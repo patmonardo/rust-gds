@@ -194,8 +194,8 @@ Tests cover:
 ## Usage Example (Conceptual)
 
 ```rust
-use rust_property::graph_store::{GraphStore, DatabaseInfo};
-use rust_property::projection::{NodeLabel, RelationshipType};
+use rust_gds::graph_store::{GraphStore, DatabaseInfo};
+use rust_gds::projection::{NodeLabel, RelationshipType};
 
 fn analyze_graph<G: GraphStore>(store: &G) {
     // Query metadata

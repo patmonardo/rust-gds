@@ -6,6 +6,7 @@ pub mod id_map;
 pub mod properties;
 pub mod property;
 pub mod property_store;
+pub mod random;
 pub mod schema;
 
 // Re-export the core types from the property module that are part of the
@@ -73,3 +74,15 @@ pub use graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DefaultGraphStore, DeletionResult, GraphName,
     GraphStore, GraphStoreAdapter, GraphStoreError, GraphStoreResult,
 };
+pub use random::{
+    RandomGraphConfig, RandomGraphError, RandomGraphResult, RandomRelationshipConfig, Randomizable,
+};
+
+/// Convenience helper that constructs a randomized [`DefaultGraphStore`] using the
+/// crate's existing generator. Returns the same [`RandomGraphResult`] type exposed by the
+/// `random` module to preserve detailed error information from random generation.
+pub fn random_graph_store(
+    cfg: &random::RandomGraphConfig,
+) -> random::RandomGraphResult<graph_store::DefaultGraphStore> {
+    graph_store::DefaultGraphStore::random(cfg)
+}

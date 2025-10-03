@@ -81,7 +81,7 @@ impl DatabaseInfo {
     ///
     /// # Examples
     /// ```
-    /// use rust_property::graph_store::{DatabaseInfo, DatabaseId, DatabaseLocation};
+    /// use rust_gds::graph_store::{DatabaseInfo, DatabaseId, DatabaseLocation};
     ///
     /// let db_id = DatabaseId::new("neo4j");
     /// let location = DatabaseLocation::remote("localhost", 7687, None, None);

@@ -21,7 +21,7 @@ impl DeletionResult {
     ///
     /// # Examples
     /// ```
-    /// use rust_property::graph_store::{DeletionResult, GraphName};
+    /// use rust_gds::graph_store::{DeletionResult, GraphName};
     ///
     /// let graph_name = GraphName::new("my-graph");
     /// let result = DeletionResult::new(graph_name);

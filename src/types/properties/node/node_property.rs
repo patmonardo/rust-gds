@@ -1,5 +1,5 @@
 use super::node_property_values::NodePropertyValues;
-use crate::types::properties::property::{Property, PropertyTrait};
+use crate::types::properties::property::Property;
 use crate::types::property::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
 
@@ -37,6 +37,7 @@ impl NodeProperty {
 mod tests {
     use super::*;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
+    use crate::types::properties::property::PropertyTrait;
 
     #[test]
     fn test_node_property_creation() {

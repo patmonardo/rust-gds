@@ -19,7 +19,7 @@ impl DatabaseId {
     ///
     /// # Examples
     /// ```
-    /// use rust_property::graph_store::DatabaseId;
+    /// use rust_gds::graph_store::DatabaseId;
     ///
     /// let db_id = DatabaseId::new("neo4j");
     /// assert_eq!(db_id.value(), "neo4j");

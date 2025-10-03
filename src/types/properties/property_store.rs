@@ -72,7 +72,6 @@ impl<V: PropertyValues> GenericPropertyStore<V> {
     pub fn new(properties: HashMap<String, Property<V>>) -> Self {
         GenericPropertyStore { properties }
     }
-
 }
 
 impl<V: PropertyValues> PropertyStore for GenericPropertyStore<V> {

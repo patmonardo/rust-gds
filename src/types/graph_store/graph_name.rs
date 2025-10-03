@@ -19,7 +19,7 @@ impl GraphName {
     ///
     /// # Examples
     /// ```
-    /// use rust_property::graph_store::GraphName;
+    /// use rust_gds::graph_store::GraphName;
     ///
     /// let name = GraphName::new("my-graph");
     /// assert_eq!(name.value(), "my-graph");

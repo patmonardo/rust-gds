@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "rust_property"
-crate-type = ["cdylib"]
+name = "rust_gds"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 napi = { version = "2", features = ["serde-json"] }
@@ -24,6 +24,15 @@ polars = { version = "0.32", features = [
 ] }
 memmap2 = "0.5"
 arrow2 = "0.15"
+rand = { version = "0.8", features = ["std", "std_rng"] }
 
 [build-dependencies]
 napi-build = "2"
+
+[features]
+default = []
+cursor = []
+core = ["cursor"]
+arrow = []
+io = []
+pipeline = []

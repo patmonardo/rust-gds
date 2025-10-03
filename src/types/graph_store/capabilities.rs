@@ -16,7 +16,7 @@ impl Capabilities {
     ///
     /// # Examples
     /// ```
-    /// use rust_property::graph_store::Capabilities;
+    /// use rust_gds::graph_store::Capabilities;
     ///
     /// let caps = Capabilities::new();
     /// ```
@@ -33,7 +33,7 @@ impl Capabilities {
     ///
     /// # Examples
     /// ```
-    /// use rust_property::graph_store::Capabilities;
+    /// use rust_gds::graph_store::Capabilities;
     ///
     /// let caps = Capabilities::with_features(vec!["write", "delete"]);
     /// assert!(caps.supports("write"));
