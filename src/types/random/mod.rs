@@ -89,6 +89,8 @@ pub enum RandomGraphError {
     MissingNodeLabels,
     #[error("probability must be between 0.0 and 1.0 for relationship '{0}'")]
     InvalidProbability(String),
+    #[error("invalid range: min={min}, max={max}")]
+    InvalidRange { min: f64, max: f64 },
     #[error("graph store error: {0}")]
     GraphStore(#[from] GraphStoreError),
 }
@@ -198,6 +200,49 @@ impl Randomizable<(&RandomGraphConfig, &RandomRelationshipConfig)> for Relations
     }
 }
 
+/// Configuration for generating random double-valued node properties.
+#[derive(Debug, Clone)]
+pub struct RandomNodeDoublePropertyConfig {
+    pub node_count: usize,
+    pub min: f64,
+    pub max: f64,
+}
+
+impl Default for RandomNodeDoublePropertyConfig {
+    fn default() -> Self {
+        Self {
+            node_count: 0,
+            min: 0.0,
+            max: 1.0,
+        }
+    }
+}
+
+impl Randomizable<RandomNodeDoublePropertyConfig> for DefaultDoubleNodePropertyValues {
+    type Error = RandomGraphError;
+
+    fn random_with_rng<R: Rng + ?Sized>(
+        config: &RandomNodeDoublePropertyConfig,
+        rng: &mut R,
+    ) -> RandomGraphResult<Self> {
+        if config.node_count == 0 {
+            return Err(RandomGraphError::EmptyGraph);
+        }
+        if !(config.min < config.max) {
+            return Err(RandomGraphError::InvalidRange {
+                min: config.min,
+                max: config.max,
+            });
+        }
+
+        let values: Vec<f64> = (0..config.node_count)
+            .map(|_| rng.gen_range(config.min..config.max))
+            .collect();
+
+        Ok(Self::new(values, config.node_count))
+    }
+}
+
 impl Randomizable<RandomGraphConfig> for DefaultGraphStore {
     type Error = RandomGraphError;
 
@@ -281,13 +326,16 @@ impl Randomizable<RandomGraphConfig> for DefaultGraphStore {
         );
 
         // Add a random floating-point score for each node.
-        let node_scores: Vec<f64> = (0..config.node_count)
-            .map(|_| rng.gen_range(0.0..1.0))
-            .collect();
-        let node_property_values = Arc::new(DefaultDoubleNodePropertyValues::new(
-            node_scores,
-            config.node_count,
-        ));
+        let node_property_values = Arc::new(<DefaultDoubleNodePropertyValues as Randomizable<
+            RandomNodeDoublePropertyConfig,
+        >>::random_with_rng(
+            &RandomNodeDoublePropertyConfig {
+                node_count: config.node_count,
+                min: 0.0,
+                max: 1.0,
+            },
+            rng,
+        )?);
         let label_set: HashSet<ProjectionNodeLabel> = projection_node_labels.into_iter().collect();
         store.add_node_property(label_set, "random_score", node_property_values)?;
 
@@ -330,6 +378,8 @@ impl DefaultGraphStore {
 mod tests {
     use super::*;
     use crate::types::graph_store::GraphStore;
+    use crate::types::properties::node::NodePropertyValues;
+    use rand::{Rng, SeedableRng};
 
     #[test]
     fn generates_random_graph_store() {
@@ -347,5 +397,31 @@ mod tests {
         assert!(store.relationship_count() > 0);
         assert!(store.graph_property_keys().contains("edge_density"));
         assert!(store.node_property_keys().contains("random_score"));
+    }
+
+    #[test]
+    fn random_node_double_property_values_are_deterministic() {
+        let config = RandomNodeDoublePropertyConfig {
+            node_count: 4,
+            min: -1.0,
+            max: 2.5,
+        };
+
+        let mut rng = StdRng::seed_from_u64(99);
+        let values = DefaultDoubleNodePropertyValues::random_with_rng(&config, &mut rng)
+            .expect("random node property values");
+
+        let mut rng_control = StdRng::seed_from_u64(99);
+        let expected: Vec<f64> = (0..config.node_count)
+            .map(|_| rng_control.gen_range(config.min..config.max))
+            .collect();
+
+        for (idx, expected_value) in expected.iter().enumerate() {
+            let actual = values.double_value(idx as u64).unwrap();
+            assert!(
+                (actual - expected_value).abs() < 1e-12,
+                "value mismatch at index {idx}: {actual} vs {expected_value}"
+            );
+        }
     }
 }
