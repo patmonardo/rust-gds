@@ -627,7 +627,7 @@ impl RelationshipPredicate for DefaultGraph {
         self.ordered_types.iter().any(|rel_type| {
             self.topology_for(rel_type)
                 .and_then(|topology| topology.outgoing(source_id))
-                .map(|neighbors| neighbors.iter().any(|neighbor| *neighbor == target_id))
+                .map(|neighbors| neighbors.contains(&target_id))
                 .unwrap_or(false)
         })
     }

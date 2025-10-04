@@ -5,9 +5,10 @@ use std::fmt;
 ///
 /// Defines how multiple property values are aggregated when
 /// combining parallel relationships or multiple paths.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Aggregation {
     /// Use default aggregation (context-dependent).
+    #[default]
     Default,
     /// No aggregation (fail on multiple values).
     None,
@@ -21,12 +22,6 @@ pub enum Aggregation {
     Single,
     /// Count occurrences.
     Count,
-}
-
-impl Default for Aggregation {
-    fn default() -> Self {
-        Aggregation::Default
-    }
 }
 
 impl Aggregation {
