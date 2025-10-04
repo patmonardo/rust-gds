@@ -56,7 +56,7 @@ impl PropertySchema {
     }
 
     pub fn value_type(&self) -> ValueType {
-        self.value_type.clone()
+        self.value_type
     }
 
     pub fn state(&self) -> PropertyState {

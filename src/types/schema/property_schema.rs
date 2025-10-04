@@ -83,7 +83,7 @@ impl PropertySchema {
     pub fn of(key: impl Into<String>, value_type: ValueType) -> Self {
         Self::new(
             key,
-            value_type.clone(),
+            value_type,
             DefaultValue::of(value_type),
             PropertyState::Normal,
         )
@@ -104,7 +104,7 @@ impl PropertySchema {
     }
 
     pub fn value_type(&self) -> ValueType {
-        self.value_type.clone()
+        self.value_type
     }
 
     pub fn default_value(&self) -> &DefaultValue {
@@ -122,7 +122,7 @@ impl PropertySchemaTrait for PropertySchema {
     }
 
     fn value_type(&self) -> ValueType {
-        self.value_type.clone()
+        self.value_type
     }
 
     fn default_value(&self) -> &DefaultValue {

@@ -20,10 +20,6 @@ impl DefaultLongGraphPropertyValues {
         Self::new(vec![value])
     }
 
-    pub fn from_iter<I: IntoIterator<Item = i64>>(iter: I) -> Self {
-        Self::new(iter.into_iter().collect())
-    }
-
     pub fn values(&self) -> &[i64] {
         &self.values
     }
@@ -75,6 +71,12 @@ impl LongGraphPropertyValues for DefaultLongGraphPropertyValues {
     }
 }
 
+impl FromIterator<i64> for DefaultLongGraphPropertyValues {
+    fn from_iter<T: IntoIterator<Item = i64>>(iter: T) -> Self {
+        Self::new(iter.into_iter().collect())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct DefaultDoubleGraphPropertyValues {
     values: Vec<f64>,
@@ -87,10 +89,6 @@ impl DefaultDoubleGraphPropertyValues {
 
     pub fn singleton(value: f64) -> Self {
         Self::new(vec![value])
-    }
-
-    pub fn from_iter<I: IntoIterator<Item = f64>>(iter: I) -> Self {
-        Self::new(iter.into_iter().collect())
     }
 
     pub fn values(&self) -> &[f64] {
@@ -144,6 +142,12 @@ impl DoubleGraphPropertyValues for DefaultDoubleGraphPropertyValues {
     }
 }
 
+impl FromIterator<f64> for DefaultDoubleGraphPropertyValues {
+    fn from_iter<T: IntoIterator<Item = f64>>(iter: T) -> Self {
+        Self::new(iter.into_iter().collect())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct DefaultDoubleArrayGraphPropertyValues {
     values: Vec<Vec<f64>>,
@@ -154,18 +158,6 @@ impl DefaultDoubleArrayGraphPropertyValues {
     pub fn new(values: Vec<Vec<f64>>) -> Self {
         let dimension = values.first().map(|vec| vec.len());
         Self { values, dimension }
-    }
-
-    pub fn from_iter<I, J>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = J>,
-        J: IntoIterator<Item = f64>,
-    {
-        let collected: Vec<Vec<f64>> = iter
-            .into_iter()
-            .map(|inner| inner.into_iter().collect())
-            .collect();
-        Self::new(collected)
     }
 
     pub fn singleton(value: Vec<f64>) -> Self {
@@ -231,6 +223,19 @@ impl DoubleArrayGraphPropertyValues for DefaultDoubleArrayGraphPropertyValues {
     }
 }
 
+impl<T> FromIterator<T> for DefaultDoubleArrayGraphPropertyValues
+where
+    T: IntoIterator<Item = f64>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let collected: Vec<Vec<f64>> = iter
+            .into_iter()
+            .map(|inner| inner.into_iter().collect())
+            .collect();
+        Self::new(collected)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct DefaultFloatArrayGraphPropertyValues {
     values: Vec<Vec<f32>>,
@@ -241,18 +246,6 @@ impl DefaultFloatArrayGraphPropertyValues {
     pub fn new(values: Vec<Vec<f32>>) -> Self {
         let dimension = values.first().map(|vec| vec.len());
         Self { values, dimension }
-    }
-
-    pub fn from_iter<I, J>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = J>,
-        J: IntoIterator<Item = f32>,
-    {
-        let collected: Vec<Vec<f32>> = iter
-            .into_iter()
-            .map(|inner| inner.into_iter().collect())
-            .collect();
-        Self::new(collected)
     }
 
     pub fn singleton(value: Vec<f32>) -> Self {
@@ -318,6 +311,19 @@ impl FloatArrayGraphPropertyValues for DefaultFloatArrayGraphPropertyValues {
     }
 }
 
+impl<T> FromIterator<T> for DefaultFloatArrayGraphPropertyValues
+where
+    T: IntoIterator<Item = f32>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let collected: Vec<Vec<f32>> = iter
+            .into_iter()
+            .map(|inner| inner.into_iter().collect())
+            .collect();
+        Self::new(collected)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct DefaultLongArrayGraphPropertyValues {
     values: Vec<Vec<i64>>,
@@ -328,18 +334,6 @@ impl DefaultLongArrayGraphPropertyValues {
     pub fn new(values: Vec<Vec<i64>>) -> Self {
         let dimension = values.first().map(|vec| vec.len());
         Self { values, dimension }
-    }
-
-    pub fn from_iter<I, J>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = J>,
-        J: IntoIterator<Item = i64>,
-    {
-        let collected: Vec<Vec<i64>> = iter
-            .into_iter()
-            .map(|inner| inner.into_iter().collect())
-            .collect();
-        Self::new(collected)
     }
 
     pub fn singleton(value: Vec<i64>) -> Self {
@@ -409,13 +403,26 @@ impl LongArrayGraphPropertyValues for DefaultLongArrayGraphPropertyValues {
     }
 }
 
+impl<T> FromIterator<T> for DefaultLongArrayGraphPropertyValues
+where
+    T: IntoIterator<Item = i64>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let collected: Vec<Vec<i64>> = iter
+            .into_iter()
+            .map(|inner| inner.into_iter().collect())
+            .collect();
+        Self::new(collected)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_long_graph_property_values() {
-        let values = DefaultLongGraphPropertyValues::from_iter([1, 2, 3]);
+        let values: DefaultLongGraphPropertyValues = [1, 2, 3].into_iter().collect();
         assert_eq!(values.value_type(), ValueType::Long);
         assert_eq!(values.element_count(), 3);
         let collected: Vec<i64> = values.long_values().collect();
@@ -426,8 +433,8 @@ mod tests {
 
     #[test]
     fn test_double_array_graph_property_values() {
-        let values =
-            DefaultDoubleArrayGraphPropertyValues::from_iter([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
+        let values: DefaultDoubleArrayGraphPropertyValues =
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]].into_iter().collect();
         assert_eq!(values.value_type(), ValueType::DoubleArray);
         assert_eq!(values.element_count(), 2);
         assert_eq!(values.dimension(), Some(3));

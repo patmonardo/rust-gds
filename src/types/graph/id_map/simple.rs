@@ -179,7 +179,7 @@ impl IdMap for SimpleIdMap {
         self.available_labels.insert(node_label.clone());
         self.labels_by_node
             .entry(node_id)
-            .or_insert_with(HashSet::new)
+            .or_default()
             .insert(node_label);
     }
 

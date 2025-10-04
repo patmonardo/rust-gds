@@ -16,6 +16,7 @@ use crate::types::schema::{
 use crate::types::ValueType;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use thiserror::Error;
@@ -167,15 +168,15 @@ impl Randomizable<(&RandomGraphConfig, &RandomRelationshipConfig)> for Relations
         };
 
         if graph_config.directed {
-            for source in 0..node_count {
+            for (source, neighbors) in outgoing.iter_mut().enumerate() {
                 for target in 0..node_count {
                     if source == target {
                         continue;
                     }
 
                     if rng.gen_bool(rel_config.probability) {
-                        outgoing[source].push(target as u64);
-                        if let Some(ref mut incoming_lists) = incoming {
+                        neighbors.push(target as u64);
+                        if let Some(incoming_lists) = incoming.as_mut() {
                             incoming_lists[target].push(source as u64);
                         }
                     }
@@ -183,11 +184,16 @@ impl Randomizable<(&RandomGraphConfig, &RandomRelationshipConfig)> for Relations
             }
         } else {
             for source in 0..node_count {
-                for target in (source + 1)..node_count {
+                let (left, right) = outgoing.split_at_mut(source + 1);
+                let source_neighbors = &mut left[source];
+
+                for (offset, target_neighbors) in right.iter_mut().enumerate() {
+                    let target = source + 1 + offset;
                     if rng.gen_bool(rel_config.probability) {
-                        outgoing[source].push(target as u64);
-                        outgoing[target].push(source as u64);
-                        if let Some(ref mut incoming_lists) = incoming {
+                        source_neighbors.push(target as u64);
+                        target_neighbors.push(source as u64);
+
+                        if let Some(incoming_lists) = incoming.as_mut() {
                             incoming_lists[target].push(source as u64);
                             incoming_lists[source].push(target as u64);
                         }
@@ -228,11 +234,15 @@ impl Randomizable<RandomNodeDoublePropertyConfig> for DefaultDoubleNodePropertyV
         if config.node_count == 0 {
             return Err(RandomGraphError::EmptyGraph);
         }
-        if !(config.min < config.max) {
-            return Err(RandomGraphError::InvalidRange {
-                min: config.min,
-                max: config.max,
-            });
+
+        match config.min.partial_cmp(&config.max) {
+            Some(Ordering::Less) => {}
+            _ => {
+                return Err(RandomGraphError::InvalidRange {
+                    min: config.min,
+                    max: config.max,
+                });
+            }
         }
 
         let values: Vec<f64> = (0..config.node_count)
