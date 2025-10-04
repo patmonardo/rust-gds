@@ -7,9 +7,10 @@ use crate::types::graph::id_map::{
 };
 use crate::types::properties::node::{NodePropertyContainer, NodePropertyValues};
 use crate::types::properties::relationship::{
-    PropertyValue, RelationshipConsumer, RelationshipCursorBox, RelationshipIterator,
+    DefaultModifiableRelationshipCursor, DefaultRelationshipCursor, ModifiableRelationshipCursor,
+    PropertyValue, RelationshipCursor, RelationshipCursorBox, RelationshipIterator,
     RelationshipPredicate, RelationshipProperties, RelationshipPropertyStore,
-    RelationshipPropertyValues, RelationshipWithPropertyConsumer,
+    RelationshipPropertyValues, RelationshipStream,
 };
 use crate::types::schema::{GraphSchema, NodeLabel, RelationshipType as SchemaRelationshipType};
 use std::collections::{HashMap, HashSet};
@@ -150,6 +151,114 @@ impl DefaultGraph {
 
         selected.value_at_or(index, fallback_value)
     }
+
+    fn traverse_outgoing_relationships<F>(
+        &self,
+        node_id: MappedNodeId,
+        mode: PropertyTraversalMode,
+        mut callback: F,
+    ) -> bool
+    where
+        F: FnMut(&dyn RelationshipCursor) -> bool,
+    {
+        let fallback = mode.fallback();
+        let mut cursor = DefaultModifiableRelationshipCursor::new(node_id, node_id, fallback);
+        cursor.set_source_id(node_id);
+
+        for relationship_type in &self.ordered_types {
+            let topology = match self.topology_for(relationship_type) {
+                Some(topology) => topology,
+                None => continue,
+            };
+
+            let neighbors = match topology.outgoing(node_id) {
+                Some(neighbors) => neighbors,
+                None => continue,
+            };
+
+            for (index, &target) in neighbors.iter().enumerate() {
+                cursor.set_target_id(target);
+
+                let property_value = if mode.requires_value() {
+                    self.relationship_property_value_for(
+                        relationship_type,
+                        node_id,
+                        index,
+                        fallback,
+                    )
+                } else {
+                    fallback
+                };
+
+                cursor.set_property(property_value);
+
+                if !callback(&cursor as &dyn RelationshipCursor) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    fn traverse_inverse_relationships<F>(
+        &self,
+        node_id: MappedNodeId,
+        mode: PropertyTraversalMode,
+        mut callback: F,
+    ) -> bool
+    where
+        F: FnMut(&dyn RelationshipCursor) -> bool,
+    {
+        let fallback = mode.fallback();
+        let mut cursor = DefaultModifiableRelationshipCursor::new(node_id, node_id, fallback);
+        cursor.set_target_id(node_id);
+
+        for relationship_type in &self.ordered_types {
+            let topology = match self.topology_for(relationship_type) {
+                Some(topology) => topology,
+                None => continue,
+            };
+
+            let incoming = match topology.incoming(node_id) {
+                Some(incoming) => incoming,
+                None => continue,
+            };
+
+            for &source in incoming.iter() {
+                cursor.set_source_id(source);
+
+                let property_value = if mode.requires_value() {
+                    topology
+                        .outgoing(source)
+                        .and_then(|neighbors| {
+                            neighbors
+                                .iter()
+                                .position(|&target| target == node_id)
+                                .map(|index| {
+                                    self.relationship_property_value_for(
+                                        relationship_type,
+                                        source,
+                                        index,
+                                        fallback,
+                                    )
+                                })
+                        })
+                        .unwrap_or(fallback)
+                } else {
+                    fallback
+                };
+
+                cursor.set_property(property_value);
+
+                if !callback(&cursor as &dyn RelationshipCursor) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -165,6 +274,29 @@ impl SelectedRelationshipProperty {
 
     fn value_at_or(&self, index: u64, fallback: PropertyValue) -> PropertyValue {
         self.values.double_value(index).unwrap_or(fallback)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct PropertyTraversalMode {
+    fallback: PropertyValue,
+    include_value: bool,
+}
+
+impl PropertyTraversalMode {
+    fn with_value(fallback: PropertyValue) -> Self {
+        Self {
+            fallback,
+            include_value: true,
+        }
+    }
+
+    fn fallback(self) -> PropertyValue {
+        self.fallback
+    }
+
+    fn requires_value(self) -> bool {
+        self.include_value
     }
 }
 
@@ -502,127 +634,47 @@ impl RelationshipPredicate for DefaultGraph {
 }
 
 impl RelationshipIterator for DefaultGraph {
-    fn for_each_relationship(
-        &self,
-        node_id: MappedNodeId,
-        consumer: &mut dyn RelationshipConsumer,
-    ) {
-        for rel_type in &self.ordered_types {
-            if let Some(topology) = self.topology_for(rel_type) {
-                if let Some(neighbors) = topology.outgoing(node_id) {
-                    for &target in neighbors {
-                        if !consumer.accept(node_id, target) {
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fn for_each_relationship_with_properties(
-        &self,
-        node_id: MappedNodeId,
-        fallback_value: PropertyValue,
-        consumer: &mut dyn RelationshipWithPropertyConsumer,
-    ) {
-        for rel_type in &self.ordered_types {
-            if let Some(topology) = self.topology_for(rel_type) {
-                if let Some(neighbors) = topology.outgoing(node_id) {
-                    for (index, &target) in neighbors.iter().enumerate() {
-                        let property = self.relationship_property_value_for(
-                            rel_type,
-                            node_id,
-                            index,
-                            fallback_value,
-                        );
-                        if !consumer.accept(node_id, target, property) {
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fn for_each_inverse_relationship(
-        &self,
-        node_id: MappedNodeId,
-        consumer: &mut dyn RelationshipConsumer,
-    ) {
-        for rel_type in &self.ordered_types {
-            if let Some(topology) = self.topology_for(rel_type) {
-                if let Some(incoming) = topology.incoming(node_id) {
-                    for &source in incoming {
-                        if !consumer.accept(source, node_id) {
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    fn for_each_inverse_relationship_with_properties(
-        &self,
-        node_id: MappedNodeId,
-        fallback_value: PropertyValue,
-        consumer: &mut dyn RelationshipWithPropertyConsumer,
-    ) {
-        for rel_type in &self.ordered_types {
-            if let Some(topology) = self.topology_for(rel_type) {
-                if let Some(incoming) = topology.incoming(node_id) {
-                    for &source in incoming {
-                        let property = topology
-                            .outgoing(source)
-                            .and_then(|neighbors| {
-                                neighbors.iter().position(|&target| target == node_id).map(
-                                    |index| {
-                                        self.relationship_property_value_for(
-                                            rel_type,
-                                            source,
-                                            index,
-                                            fallback_value,
-                                        )
-                                    },
-                                )
-                            })
-                            .unwrap_or(fallback_value);
-
-                        if !consumer.accept(source, node_id, property) {
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fn stream_relationships<'a>(
         &'a self,
         node_id: MappedNodeId,
         fallback_value: PropertyValue,
-    ) -> Box<dyn Iterator<Item = RelationshipCursorBox> + Send + 'a> {
+    ) -> RelationshipStream<'a> {
         let mut cursors: Vec<RelationshipCursorBox> = Vec::new();
-        for rel_type in &self.ordered_types {
-            if let Some(topology) = self.topology_for(rel_type) {
-                if let Some(neighbors) = topology.outgoing(node_id) {
-                    cursors.extend(neighbors.iter().enumerate().map(|(index, &target)| {
-                        let property = self.relationship_property_value_for(
-                            rel_type,
-                            node_id,
-                            index,
-                            fallback_value,
-                        );
-                        Box::new(StaticRelationshipCursor {
-                            source: node_id,
-                            target,
-                            property,
-                        }) as RelationshipCursorBox
-                    }));
-                }
-            }
-        }
+        let _ = self.traverse_outgoing_relationships(
+            node_id,
+            PropertyTraversalMode::with_value(fallback_value),
+            |cursor| {
+                let snapshot = DefaultRelationshipCursor::new(
+                    cursor.source_id(),
+                    cursor.target_id(),
+                    cursor.property(),
+                );
+                cursors.push(Box::new(snapshot) as RelationshipCursorBox);
+                true
+            },
+        );
+        Box::new(cursors.into_iter())
+    }
+
+    fn stream_inverse_relationships<'a>(
+        &'a self,
+        node_id: MappedNodeId,
+        fallback_value: PropertyValue,
+    ) -> RelationshipStream<'a> {
+        let mut cursors: Vec<RelationshipCursorBox> = Vec::new();
+        let _ = self.traverse_inverse_relationships(
+            node_id,
+            PropertyTraversalMode::with_value(fallback_value),
+            |cursor| {
+                let snapshot = DefaultRelationshipCursor::new(
+                    cursor.source_id(),
+                    cursor.target_id(),
+                    cursor.property(),
+                );
+                cursors.push(Box::new(snapshot) as RelationshipCursorBox);
+                true
+            },
+        );
         Box::new(cursors.into_iter())
     }
 
@@ -650,22 +702,27 @@ impl RelationshipProperties for DefaultGraph {
             return fallback_value;
         }
 
-        for relationship_type in &self.ordered_types {
-            if let Some(topology) = self.topology_for(relationship_type) {
-                if let Some(neighbors) = topology.outgoing(source_id) {
-                    if let Some(index) = neighbors.iter().position(|&target| target == target_id) {
-                        return self.relationship_property_value_for(
-                            relationship_type,
-                            source_id,
-                            index,
-                            fallback_value,
-                        );
-                    }
+        let mut property = fallback_value;
+        let mut found = false;
+        let _ = self.traverse_outgoing_relationships(
+            source_id,
+            PropertyTraversalMode::with_value(fallback_value),
+            |cursor| {
+                if cursor.target_id() == target_id {
+                    property = cursor.property();
+                    found = true;
+                    false
+                } else {
+                    true
                 }
-            }
-        }
+            },
+        );
 
-        fallback_value
+        if found {
+            property
+        } else {
+            fallback_value
+        }
     }
 }
 
@@ -676,27 +733,6 @@ impl NodePropertyContainer for DefaultGraph {
 
     fn available_node_properties(&self) -> HashSet<String> {
         self.node_properties.keys().cloned().collect()
-    }
-}
-
-#[derive(Debug, Clone)]
-struct StaticRelationshipCursor {
-    source: MappedNodeId,
-    target: MappedNodeId,
-    property: PropertyValue,
-}
-
-impl crate::types::properties::relationship::RelationshipCursor for StaticRelationshipCursor {
-    fn source_id(&self) -> MappedNodeId {
-        self.source
-    }
-
-    fn target_id(&self) -> MappedNodeId {
-        self.target
-    }
-
-    fn property(&self) -> PropertyValue {
-        self.property
     }
 }
 

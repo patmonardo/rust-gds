@@ -1,12 +1,9 @@
-use crate::types::properties::property_values::{
-    PropertyValues, PropertyValuesError, PropertyValuesResult,
-};
-use crate::types::property::ValueType;
+use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
 
 /// Represents properties of relationships in a graph.
 /// Provides access to relationship property values and metadata.
 ///
-/// This is a simplified version focused on the core property access patterns.
+/// Concrete implementations live under the `impls` module.
 pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug + Send + Sync {
     /// Returns the double value for the given relationship index.
     fn double_value(&self, rel_index: u64) -> PropertyValuesResult<f64>;
@@ -27,78 +24,4 @@ pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug + Send + 
 
     /// Returns whether the relationship has a value.
     fn has_value(&self, rel_index: u64) -> bool;
-}
-
-/// Default implementation for relationship property values (doubles).
-#[derive(Debug, Clone)]
-pub struct DefaultRelationshipPropertyValues {
-    values: Vec<f64>,
-    default_value: f64,
-    element_count: usize,
-}
-
-impl DefaultRelationshipPropertyValues {
-    pub fn new(values: Vec<f64>, default_value: f64, element_count: usize) -> Self {
-        DefaultRelationshipPropertyValues {
-            values,
-            default_value,
-            element_count,
-        }
-    }
-
-    pub fn with_default(values: Vec<f64>, element_count: usize) -> Self {
-        Self::new(values, 0.0, element_count)
-    }
-}
-
-impl PropertyValues for DefaultRelationshipPropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::Double
-    }
-
-    fn element_count(&self) -> usize {
-        self.element_count
-    }
-}
-
-impl RelationshipPropertyValues for DefaultRelationshipPropertyValues {
-    fn double_value(&self, rel_index: u64) -> PropertyValuesResult<f64> {
-        self.values
-            .get(rel_index as usize)
-            .copied()
-            .ok_or(PropertyValuesError::InvalidNodeId(rel_index))
-    }
-
-    fn long_value(&self, rel_index: u64) -> PropertyValuesResult<i64> {
-        Ok(self.double_value(rel_index)? as i64)
-    }
-
-    fn get_object(&self, rel_index: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.double_value(rel_index)?))
-    }
-
-    fn default_value(&self) -> f64 {
-        self.default_value
-    }
-
-    fn has_value(&self, rel_index: u64) -> bool {
-        (rel_index as usize) < self.values.len()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_relationship_property_values() {
-        let values = DefaultRelationshipPropertyValues::new(vec![1.0, 2.5, 3.7], 0.0, 3);
-
-        assert_eq!(values.value_type(), ValueType::Double);
-        assert_eq!(values.relationship_count(), 3);
-        assert_eq!(values.double_value(1).unwrap(), 2.5);
-        assert_eq!(values.default_value(), 0.0);
-        assert!(values.has_value(0));
-        assert!(!values.has_value(10));
-    }
 }

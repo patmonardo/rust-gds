@@ -6,7 +6,7 @@ use crate::types::graph::{
 };
 use crate::types::properties::{
     node::{NodePropertyContainer, NodePropertyContainerExt},
-    relationship::{RelationshipConsumer, RelationshipIterator, RelationshipProperties},
+    relationship::{RelationshipIterator, RelationshipProperties},
 };
 use crate::types::schema::GraphSchema;
 use std::collections::HashSet;
@@ -63,13 +63,9 @@ pub trait Graph:
             return None;
         }
 
-        let mut visitor = NthTargetConsumer {
-            remaining: offset,
-            target: None,
-        };
-
-        self.for_each_relationship(source_id, &mut visitor);
-        visitor.target
+        self.stream_relationships(source_id, self.default_property_value())
+            .nth(offset)
+            .map(|cursor| cursor.target_id())
     }
 }
 
@@ -98,20 +94,3 @@ pub trait GraphExt: Graph {
 }
 
 impl<T: Graph + ?Sized> GraphExt for T {}
-
-struct NthTargetConsumer {
-    remaining: usize,
-    target: Option<MappedNodeId>,
-}
-
-impl RelationshipConsumer for NthTargetConsumer {
-    fn accept(&mut self, _source_id: MappedNodeId, target_id: MappedNodeId) -> bool {
-        if self.remaining == 0 {
-            self.target = Some(target_id);
-            false
-        } else {
-            self.remaining -= 1;
-            true
-        }
-    }
-}

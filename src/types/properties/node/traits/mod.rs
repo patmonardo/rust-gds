@@ -1,3 +1,5 @@
-pub mod node_property_values;
+pub mod node_property_container;
 
-pub use node_property_values::*;
+pub use node_property_container::{
+    EmptyNodePropertyContainer, NodePropertyContainer, NodePropertyContainerExt,
+};

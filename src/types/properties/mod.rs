@@ -36,13 +36,10 @@ pub use node::{
     NodePropertyStore, NodePropertyStoreBuilder, NodePropertyValues,
 };
 pub use relationship::{
-    all_relationships, for_each_relationship, for_each_relationship_with_property,
-    no_relationships, not_relationships, AndThenRelationshipConsumer,
-    AndThenRelationshipWithPropertyConsumer, ConstantRelationshipProperties, EmptyPropertyCursor,
-    EmptyRelationshipProperties, ModifiableRelationshipCursor, PropertyCursor, PropertyValue,
-    RelationshipConsumer, RelationshipConsumerExt, RelationshipCursor, RelationshipCursorBox,
-    RelationshipIterator, RelationshipIteratorExt, RelationshipPredicate, RelationshipProperties,
-    RelationshipPropertiesExt, RelationshipProperty, RelationshipPropertyStore,
-    RelationshipPropertyStoreBuilder, RelationshipPropertyValues, RelationshipStream,
-    RelationshipWithPropertyConsumer, RelationshipWithPropertyConsumerExt,
+    all_relationships, no_relationships, not_relationships, ConstantRelationshipProperties,
+    EmptyPropertyCursor, EmptyRelationshipProperties, ModifiableRelationshipCursor, PropertyCursor,
+    PropertyValue, RelationshipCursor, RelationshipCursorBox, RelationshipIterator,
+    RelationshipPredicate, RelationshipProperties, RelationshipPropertiesExt, RelationshipProperty,
+    RelationshipPropertyStore, RelationshipPropertyStoreBuilder, RelationshipPropertyValues,
+    RelationshipStream,
 };

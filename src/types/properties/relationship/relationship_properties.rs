@@ -1,4 +1,4 @@
-use super::property_cursor::{PropertyCursor, PropertyValue};
+use super::traits::{PropertyCursor, PropertyValue};
 use crate::types::graph::id_map::MappedNodeId;
 use std::fmt::Debug;
 

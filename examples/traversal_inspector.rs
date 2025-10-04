@@ -6,6 +6,7 @@
 use rust_gds::projection::RelationshipType;
 use rust_gds::types::graph::{Graph, GraphExt, GraphResult};
 use rust_gds::types::graph_store::DefaultGraphStore;
+use rust_gds::types::properties::relationship::PropertyValue;
 use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use rust_gds::types::MappedNodeId;
 use std::collections::HashSet;
@@ -62,7 +63,8 @@ fn summarize_graph(graph: &dyn Graph) {
 }
 
 fn sample_reachable_nodes(graph: &dyn Graph, node_limit: usize) {
-    println!("Sampling degrees and reachable neighbors");
+    const FALLBACK_REL_PROPERTY: PropertyValue = 0.0;
+    println!("Sampling degrees and reachable neighbors via RelationshipCursor");
 
     let limit = node_limit.min(graph.node_count());
     for node in 0..limit {
@@ -75,15 +77,30 @@ fn sample_reachable_nodes(graph: &dyn Graph, node_limit: usize) {
         );
 
         let mut neighbors = Vec::new();
-        graph.for_each_relationship(node_id, &mut |_, target| {
-            neighbors.push(target);
-            neighbors.len() < 5
-        });
+        let mut more_neighbors = false;
+        let relationships = graph.stream_relationships(node_id, FALLBACK_REL_PROPERTY);
+
+        for (idx, cursor) in relationships.enumerate() {
+            if idx < 5 {
+                neighbors.push((cursor.target_id(), cursor.property()));
+            } else {
+                more_neighbors = true;
+                break;
+            }
+        }
 
         if neighbors.is_empty() {
             println!("    No outgoing relationships");
         } else {
-            println!("    -> {:?}", neighbors);
+            let display: Vec<String> = neighbors
+                .iter()
+                .map(|(target, property)| format!("target={target}, property={property:.3}"))
+                .collect();
+            if more_neighbors {
+                println!("    -> [{} ...]", display.join(", "));
+            } else {
+                println!("    -> [{}]", display.join(", "));
+            }
         }
     }
 }

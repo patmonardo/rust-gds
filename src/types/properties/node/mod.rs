@@ -5,21 +5,20 @@
 
 pub mod impls;
 pub mod node_property;
-pub mod node_property_container;
 pub mod node_property_store;
 pub mod node_property_values;
 pub mod traits;
 
 // Re-export public API
-pub use node_property::NodeProperty;
-pub use node_property_container::{
-    EmptyNodePropertyContainer, NodePropertyContainer, NodePropertyContainerExt,
-};
-pub use node_property_store::{NodePropertyStore, NodePropertyStoreBuilder};
-pub use node_property_values::{
+pub use impls::{
     DefaultDoubleArrayNodePropertyValues, DefaultDoubleNodePropertyValues,
     DefaultFloatArrayNodePropertyValues, DefaultLongArrayNodePropertyValues,
-    DefaultLongNodePropertyValues, DoubleArrayNodePropertyValues, DoubleNodePropertyValues,
-    FloatArrayNodePropertyValues, LongArrayNodePropertyValues, LongNodePropertyValues,
-    NodePropertyValues,
+    DefaultLongNodePropertyValues, NodePropertyStoreBuilder,
 };
+pub use node_property::NodeProperty;
+pub use node_property_store::NodePropertyStore;
+pub use node_property_values::{
+    DoubleArrayNodePropertyValues, DoubleNodePropertyValues, FloatArrayNodePropertyValues,
+    LongArrayNodePropertyValues, LongNodePropertyValues, NodePropertyValues,
+};
+pub use traits::{EmptyNodePropertyContainer, NodePropertyContainer, NodePropertyContainerExt};

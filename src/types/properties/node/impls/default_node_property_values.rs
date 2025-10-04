@@ -1,4 +1,4 @@
-use crate::types::properties::node::traits::{
+use crate::types::properties::node::node_property_values::{
     DoubleArrayNodePropertyValues, DoubleNodePropertyValues, FloatArrayNodePropertyValues,
     LongArrayNodePropertyValues, LongNodePropertyValues, NodePropertyValues,
 };

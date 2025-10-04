@@ -7,15 +7,16 @@ pub mod graph_property;
 pub mod graph_property_store;
 pub mod graph_property_values;
 pub mod impls;
-pub mod traits;
 
 // Re-export public API
 pub use graph_property::GraphProperty;
 pub use graph_property_store::{GraphPropertyStore, GraphPropertyStoreBuilder};
 pub use graph_property_values::{
+    DoubleArrayGraphPropertyValues, DoubleGraphPropertyValues, FloatArrayGraphPropertyValues,
+    GraphPropertyValues, LongArrayGraphPropertyValues, LongGraphPropertyValues,
+};
+pub use impls::{
     DefaultDoubleArrayGraphPropertyValues, DefaultDoubleGraphPropertyValues,
-    DefaultFloatArrayGraphPropertyValues, DefaultLongArrayGraphPropertyValues,
-    DefaultLongGraphPropertyValues, DoubleArrayGraphPropertyValues, DoubleGraphPropertyValues,
-    FloatArrayGraphPropertyValues, GraphPropertyValues, LongArrayGraphPropertyValues,
-    LongGraphPropertyValues,
+    DefaultFloatArrayGraphPropertyValues, DefaultGraphProperty, DefaultGraphPropertyStore,
+    DefaultLongArrayGraphPropertyValues, DefaultLongGraphPropertyValues,
 };

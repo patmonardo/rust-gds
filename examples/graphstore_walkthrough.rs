@@ -7,13 +7,14 @@ use rust_gds::types::graph_store::{
 };
 use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use rust_gds::types::properties::node::DefaultLongNodePropertyValues;
+use rust_gds::types::properties::relationship::PropertyValue;
 use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use rust_gds::types::schema::{
     Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
     RelationshipType as SchemaRelationshipType,
 };
 use rust_gds::types::ValueType;
-use rust_gds::types::{IdMap, SimpleIdMap};
+use rust_gds::types::{IdMap, MappedNodeId, SimpleIdMap};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;
@@ -109,6 +110,7 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     println!("  Directed: {}", graph.characteristics().is_directed());
     println!("  Person nodes: {}", store.node_count_for_label(&person));
     println!("  Movie nodes: {}", store.node_count_for_label(&movie));
+    print_relationship_sample(&*graph, 0, "  Sample outgoing relationships from node 0");
 
     println!("8. Schema summary");
     print_sorted_labels("  Node labels", &store.node_labels());
@@ -171,6 +173,7 @@ fn random_walkthrough() -> RandomGraphResult<()> {
 
     print_sorted_labels("  Node labels", &store.node_labels());
     print_sorted_relationships("  Relationship types", &store.relationship_types());
+    print_relationship_sample(&*graph, 0, "  Sample outgoing relationships from node 0");
 
     Ok(())
 }
@@ -191,4 +194,32 @@ fn print_sorted_relationships(title: &str, relationships: &HashSet<RelationshipT
         .collect();
     names.sort();
     println!("{}: {}", title, names.join(", "));
+}
+
+fn print_relationship_sample(graph: &dyn Graph, node_id: MappedNodeId, title: &str) {
+    const FALLBACK: PropertyValue = 0.0;
+    println!("{}", title);
+
+    let mut count = 0usize;
+    let mut more = false;
+    for (index, cursor) in graph.stream_relationships(node_id, FALLBACK).enumerate() {
+        if index < 5 {
+            println!(
+                "    {} -> {} (property {:.3})",
+                cursor.source_id(),
+                cursor.target_id(),
+                cursor.property()
+            );
+        } else {
+            more = true;
+            break;
+        }
+        count += 1;
+    }
+
+    if count == 0 {
+        println!("    (no outgoing relationships)");
+    } else if more {
+        println!("    ...");
+    }
 }

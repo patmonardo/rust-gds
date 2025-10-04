@@ -140,7 +140,7 @@ The generated `.node` binary can then be required/imported by applications or te
 
 Deep dives and ADRs are located in the `doc/` directory:
 
-- `adr0001.md` &mdash; project philosophy and initial decisions.
+- `adr0001_property_graph_store_design.md` &mdash; project philosophy and initial decisions.
 - `graphstore_implementation.md` &mdash; trait architecture and design goals.
 - `projection_module.md` &mdash; type interners for labels and relationship types.
 - `projection_philosophy.md` &mdash; conceptual alignment with the GDS TypeScript project.

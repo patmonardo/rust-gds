@@ -17,12 +17,13 @@ use rust_gds::types::properties::node::{
     DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues, NodePropertyContainer,
     NodePropertyValues,
 };
+use rust_gds::types::properties::relationship::PropertyValue;
 use rust_gds::types::schema::{
     Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
     RelationshipType as SchemaRelationshipType,
 };
 use rust_gds::types::ValueType;
-use rust_gds::types::{IdMap, SimpleIdMap};
+use rust_gds::types::{IdMap, MappedNodeId, SimpleIdMap};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;
@@ -166,6 +167,8 @@ fn explore_graph_view(store: &DefaultGraphStore) -> GraphStoreResult<()> {
         print_scalar_series("performance_rating", &values, graph.node_count());
     }
 
+    print_relationship_sample(&*graph, 0, "Cursor sample from node 0");
+
     Ok(())
 }
 
@@ -199,5 +202,33 @@ fn print_scalar_series(name: &str, values: &Arc<dyn NodePropertyValues>, node_co
                 values.dimension()
             );
         }
+    }
+}
+
+fn print_relationship_sample(graph: &dyn Graph, node_id: MappedNodeId, title: &str) {
+    const FALLBACK: PropertyValue = 0.0;
+    println!("{}", title);
+
+    let mut count = 0usize;
+    let mut more = false;
+    for (index, cursor) in graph.stream_relationships(node_id, FALLBACK).enumerate() {
+        if index < 5 {
+            println!(
+                "    {} -> {} (property {:.3})",
+                cursor.source_id(),
+                cursor.target_id(),
+                cursor.property()
+            );
+        } else {
+            more = true;
+            break;
+        }
+        count += 1;
+    }
+
+    if count == 0 {
+        println!("    (no outgoing relationships)");
+    } else if more {
+        println!("    ...");
     }
 }

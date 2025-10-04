@@ -1,7 +1,6 @@
 use crate::types::graph::id_map::MappedNodeId;
-use crate::types::properties::relationship::property_cursor::PropertyValue;
 use crate::types::properties::relationship::traits::{
-    ModifiableRelationshipCursor, RelationshipCursor,
+    ModifiableRelationshipCursor, PropertyValue, RelationshipCursor,
 };
 
 /// Immutable relationship cursor mirroring the TypeScript primitive
