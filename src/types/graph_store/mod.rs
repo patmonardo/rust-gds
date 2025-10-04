@@ -1,4 +1,5 @@
 //! GraphStore - Central interface for managing and accessing graph data.
+#![allow(clippy::module_inception)]
 //!
 //! The GraphStore module provides the main orchestration layer for graph data management,
 //! including schema, properties, topology, and filtered views.

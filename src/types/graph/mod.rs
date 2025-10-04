@@ -1,3 +1,5 @@
+#![allow(clippy::module_inception)]
+
 pub mod adj_list;
 pub mod characteristics;
 pub mod default_graph;

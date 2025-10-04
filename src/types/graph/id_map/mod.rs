@@ -1,3 +1,5 @@
+#![allow(clippy::module_inception)]
+
 mod batch_node_iterable;
 mod filtered_id_map;
 mod id_map;

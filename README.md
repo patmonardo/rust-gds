@@ -96,6 +96,14 @@ More advanced usage lives in `examples/` and `tests/`:
 - `examples/random_graph.rs` &mdash; builds a seeded graph and dumps schema metadata.
 - `tests/random_api.rs` &mdash; integration coverage for `random_graph_store`.
 
+Recommended import surface
+
+For downstream code that wants a stable, small surface, prefer importing the curated prelude:
+
+```rust
+use rust_gds::types::prelude::*;
+```
+
 ---
 
 ## Feature flags
