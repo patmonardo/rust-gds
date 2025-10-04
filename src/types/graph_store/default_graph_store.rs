@@ -334,7 +334,7 @@ impl GraphStore for DefaultGraphStore {
             let label_key = Self::label_key(&label);
             self.node_properties_by_label
                 .entry(label_key)
-                .or_insert_with(HashSet::new)
+                .or_default()
                 .insert(key.clone());
         }
 

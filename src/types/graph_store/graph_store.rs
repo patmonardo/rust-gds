@@ -245,6 +245,47 @@ impl<G: GraphStore> GraphStoreAdapter<G> {
     pub fn inner(&self) -> &G {
         &self.graph_store
     }
+
+    /// Check whether a property key is present anywhere in this store:
+    /// - graph-level properties
+    /// - node-level properties (any label)
+    /// - relationship-level properties (any relationship type)
+    pub fn is_property_key_used_anywhere(&self, key: &str) -> bool {
+        if self.graph_store.has_graph_property(key) {
+            return true;
+        }
+        if self.graph_store.has_node_property(key) {
+            return true;
+        }
+        self.graph_store.relationship_property_keys().contains(key)
+    }
+
+    /// Return where a property key appears:
+    /// (is_graph_level, node_labels_with_key, relationship_types_with_key)
+    pub fn property_key_locations(
+        &self,
+        key: &str,
+    ) -> (bool, HashSet<NodeLabel>, HashSet<RelationshipType>) {
+        let mut node_labels_with = HashSet::new();
+        for label in self.graph_store.node_labels() {
+            if self.graph_store.has_node_property_for_label(&label, key) {
+                node_labels_with.insert(label);
+            }
+        }
+
+        let mut rel_types_with = HashSet::new();
+        for rel_type in self.graph_store.relationship_types() {
+            if self.graph_store.has_relationship_property(&rel_type, key) {
+                rel_types_with.insert(rel_type);
+            }
+        }
+
+        (
+            self.graph_store.has_graph_property(key),
+            node_labels_with,
+            rel_types_with,
+        )
+    }
 }
 
 impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
@@ -458,6 +499,69 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::graph_store::default_graph_store::DefaultGraphStore;
+
+    use crate::types::graph::id_map::SimpleIdMap;
+    use crate::types::graph::RelationshipTopology;
+    use crate::types::graph_store::{DatabaseId, DatabaseLocation, GraphName};
+    use crate::types::properties::relationship::DefaultRelationshipPropertyValues;
+    use std::collections::HashMap;
+    use std::sync::Arc;
+
+    fn make_sample_store() -> DefaultGraphStore {
+        let graph_name = GraphName::new("g");
+        let database_info = DatabaseInfo::new(
+            DatabaseId::new("db"),
+            DatabaseLocation::remote("localhost", 7687, None, None),
+        );
+        let schema = GraphSchema::empty();
+        let capabilities = Capabilities::default();
+        let id_map = SimpleIdMap::from_original_ids([0, 1, 2]);
+
+        let topology = RelationshipTopology::new(vec![vec![1, 2], vec![2], vec![]], None);
+
+        let mut relationship_topologies = HashMap::new();
+        relationship_topologies.insert(RelationshipType::of("KNOWS"), topology);
+
+        DefaultGraphStore::new(
+            graph_name,
+            database_info,
+            schema,
+            capabilities,
+            id_map,
+            relationship_topologies,
+        )
+    }
+
+    #[test]
+    fn graph_store_adapter_reflects_relationship_property_usage() {
+        let mut store = make_sample_store();
+
+        let rel_type = RelationshipType::of("KNOWS");
+        let values = Arc::new(DefaultRelationshipPropertyValues::with_default(
+            vec![1.0, 2.0, 3.0],
+            3,
+        ));
+
+        // add a relationship property and verify adapter finds it
+        store
+            .add_relationship_property(rel_type.clone(), "weight", values)
+            .expect("add relationship property");
+
+        let adapter = GraphStoreAdapter::new(Arc::new(store));
+
+        // relationship-level key should be detected
+        assert!(adapter.is_property_key_used_anywhere("weight"));
+
+        // absent key should not be detected anywhere
+        assert!(!adapter.is_property_key_used_anywhere("absent_key"));
+
+        // locations should report that the key appears under the KNOWS relationship type
+        let (is_graph, node_labels, rel_types) = adapter.property_key_locations("weight");
+        assert!(!is_graph);
+        assert!(node_labels.is_empty());
+        assert!(rel_types.contains(&RelationshipType::of("KNOWS")));
+    }
 
     #[test]
     fn test_graph_store_error_variants() {
