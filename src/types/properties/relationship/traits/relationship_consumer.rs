@@ -1,4 +1,4 @@
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 
 /// Consumer interface for iterating relationships without attached properties.
 pub trait RelationshipConsumer {

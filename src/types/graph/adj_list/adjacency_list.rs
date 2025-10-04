@@ -1,5 +1,5 @@
 use super::adjacency_cursor::AdjacencyCursor;
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 
 /// Read-only access to the adjacency list of a mono-partite graph.
 ///

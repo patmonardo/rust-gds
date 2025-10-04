@@ -1,14 +1,14 @@
 use super::{characteristics::GraphCharacteristics, degrees::Degrees};
 use crate::projection::RelationshipType;
-use crate::types::{
-    graph::characteristics::GraphCharacteristicsBuilder,
+use crate::types::graph::{
+    characteristics::GraphCharacteristicsBuilder,
     id_map::{FilteredIdMap, IdMap, MappedNodeId, NOT_FOUND},
-    properties::{
-        node::{NodePropertyContainer, NodePropertyContainerExt},
-        relationship::{RelationshipConsumer, RelationshipIterator, RelationshipProperties},
-    },
-    schema::GraphSchema,
 };
+use crate::types::properties::{
+    node::{NodePropertyContainer, NodePropertyContainerExt},
+    relationship::{RelationshipConsumer, RelationshipIterator, RelationshipProperties},
+};
+use crate::types::schema::GraphSchema;
 use std::collections::HashSet;
 use std::sync::Arc;
 

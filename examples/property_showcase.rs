@@ -12,7 +12,6 @@ use rust_gds::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore, GraphStoreResult,
 };
-use rust_gds::types::id_map::{IdMap, SimpleIdMap};
 use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use rust_gds::types::properties::node::{
     DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues, NodePropertyContainer,
@@ -23,6 +22,7 @@ use rust_gds::types::schema::{
     RelationshipType as SchemaRelationshipType,
 };
 use rust_gds::types::ValueType;
+use rust_gds::types::{IdMap, SimpleIdMap};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;

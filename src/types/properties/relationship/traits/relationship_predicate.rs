@@ -1,4 +1,4 @@
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 
 /// Predicate for checking the existence of relationships between nodes.
 pub trait RelationshipPredicate {

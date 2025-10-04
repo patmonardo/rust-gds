@@ -1,14 +1,15 @@
 use super::{Graph, GraphCharacteristics, GraphResult, RelationshipTopology};
 use crate::projection::RelationshipType;
 use crate::types::graph::characteristics::GraphCharacteristicsBuilder;
-use crate::types::id_map::{
+use crate::types::graph::id_map::{
     BatchNodeIterable, FilteredIdMap, IdMap, MappedNodeId, NodeConsumer, NodeIdBatch,
     NodeIdIterator, NodeIterator, OriginalNodeId, PartialIdMap, SimpleIdMap,
 };
 use crate::types::properties::node::{NodePropertyContainer, NodePropertyValues};
 use crate::types::properties::relationship::{
     PropertyValue, RelationshipConsumer, RelationshipCursorBox, RelationshipIterator,
-    RelationshipPredicate, RelationshipProperties, RelationshipWithPropertyConsumer,
+    RelationshipPredicate, RelationshipProperties, RelationshipPropertyStore,
+    RelationshipPropertyValues, RelationshipWithPropertyConsumer,
 };
 use crate::types::schema::{GraphSchema, NodeLabel, RelationshipType as SchemaRelationshipType};
 use std::collections::{HashMap, HashSet};
@@ -26,6 +27,10 @@ pub struct DefaultGraph {
     relationship_count: usize,
     has_parallel_edges: bool,
     node_properties: HashMap<String, Arc<dyn NodePropertyValues>>,
+    relationship_properties: HashMap<RelationshipType, RelationshipPropertyStore>,
+    selected_relationship_properties: HashMap<RelationshipType, SelectedRelationshipProperty>,
+    relationship_property_selectors: HashMap<RelationshipType, String>,
+    topology_offsets: HashMap<RelationshipType, Arc<Vec<usize>>>,
     has_relationship_properties: bool,
 }
 
@@ -42,8 +47,18 @@ impl DefaultGraph {
         relationship_count: usize,
         has_parallel_edges: bool,
         node_properties: HashMap<String, Arc<dyn NodePropertyValues>>,
-        has_relationship_properties: bool,
+        relationship_properties: HashMap<RelationshipType, RelationshipPropertyStore>,
+        relationship_property_selectors: HashMap<RelationshipType, String>,
     ) -> Self {
+        let topology_offsets = compute_topology_offsets(&topologies);
+        let (selected_relationship_properties, effective_selectors) =
+            build_selected_relationship_properties(
+                &ordered_types,
+                &relationship_properties,
+                &relationship_property_selectors,
+            );
+        let has_relationship_properties = !selected_relationship_properties.is_empty();
+
         Self {
             schema,
             id_map,
@@ -54,6 +69,10 @@ impl DefaultGraph {
             relationship_count,
             has_parallel_edges,
             node_properties,
+            relationship_properties,
+            selected_relationship_properties,
+            relationship_property_selectors: effective_selectors,
+            topology_offsets,
             has_relationship_properties,
         }
     }
@@ -83,6 +102,137 @@ impl DefaultGraph {
             builder = builder.inverse_indexed();
         }
         builder.build()
+    }
+
+    fn selected_property(
+        &self,
+        relationship_type: &RelationshipType,
+    ) -> Option<&SelectedRelationshipProperty> {
+        self.selected_relationship_properties.get(relationship_type)
+    }
+
+    fn property_index(
+        &self,
+        relationship_type: &RelationshipType,
+        source_id: MappedNodeId,
+        neighbor_index: usize,
+    ) -> Option<u64> {
+        let offsets = self.topology_offsets.get(relationship_type)?;
+        let source_index = source_id as usize;
+        if source_index + 1 >= offsets.len() {
+            return None;
+        }
+        let start = offsets[source_index];
+        let end = offsets[source_index + 1];
+        let degree = end.saturating_sub(start);
+        if neighbor_index >= degree {
+            return None;
+        }
+        Some((start + neighbor_index) as u64)
+    }
+
+    fn relationship_property_value_for(
+        &self,
+        relationship_type: &RelationshipType,
+        source_id: MappedNodeId,
+        neighbor_index: usize,
+        fallback_value: PropertyValue,
+    ) -> PropertyValue {
+        let selected = match self.selected_property(relationship_type) {
+            Some(selected) => selected,
+            None => return fallback_value,
+        };
+
+        let index = match self.property_index(relationship_type, source_id, neighbor_index) {
+            Some(index) => index,
+            None => return fallback_value,
+        };
+
+        selected.value_at_or(index, fallback_value)
+    }
+}
+
+#[derive(Debug, Clone)]
+struct SelectedRelationshipProperty {
+    values: Arc<dyn RelationshipPropertyValues>,
+    fallback: PropertyValue,
+}
+
+impl SelectedRelationshipProperty {
+    fn new(values: Arc<dyn RelationshipPropertyValues>, fallback: PropertyValue) -> Self {
+        Self { values, fallback }
+    }
+
+    fn value_at_or(&self, index: u64, fallback: PropertyValue) -> PropertyValue {
+        self.values.double_value(index).unwrap_or(fallback)
+    }
+}
+
+fn compute_topology_offsets(
+    topologies: &HashMap<RelationshipType, Arc<RelationshipTopology>>,
+) -> HashMap<RelationshipType, Arc<Vec<usize>>> {
+    let mut offsets = HashMap::new();
+    for (rel_type, topology) in topologies {
+        let capacity = topology.node_capacity();
+        let mut prefix = Vec::with_capacity(capacity + 1);
+        let mut total = 0usize;
+        prefix.push(total);
+        for node in 0..capacity {
+            let mapped_id = node as MappedNodeId;
+            let degree = topology
+                .outgoing(mapped_id)
+                .map(|neighbors| neighbors.len())
+                .unwrap_or(0);
+            total += degree;
+            prefix.push(total);
+        }
+        offsets.insert(rel_type.clone(), Arc::new(prefix));
+    }
+    offsets
+}
+
+fn build_selected_relationship_properties(
+    ordered_types: &[RelationshipType],
+    stores: &HashMap<RelationshipType, RelationshipPropertyStore>,
+    selectors: &HashMap<RelationshipType, String>,
+) -> (
+    HashMap<RelationshipType, SelectedRelationshipProperty>,
+    HashMap<RelationshipType, String>,
+) {
+    let mut selected = HashMap::new();
+    let mut effective = HashMap::new();
+
+    for rel_type in ordered_types {
+        let store = match stores.get(rel_type) {
+            Some(store) if !store.is_empty() => store,
+            _ => continue,
+        };
+
+        let chosen_key = selectors
+            .get(rel_type)
+            .cloned()
+            .or_else(|| auto_select_property_key(store));
+
+        if let Some(key) = chosen_key {
+            if let Some(property) = store.get(&key) {
+                let selection = SelectedRelationshipProperty::new(
+                    property.values_arc(),
+                    property.values().default_value(),
+                );
+                selected.insert(rel_type.clone(), selection);
+                effective.insert(rel_type.clone(), key);
+            }
+        }
+    }
+
+    (selected, effective)
+}
+
+fn auto_select_property_key(store: &RelationshipPropertyStore) -> Option<String> {
+    if store.len() == 1 {
+        store.relationship_properties().keys().next().cloned()
+    } else {
+        None
     }
 }
 
@@ -153,6 +303,24 @@ impl Graph for DefaultGraph {
             Arc::new(self.schema.filter_relationship_types(&schema_types))
         };
 
+        let filtered_relationship_properties = ordered_types
+            .iter()
+            .filter_map(|rel_type| {
+                self.relationship_properties
+                    .get(rel_type)
+                    .map(|store| (rel_type.clone(), store.clone()))
+            })
+            .collect::<HashMap<_, _>>();
+
+        let filtered_selectors = ordered_types
+            .iter()
+            .filter_map(|rel_type| {
+                self.relationship_property_selectors
+                    .get(rel_type)
+                    .map(|key| (rel_type.clone(), key.clone()))
+            })
+            .collect::<HashMap<_, _>>();
+
         let filtered_graph = DefaultGraph::new(
             filtered_schema,
             Arc::clone(&self.id_map),
@@ -163,7 +331,8 @@ impl Graph for DefaultGraph {
             relationship_count,
             has_parallel_edges,
             self.node_properties.clone(),
-            self.has_relationship_properties,
+            filtered_relationship_properties,
+            filtered_selectors,
         );
 
         Ok(Arc::new(filtered_graph))
@@ -248,7 +417,7 @@ impl IdMap for DefaultGraph {
     fn for_each_node_label(
         &self,
         mapped_node_id: MappedNodeId,
-        consumer: &mut dyn crate::types::id_map::NodeLabelConsumer,
+        consumer: &mut dyn crate::types::graph::id_map::NodeLabelConsumer,
     ) {
         self.id_map.for_each_node_label(mapped_node_id, consumer)
     }
@@ -360,8 +529,14 @@ impl RelationshipIterator for DefaultGraph {
         for rel_type in &self.ordered_types {
             if let Some(topology) = self.topology_for(rel_type) {
                 if let Some(neighbors) = topology.outgoing(node_id) {
-                    for &target in neighbors {
-                        if !consumer.accept(node_id, target, fallback_value) {
+                    for (index, &target) in neighbors.iter().enumerate() {
+                        let property = self.relationship_property_value_for(
+                            rel_type,
+                            node_id,
+                            index,
+                            fallback_value,
+                        );
+                        if !consumer.accept(node_id, target, property) {
                             return;
                         }
                     }
@@ -398,7 +573,23 @@ impl RelationshipIterator for DefaultGraph {
             if let Some(topology) = self.topology_for(rel_type) {
                 if let Some(incoming) = topology.incoming(node_id) {
                     for &source in incoming {
-                        if !consumer.accept(source, node_id, fallback_value) {
+                        let property = topology
+                            .outgoing(source)
+                            .and_then(|neighbors| {
+                                neighbors.iter().position(|&target| target == node_id).map(
+                                    |index| {
+                                        self.relationship_property_value_for(
+                                            rel_type,
+                                            source,
+                                            index,
+                                            fallback_value,
+                                        )
+                                    },
+                                )
+                            })
+                            .unwrap_or(fallback_value);
+
+                        if !consumer.accept(source, node_id, property) {
                             return;
                         }
                     }
@@ -416,11 +607,17 @@ impl RelationshipIterator for DefaultGraph {
         for rel_type in &self.ordered_types {
             if let Some(topology) = self.topology_for(rel_type) {
                 if let Some(neighbors) = topology.outgoing(node_id) {
-                    cursors.extend(neighbors.iter().map(|&target| {
+                    cursors.extend(neighbors.iter().enumerate().map(|(index, &target)| {
+                        let property = self.relationship_property_value_for(
+                            rel_type,
+                            node_id,
+                            index,
+                            fallback_value,
+                        );
                         Box::new(StaticRelationshipCursor {
                             source: node_id,
                             target,
-                            property: fallback_value,
+                            property,
                         }) as RelationshipCursorBox
                     }));
                 }
@@ -436,15 +633,38 @@ impl RelationshipIterator for DefaultGraph {
 
 impl RelationshipProperties for DefaultGraph {
     fn default_property_value(&self) -> PropertyValue {
-        0.0
+        self.selected_relationship_properties
+            .values()
+            .next()
+            .map(|selection| selection.fallback)
+            .unwrap_or(0.0)
     }
 
     fn relationship_property(
         &self,
-        _source_id: MappedNodeId,
-        _target_id: MappedNodeId,
+        source_id: MappedNodeId,
+        target_id: MappedNodeId,
         fallback_value: PropertyValue,
     ) -> PropertyValue {
+        if self.selected_relationship_properties.is_empty() {
+            return fallback_value;
+        }
+
+        for relationship_type in &self.ordered_types {
+            if let Some(topology) = self.topology_for(relationship_type) {
+                if let Some(neighbors) = topology.outgoing(source_id) {
+                    if let Some(index) = neighbors.iter().position(|&target| target == target_id) {
+                        return self.relationship_property_value_for(
+                            relationship_type,
+                            source_id,
+                            index,
+                            fallback_value,
+                        );
+                    }
+                }
+            }
+        }
+
         fallback_value
     }
 }
@@ -508,7 +728,8 @@ mod tests {
             relationship_count,
             has_parallel_edges,
             HashMap::new(),
-            false,
+            HashMap::new(),
+            HashMap::new(),
         )
     }
 

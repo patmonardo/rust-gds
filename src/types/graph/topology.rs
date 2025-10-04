@@ -1,4 +1,4 @@
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 
 /// In-memory adjacency representation used by the default graph implementation.
 #[derive(Debug, Clone)]

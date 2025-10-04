@@ -3,6 +3,7 @@
 // Provides property storage for relationship properties.
 // Relationship properties are values associated with edges in the graph.
 
+pub mod impls;
 pub mod property_cursor;
 pub mod relationship_properties;
 pub mod relationship_property;
@@ -11,6 +12,10 @@ pub mod relationship_property_values;
 pub mod traits;
 
 // Re-export public API
+pub use impls::DefaultRelationshipPropertyStore;
+pub use impls::{
+    DefaultModifiableRelationshipCursor, DefaultRelationshipCursor, DefaultRelationshipProperty,
+};
 pub use property_cursor::{EmptyPropertyCursor, PropertyCursor, PropertyValue};
 pub use relationship_properties::{
     ConstantRelationshipProperties, EmptyRelationshipProperties, RelationshipProperties,

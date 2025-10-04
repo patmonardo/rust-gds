@@ -3,7 +3,8 @@ use super::{MappedNodeId, OriginalNodeId};
 /// Partial mapping between original node identifiers and mapped identifiers.
 ///
 /// This trait mirrors the TypeScript `PartialIdMap` interface. It is used by the
-/// relationship loading code paths where only a subset of the full [`IdMap`](crate::types::id_map::IdMap)
+/// relationship loading code paths where only a subset of the full
+/// [`IdMap`](crate::types::graph::id_map::IdMap)
 /// functionality is required.
 pub trait PartialIdMap: Send + Sync {
     /// Maps an original node identifier into the mapped node identifier space.

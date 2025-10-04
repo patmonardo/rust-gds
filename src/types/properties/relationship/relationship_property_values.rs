@@ -7,7 +7,7 @@ use crate::types::property::ValueType;
 /// Provides access to relationship property values and metadata.
 ///
 /// This is a simplified version focused on the core property access patterns.
-pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug {
+pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug + Send + Sync {
     /// Returns the double value for the given relationship index.
     fn double_value(&self, rel_index: u64) -> PropertyValuesResult<f64>;
 

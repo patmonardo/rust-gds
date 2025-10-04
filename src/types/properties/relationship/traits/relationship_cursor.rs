@@ -1,4 +1,4 @@
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 use crate::types::properties::relationship::PropertyValue;
 use std::fmt::Debug;
 

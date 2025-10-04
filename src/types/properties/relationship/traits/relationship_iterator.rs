@@ -2,7 +2,7 @@ use super::relationship_consumer::RelationshipConsumer;
 use super::relationship_cursor::RelationshipCursorBox;
 use super::relationship_predicate::RelationshipPredicate;
 use super::relationship_with_property_consumer::RelationshipWithPropertyConsumer;
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 use crate::types::properties::relationship::PropertyValue;
 
 /// Iterator abstraction for traversing relationships with optional property values.

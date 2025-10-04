@@ -1,8 +1,6 @@
-pub mod adj_list;
 pub mod concurrency;
 pub mod graph;
 pub mod graph_store;
-pub mod id_map;
 pub mod properties;
 pub mod property;
 pub mod property_store;
@@ -54,12 +52,12 @@ pub type PropertyId = u32;
 pub type PropertyData = String;
 
 // Re-export IdMap traits and helpers so downstream crates can build on the high-level API.
-pub use adj_list::{
+pub use concurrency::Concurrency;
+pub use graph::adj_list::{
     AdjacencyCursor, AdjacencyCursorExt, AdjacencyList, AdjacencyListExt, EdgeWeight,
     WeightedAdjacencyCursor, WeightedAdjacencyCursorExt, NOT_FOUND_TARGET,
 };
-pub use concurrency::Concurrency;
-pub use id_map::{
+pub use graph::id_map::{
     BatchNodeIterable, EmptyPartialIdMap, FilteredIdMap, IdMap, MappedNodeId, NodeConsumer,
     NodeIdBatch, NodeIdBatchIter, NodeIterator, NodeIteratorExt, NodeLabelConsumer, OriginalNodeId,
     PartialIdMap, SimpleIdMap, NOT_FOUND, NO_TYPE, START_NODE_ID,

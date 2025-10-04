@@ -1,4 +1,4 @@
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 
 /// Special target identifier returned when a cursor cannot produce a valid value.
 pub const NOT_FOUND_TARGET: MappedNodeId = MappedNodeId::MAX;

@@ -198,6 +198,21 @@ pub trait GraphStore: Send + Sync {
         property_key: &str,
     ) -> GraphStoreResult<Arc<dyn RelationshipPropertyValues>>;
 
+    /// Adds relationship property values for the given relationship type.
+    fn add_relationship_property(
+        &mut self,
+        relationship_type: RelationshipType,
+        property_key: impl Into<String>,
+        property_values: Arc<dyn RelationshipPropertyValues>,
+    ) -> GraphStoreResult<()>;
+
+    /// Removes a relationship property from the given relationship type.
+    fn remove_relationship_property(
+        &mut self,
+        relationship_type: &RelationshipType,
+        property_key: &str,
+    ) -> GraphStoreResult<()>;
+
     // =============================================================================
     // Operations
     // =============================================================================
@@ -407,6 +422,27 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
     ) -> GraphStoreResult<Arc<dyn RelationshipPropertyValues>> {
         self.graph_store
             .relationship_property_values(relationship_type, property_key)
+    }
+
+    fn add_relationship_property(
+        &mut self,
+        _relationship_type: RelationshipType,
+        _property_key: impl Into<String>,
+        _property_values: Arc<dyn RelationshipPropertyValues>,
+    ) -> GraphStoreResult<()> {
+        Err(GraphStoreError::InvalidOperation(
+            "Cannot mutate through adapter".to_string(),
+        ))
+    }
+
+    fn remove_relationship_property(
+        &mut self,
+        _relationship_type: &RelationshipType,
+        _property_key: &str,
+    ) -> GraphStoreResult<()> {
+        Err(GraphStoreError::InvalidOperation(
+            "Cannot mutate through adapter".to_string(),
+        ))
     }
 
     fn delete_relationships(

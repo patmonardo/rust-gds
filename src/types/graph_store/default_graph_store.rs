@@ -4,12 +4,15 @@ use super::{
 };
 use crate::projection::{NodeLabel, RelationshipType};
 use crate::types::graph::{
+    id_map::{IdMap, SimpleIdMap},
     DefaultGraph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
 };
-use crate::types::id_map::{IdMap, SimpleIdMap};
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::node::NodePropertyValues;
-use crate::types::properties::relationship::RelationshipPropertyValues;
+use crate::types::properties::relationship::{
+    RelationshipProperty, RelationshipPropertyStore, RelationshipPropertyValues,
+};
+use crate::types::property::PropertyState;
 use crate::types::schema::{
     Direction, GraphSchema, NodeLabel as SchemaNodeLabel, PropertySchemaTrait,
 };
@@ -22,17 +25,22 @@ use std::sync::Arc;
 pub struct DefaultGraphStore {
     graph_name: GraphName,
     database_info: DatabaseInfo,
-    schema: GraphSchema,
+    schema: Arc<GraphSchema>,
     capabilities: Capabilities,
     creation_time: DateTime<Utc>,
     modification_time: DateTime<Utc>,
-    id_map: SimpleIdMap,
-    relationship_topologies: HashMap<RelationshipType, RelationshipTopology>,
+    id_map: Arc<SimpleIdMap>,
+    relationship_topologies: HashMap<RelationshipType, Arc<RelationshipTopology>>,
+    ordered_relationship_types: Vec<RelationshipType>,
+    inverse_indexed_relationship_types: HashSet<RelationshipType>,
+    relationship_count: usize,
+    has_parallel_relationships: bool,
+    graph_characteristics: GraphCharacteristics,
     graph_properties: HashMap<String, Arc<dyn GraphPropertyValues>>,
     node_properties: HashMap<String, Arc<dyn NodePropertyValues>>,
     node_properties_by_label: HashMap<String, HashSet<String>>,
-    relationship_property_values:
-        HashMap<RelationshipType, HashMap<String, Arc<dyn RelationshipPropertyValues>>>,
+    relationship_property_stores: HashMap<RelationshipType, RelationshipPropertyStore>,
+    has_relationship_properties: bool,
 }
 
 impl DefaultGraphStore {
@@ -47,7 +55,14 @@ impl DefaultGraphStore {
         relationship_topologies: HashMap<RelationshipType, RelationshipTopology>,
     ) -> Self {
         let now = Utc::now();
-        Self {
+        let schema = Arc::new(schema);
+        let id_map = Arc::new(id_map);
+        let relationship_topologies = relationship_topologies
+            .into_iter()
+            .map(|(rel_type, topology)| (rel_type, Arc::new(topology)))
+            .collect();
+
+        let mut store = Self {
             graph_name,
             database_info,
             schema,
@@ -56,70 +71,43 @@ impl DefaultGraphStore {
             modification_time: now,
             id_map,
             relationship_topologies,
+            ordered_relationship_types: Vec::new(),
+            inverse_indexed_relationship_types: HashSet::new(),
+            relationship_count: 0,
+            has_parallel_relationships: false,
+            graph_characteristics: GraphCharacteristicsBuilder::new().build(),
             graph_properties: HashMap::new(),
             node_properties: HashMap::new(),
             node_properties_by_label: HashMap::new(),
-            relationship_property_values: HashMap::new(),
-        }
+            relationship_property_stores: HashMap::new(),
+            has_relationship_properties: false,
+        };
+
+        store.rebuild_relationship_metadata();
+        store.refresh_relationship_property_state();
+        store
     }
 
     /// Builds a [`DefaultGraph`] view over the current store contents.
     pub fn graph(&self) -> Arc<DefaultGraph> {
-        let mut ordered_types: Vec<RelationshipType> =
-            self.relationship_topologies.keys().cloned().collect();
-        ordered_types.sort_by(|left, right| left.name().cmp(right.name()));
-
-        let mut topologies = HashMap::new();
-        let mut inverse_indexed_types = HashSet::new();
-        let mut relationship_count = 0usize;
-        let mut has_parallel_edges = false;
-
-        for relationship_type in &ordered_types {
-            if let Some(topology) = self.relationship_topologies.get(relationship_type) {
-                if topology.is_inverse_indexed() {
-                    inverse_indexed_types.insert(relationship_type.clone());
-                }
-                if topology.has_parallel_edges() {
-                    has_parallel_edges = true;
-                }
-                relationship_count += topology.relationship_count();
-                topologies.insert(relationship_type.clone(), Arc::new(topology.clone()));
-            }
-        }
-
-        let mut characteristics_builder = GraphCharacteristicsBuilder::new();
-        match self.schema.direction() {
-            Direction::Directed => {
-                characteristics_builder = characteristics_builder.directed();
-            }
-            Direction::Undirected => {
-                characteristics_builder = characteristics_builder.undirected();
-            }
-        }
-
-        let inverse_indexed = !ordered_types.is_empty()
-            && ordered_types
-                .iter()
-                .all(|rel_type| inverse_indexed_types.contains(rel_type));
-        if inverse_indexed {
-            characteristics_builder = characteristics_builder.inverse_indexed();
-        }
-
-        let characteristics: GraphCharacteristics = characteristics_builder.build();
+        let topologies = self
+            .relationship_topologies
+            .iter()
+            .map(|(rel_type, topology)| (rel_type.clone(), Arc::clone(topology)))
+            .collect::<HashMap<_, _>>();
 
         Arc::new(DefaultGraph::new(
-            Arc::new(self.schema.clone()),
-            Arc::new(self.id_map.clone()),
-            characteristics,
+            Arc::clone(&self.schema),
+            Arc::clone(&self.id_map),
+            self.graph_characteristics,
             topologies,
-            ordered_types,
-            inverse_indexed_types,
-            relationship_count,
-            has_parallel_edges,
+            self.ordered_relationship_types.clone(),
+            self.inverse_indexed_relationship_types.clone(),
+            self.relationship_count,
+            self.has_parallel_relationships,
             self.node_properties.clone(),
-            self.relationship_property_values
-                .values()
-                .any(|properties| !properties.is_empty()),
+            self.relationship_property_stores.clone(),
+            HashMap::new(),
         ))
     }
 
@@ -137,6 +125,60 @@ impl DefaultGraphStore {
 
     fn label_key(label: &NodeLabel) -> String {
         label.name().to_string()
+    }
+
+    fn rebuild_relationship_metadata(&mut self) {
+        let mut ordered: Vec<RelationshipType> =
+            self.relationship_topologies.keys().cloned().collect();
+        ordered.sort_by(|left, right| left.name().cmp(right.name()));
+
+        let mut inverse_indexed = HashSet::new();
+        let mut relationship_count = 0usize;
+        let mut has_parallel = false;
+
+        for rel_type in &ordered {
+            if let Some(topology) = self.relationship_topologies.get(rel_type) {
+                if topology.is_inverse_indexed() {
+                    inverse_indexed.insert(rel_type.clone());
+                }
+                if topology.has_parallel_edges() {
+                    has_parallel = true;
+                }
+                relationship_count += topology.relationship_count();
+            }
+        }
+
+        let all_inverse_indexed = !ordered.is_empty()
+            && ordered
+                .iter()
+                .all(|rel_type| inverse_indexed.contains(rel_type));
+
+        let mut characteristics_builder = GraphCharacteristicsBuilder::new();
+        match self.schema.direction() {
+            Direction::Directed => {
+                characteristics_builder = characteristics_builder.directed();
+            }
+            Direction::Undirected => {
+                characteristics_builder = characteristics_builder.undirected();
+            }
+        }
+
+        if all_inverse_indexed {
+            characteristics_builder = characteristics_builder.inverse_indexed();
+        }
+
+        self.ordered_relationship_types = ordered;
+        self.inverse_indexed_relationship_types = inverse_indexed;
+        self.relationship_count = relationship_count;
+        self.has_parallel_relationships = has_parallel;
+        self.graph_characteristics = characteristics_builder.build();
+    }
+
+    fn refresh_relationship_property_state(&mut self) {
+        self.has_relationship_properties = self
+            .relationship_property_stores
+            .values()
+            .any(|store| !store.is_empty());
     }
 }
 
@@ -222,7 +264,7 @@ impl GraphStore for DefaultGraphStore {
 
     fn add_node_label(&mut self, node_label: NodeLabel) -> GraphStoreResult<()> {
         let schema_label = Self::to_schema_label(&node_label);
-        self.id_map.add_node_label(schema_label);
+        Arc::make_mut(&mut self.id_map).add_node_label(schema_label);
         self.set_modified();
         Ok(())
     }
@@ -313,16 +355,13 @@ impl GraphStore for DefaultGraphStore {
     }
 
     fn relationship_count(&self) -> usize {
-        self.relationship_topologies
-            .values()
-            .map(RelationshipTopology::relationship_count)
-            .sum()
+        self.relationship_count
     }
 
     fn relationship_count_for_type(&self, relationship_type: &RelationshipType) -> usize {
         self.relationship_topologies
             .get(relationship_type)
-            .map(RelationshipTopology::relationship_count)
+            .map(|topology| topology.relationship_count())
             .unwrap_or(0)
     }
 
@@ -342,29 +381,20 @@ impl GraphStore for DefaultGraphStore {
     }
 
     fn inverse_indexed_relationship_types(&self) -> HashSet<RelationshipType> {
-        self.relationship_topologies
-            .iter()
-            .filter_map(|(rel_type, topology)| {
-                if topology.is_inverse_indexed() {
-                    Some(rel_type.clone())
-                } else {
-                    None
-                }
-            })
-            .collect()
+        self.inverse_indexed_relationship_types.clone()
     }
 
     fn relationship_property_keys(&self) -> HashSet<String> {
-        self.relationship_property_values
+        self.relationship_property_stores
             .values()
-            .flat_map(|props| props.keys().cloned())
+            .flat_map(|store| store.relationship_properties().keys().cloned())
             .collect()
     }
 
     fn relationship_property_keys_for_type(&self, rel_type: &RelationshipType) -> HashSet<String> {
-        self.relationship_property_values
+        self.relationship_property_stores
             .get(rel_type)
-            .map(|props| props.keys().cloned().collect())
+            .map(|store| store.relationship_properties().keys().cloned().collect())
             .unwrap_or_default()
     }
 
@@ -379,9 +409,9 @@ impl GraphStore for DefaultGraphStore {
     }
 
     fn has_relationship_property(&self, rel_type: &RelationshipType, property_key: &str) -> bool {
-        self.relationship_property_values
+        self.relationship_property_stores
             .get(rel_type)
-            .map(|props| props.contains_key(property_key))
+            .map(|store| store.contains_key(property_key))
             .unwrap_or(false)
     }
 
@@ -390,10 +420,10 @@ impl GraphStore for DefaultGraphStore {
         property_key: &str,
     ) -> GraphStoreResult<crate::types::property::ValueType> {
         if let Some(value_type) = self
-            .relationship_property_values
+            .relationship_property_stores
             .values()
-            .find_map(|props| props.get(property_key))
-            .map(|values| values.value_type())
+            .find_map(|store| store.get(property_key))
+            .map(|property| property.values().value_type())
         {
             return Ok(value_type);
         }
@@ -412,11 +442,61 @@ impl GraphStore for DefaultGraphStore {
         relationship_type: &RelationshipType,
         property_key: &str,
     ) -> GraphStoreResult<Arc<dyn RelationshipPropertyValues>> {
-        self.relationship_property_values
+        self.relationship_property_stores
             .get(relationship_type)
-            .and_then(|props| props.get(property_key))
-            .cloned()
+            .and_then(|store| store.get(property_key))
+            .map(|property| property.values_arc())
             .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))
+    }
+
+    fn add_relationship_property(
+        &mut self,
+        relationship_type: RelationshipType,
+        property_key: impl Into<String>,
+        property_values: Arc<dyn RelationshipPropertyValues>,
+    ) -> GraphStoreResult<()> {
+        let key = property_key.into();
+        let property = RelationshipProperty::with_default_aggregation(
+            key.clone(),
+            PropertyState::Normal,
+            property_values,
+        );
+
+        self.relationship_property_stores
+            .entry(relationship_type)
+            .or_insert_with(RelationshipPropertyStore::empty)
+            .put_property_entry(property);
+
+        self.refresh_relationship_property_state();
+        self.set_modified();
+        Ok(())
+    }
+
+    fn remove_relationship_property(
+        &mut self,
+        relationship_type: &RelationshipType,
+        property_key: &str,
+    ) -> GraphStoreResult<()> {
+        let should_remove_entry = {
+            let store = self
+                .relationship_property_stores
+                .get_mut(relationship_type)
+                .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))?;
+
+            if store.remove_property(property_key).is_none() {
+                return Err(GraphStoreError::PropertyNotFound(property_key.to_string()));
+            }
+
+            store.is_empty()
+        };
+
+        if should_remove_entry {
+            self.relationship_property_stores.remove(relationship_type);
+        }
+
+        self.refresh_relationship_property_state();
+        self.set_modified();
+        Ok(())
     }
 
     fn delete_relationships(
@@ -425,7 +505,9 @@ impl GraphStore for DefaultGraphStore {
     ) -> GraphStoreResult<DeletionResult> {
         if let Some(topology) = self.relationship_topologies.remove(relationship_type) {
             let removed_count = topology.relationship_count();
-            self.relationship_property_values.remove(relationship_type);
+            self.relationship_property_stores.remove(relationship_type);
+            self.rebuild_relationship_metadata();
+            self.refresh_relationship_property_state();
             self.set_modified();
             Ok(DeletionResult::with_counts(
                 self.graph_name.clone(),
@@ -446,6 +528,8 @@ mod tests {
     use crate::types::graph::degrees::Degrees;
     use crate::types::graph::Graph;
     use crate::types::graph_store::{DatabaseId, DatabaseLocation};
+    use crate::types::properties::relationship::DefaultRelationshipPropertyValues;
+    use std::sync::Arc;
 
     fn sample_store() -> DefaultGraphStore {
         let graph_name = GraphName::new("g");
@@ -482,5 +566,36 @@ mod tests {
         assert_eq!(graph.relationship_count(), 3);
         assert!(graph.characteristics().is_undirected());
         assert_eq!(graph.degree(0), 2);
+    }
+
+    #[test]
+    fn manages_relationship_properties() {
+        let mut store = sample_store();
+        let rel_type = RelationshipType::of("KNOWS");
+
+        let values = Arc::new(DefaultRelationshipPropertyValues::with_default(
+            vec![1.0, 2.0, 3.0],
+            3,
+        ));
+
+        store
+            .add_relationship_property(rel_type.clone(), "weight", values)
+            .expect("add relationship property");
+
+        assert!(store.has_relationship_property(&rel_type, "weight"));
+        assert!(store
+            .relationship_property_keys()
+            .contains(&"weight".to_string()));
+        let retrieved = store
+            .relationship_property_values(&rel_type, "weight")
+            .expect("retrieve property");
+        assert_eq!(retrieved.double_value(1).unwrap(), 2.0);
+        assert!(store.graph().has_relationship_property());
+
+        store
+            .remove_relationship_property(&rel_type, "weight")
+            .expect("remove relationship property");
+        assert!(!store.has_relationship_property(&rel_type, "weight"));
+        assert!(!store.graph().has_relationship_property());
     }
 }

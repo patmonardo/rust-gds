@@ -1,12 +1,12 @@
 use crate::projection::{
     NodeLabel as ProjectionNodeLabel, RelationshipType as ProjectionRelationshipType,
 };
+use crate::types::graph::id_map::{IdMap, SimpleIdMap};
 use crate::types::graph::topology::RelationshipTopology;
 use crate::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore, GraphStoreError,
 };
-use crate::types::id_map::{IdMap, SimpleIdMap};
 use crate::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use crate::types::properties::node::DefaultDoubleNodePropertyValues;
 use crate::types::schema::{

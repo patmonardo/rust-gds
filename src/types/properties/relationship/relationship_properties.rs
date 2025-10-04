@@ -1,5 +1,5 @@
 use super::property_cursor::{PropertyCursor, PropertyValue};
-use crate::types::id_map::MappedNodeId;
+use crate::types::graph::id_map::MappedNodeId;
 use std::fmt::Debug;
 
 /// Accessor for relationship property values.
