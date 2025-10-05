@@ -32,6 +32,16 @@ pub enum ValueType {
     DateTimeArray,
     UntypedArray,
     Unknown,
+    // Map types for key-value structures
+    StringMap,
+    LongMap,
+    DoubleMap,
+    BooleanMap,
+    StringMapArray,
+    LongMapArray,
+    DoubleMapArray,
+    BooleanMapArray,
+    UntypedMap,
 }
 
 impl ValueType {
@@ -66,6 +76,15 @@ impl ValueType {
             ValueType::DateTimeArray => "DATETIME_ARRAY",
             ValueType::UntypedArray => "UNTYPED_ARRAY",
             ValueType::Unknown => "UNKNOWN",
+            ValueType::StringMap => "STRING_MAP",
+            ValueType::LongMap => "LONG_MAP",
+            ValueType::DoubleMap => "DOUBLE_MAP",
+            ValueType::BooleanMap => "BOOLEAN_MAP",
+            ValueType::StringMapArray => "STRING_MAP_ARRAY",
+            ValueType::LongMapArray => "LONG_MAP_ARRAY",
+            ValueType::DoubleMapArray => "DOUBLE_MAP_ARRAY",
+            ValueType::BooleanMapArray => "BOOLEAN_MAP_ARRAY",
+            ValueType::UntypedMap => "UNTYPED_MAP",
         }
     }
 
@@ -134,6 +153,15 @@ impl ValueType {
             ValueType::DateTimeArray => "List of DateTime",
             ValueType::UntypedArray => "List of Any",
             ValueType::Unknown => "Unknown",
+            ValueType::StringMap => "Map of String",
+            ValueType::LongMap => "Map of Long",
+            ValueType::DoubleMap => "Map of Double",
+            ValueType::BooleanMap => "Map of Boolean",
+            ValueType::StringMapArray => "List of Map of String",
+            ValueType::LongMapArray => "List of Map of Long",
+            ValueType::DoubleMapArray => "List of Map of Double",
+            ValueType::BooleanMapArray => "List of Map of Boolean",
+            ValueType::UntypedMap => "Map of Any",
         }
     }
 
@@ -192,7 +220,49 @@ impl ValueType {
             "date[]" => Some(ValueType::DateArray),
             "datetime[]" => Some(ValueType::DateTimeArray),
             "Any[]" => Some(ValueType::UntypedArray),
+            "string{}" => Some(ValueType::StringMap),
+            "long{}" => Some(ValueType::LongMap),
+            "double{}" => Some(ValueType::DoubleMap),
+            "boolean{}" => Some(ValueType::BooleanMap),
+            "string{}[]" => Some(ValueType::StringMapArray),
+            "long{}[]" => Some(ValueType::LongMapArray),
+            "double{}[]" => Some(ValueType::DoubleMapArray),
+            "boolean{}[]" => Some(ValueType::BooleanMapArray),
+            "Any{}" => Some(ValueType::UntypedMap),
             _ => None,
+        }
+    }
+
+    pub fn is_compatible_with(self, other: ValueType) -> bool {
+        if self == other {
+            return true;
+        }
+        if other == ValueType::UntypedArray {
+            matches!(
+                self,
+                ValueType::LongArray
+                    | ValueType::FloatArray
+                    | ValueType::DoubleArray
+                    | ValueType::BooleanArray
+                    | ValueType::StringArray
+                    | ValueType::BigIntArray
+                    | ValueType::UntypedArray
+            )
+        } else if other == ValueType::UntypedMap {
+            matches!(
+                self,
+                ValueType::StringMap
+                    | ValueType::LongMap
+                    | ValueType::DoubleMap
+                    | ValueType::BooleanMap
+                    | ValueType::UntypedMap
+            )
+        } else if self == ValueType::Float && other == ValueType::Double {
+            true
+        } else if self == ValueType::Long && other == ValueType::BigInt {
+            true
+        } else {
+            false
         }
     }
 }
