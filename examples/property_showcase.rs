@@ -30,6 +30,12 @@ use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("\n=== Property Showcase ===\n");
+    println!("This example demonstrates the triadic property system:");
+    println!("  1. GraphPropertyValues: scalar/aggregate properties (e.g., edge density)");
+    println!("  2. NodePropertyValues: columnar node properties (indexed by node_id)");
+    println!("  3. RelationshipPropertyValues: columnar rel properties (indexed by rel_id)\n");
+    println!("Key insight: PropertyValues = columns. GraphStore attaches columns, not scalars.");
+    println!("PropertyStore = HashMap<String, Property<Arc<dyn *PropertyValues>>>.\n");
 
     let store = build_property_showcase()?;
 
@@ -127,8 +133,11 @@ fn build_property_showcase() -> GraphStoreResult<DefaultGraphStore> {
 }
 
 fn explore_graph_properties(store: &DefaultGraphStore) -> GraphStoreResult<()> {
+    println!("--- Graph-Level Properties ---");
+    println!("Graph properties are global scalars or aggregates (e.g., total edge count).");
+    println!("They're stored as GraphPropertyValues with element_count typically = 1.\n");
     println!(
-        "Graph properties available: {:?}",
+        "Available graph property keys: {:?}",
         store.graph_property_keys()
     );
 
@@ -141,7 +150,11 @@ fn explore_graph_properties(store: &DefaultGraphStore) -> GraphStoreResult<()> {
 }
 
 fn explore_node_properties(store: &DefaultGraphStore) -> GraphStoreResult<()> {
-    println!("Node property keys: {:?}", store.node_property_keys());
+    println!("\n--- Node-Level Properties ---");
+    println!("Node properties are columnar: PropertyValues with length = node_count.");
+    println!("Properties can be label-scoped (e.g., 'experience_years' only on Person nodes).");
+    println!("Accessing store.node_property_values(key) returns Arc<dyn NodePropertyValues>.\n");
+    println!("All node property keys: {:?}", store.node_property_keys());
 
     let person_label = NodeLabel::of("Person");
     println!(
@@ -159,8 +172,12 @@ fn explore_node_properties(store: &DefaultGraphStore) -> GraphStoreResult<()> {
 }
 
 fn explore_graph_view(store: &DefaultGraphStore) -> GraphStoreResult<()> {
+    println!("\n--- Graph View Access ---");
+    println!("GraphStore::graph() creates an immutable Graph view.");
+    println!("Graph views share property columns (Arc) and expose NodePropertyContainer trait.");
+    println!("This allows property queries directly on the graph without re-accessing the store.\n");
     let graph = store.graph();
-    println!("Graph view characteristics: {:?}", graph.characteristics());
+    println!("Graph characteristics: {:?}", graph.characteristics());
 
     if let Some(values) = graph.node_properties("performance_rating") {
         println!("Graph access to performance ratings:");

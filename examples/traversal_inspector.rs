@@ -14,6 +14,13 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("\n=== Traversal Inspector ===\n");
+    println!("This example explores the Graph traversal API in depth.");
+    println!("We'll demonstrate:");
+    println!("  - Degree queries (out/in degree, degree_without_parallel_relationships)");
+    println!("  - Cursor-based neighbor enumeration (stream_relationships)");
+    println!("  - Relationship type filtering (creating sub-graph projections)");
+    println!("  - Inverse traversal (stream_inverse_relationships)\n");
+    println!("Key insight: Graph = read-only view; all traversal is zero-allocation where possible.\n");
 
     let store =
         generate_sample_graph().map_err(|err| -> Box<dyn Error + Send + Sync> { Box::new(err) })?;

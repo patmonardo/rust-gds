@@ -3,7 +3,10 @@ use crate::types::properties::node::node_property_store::{
     NodePropertyStore, NodePropertyStoreBuilder,
 };
 use crate::types::properties::node::node_property_values::NodePropertyValues;
+use crate::types::properties::property::Property;
+use crate::types::property::PropertyState;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Concrete node property store implementation.
 #[derive(Debug, Clone, Default)]
@@ -108,6 +111,8 @@ impl NodePropertyStoreBuilder for DefaultNodePropertyStoreBuilder {
         self
     }
 
+    // ...existing code...
+
     fn remove_property(mut self, key: &str) -> Self {
         self.properties.remove(key);
         self
@@ -115,6 +120,22 @@ impl NodePropertyStoreBuilder for DefaultNodePropertyStoreBuilder {
 
     fn build(self) -> Self::Store {
         DefaultNodePropertyStore::new(self.properties)
+    }
+}
+
+// Inherent convenience methods for the builder (do not belong to the trait)
+impl DefaultNodePropertyStoreBuilder {
+    /// Convenience method to add a property by supplying property values directly.
+    /// This mirrors `GraphPropertyStoreBuilder::put_property` and reduces imports for callers.
+    pub fn put_property(
+        mut self,
+        key: impl Into<String>,
+        values: Arc<dyn NodePropertyValues>,
+    ) -> Self {
+        let key_str = key.into();
+        let prop = Property::of(key_str.clone(), PropertyState::Normal, values);
+        self.properties.insert(key_str, prop);
+        self
     }
 }
 

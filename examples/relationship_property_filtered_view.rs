@@ -14,6 +14,11 @@ use std::sync::Arc;
 
 fn main() {
     println!("\n=== Relationship Property Filtered View ===\n");
+    println!("This example shows how to create filtered graph views by relationship type.");
+    println!("Graph::relationship_type_filtered_graph(types) returns a new Graph view");
+    println!("that includes only the specified relationship types.\n");
+    println!("Key insight: filtered views share topology/properties via Arc (cheap projection).");
+    println!("Property stores are cloned per type, but PropertyValues remain shared.\n");
 
     let mut store = build_store_with_multiple_relationship_types();
 

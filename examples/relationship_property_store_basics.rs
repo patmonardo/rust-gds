@@ -10,6 +10,13 @@ use std::sync::Arc;
 
 fn main() {
     println!("\n=== Relationship Property Store Basics ===\n");
+    println!("This example demonstrates the PropertyStore builder pattern.");
+    println!("PropertyStore = HashMap<String, Property<Arc<dyn *PropertyValues>>>.\n");
+    println!("Key operations:");
+    println!("  1. Property::of(key, state, values) constructs a Property wrapper");
+    println!("  2. builder().put(key, property).build() creates an immutable store");
+    println!("  3. store.to_builder() clones the store for modification (copy-on-write)\n");
+    println!("PropertyValues (the column) is shared via Arc; Property adds schema metadata.\n");
 
     let weight_values: Arc<dyn RelationshipPropertyValues> = Arc::new(
         DefaultRelationshipPropertyValues::new(vec![1.2, 0.8, 1.5], 0.0, 3),

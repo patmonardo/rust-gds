@@ -385,3 +385,65 @@ You'll have built a solid, well-documented, thoroughly-tested foundation for a p
 **Status**: Checklist created, ready for review  
 **Owner**: Pat  
 **Last Updated**: October 4, 2025
+
+## ❓ Uncertainties & Inadequacies (observed Oct 5, 2025)
+
+The following items were observed while reviewing the code and examples this morning. They represent open questions, potential design gaps, or areas that would benefit from clarification and follow-up work.
+
+- Trait surface complexity: there are many small traits (GraphStore, Graph, IdMap, RelationshipPredicate, RelationshipIterator, RelationshipProperties, etc.). It's not always obvious which trait is the "owner" of a responsibility. This increases cognitive load for new contributors.
+- Builder ergonomics and trait visibility: builder methods require explicit trait imports (e.g. `RelationshipPropertyStoreBuilder`). This leaks implementation details into caller code and may be surprising.
+- Property selection semantics: `build_selected_relationship_properties` auto-selects a property when only one exists, but behavior when multiple properties are present is ambiguous. There is no explicit override policy documented (priority, selector semantics, errors vs fallback).
+- Property value type model: `SelectedRelationshipProperty.value_at_or` calls `double_value` and `PropertyValue` appears numeric, suggesting limited generic support for other value types (integers, strings, enums). The mapping between `ValueType` and `PropertyValue` semantics needs clarification.
+- Relationship property model is double-centric: many traversal and cursor APIs assume numeric property values; the system may not uniformly support heterogeneous value types across all code paths.
+- Concurrency model and Arc::make_mut uses: `DefaultGraph` and `DefaultGraphStore` use `Arc` and `Arc::make_mut`. The exact thread-safety and mutation rules (what operations are allowed concurrently; copy-on-write semantics) need an explicit contract.
+- Relationship property snapshots vs live views: `Graph::relationship_type_filtered_graph` clones stores and topologies. It's not obvious whether these are shallow copies (sharing underlying data) or deep snapshots. Clarify expectations for mutability and lifetime.
+- Inverse-indexing fallbacks: some degree/inverse-degree functions return `None` when inverse indices are absent. The expected behavior for APIs that depend on inverse indices should be documented more thoroughly.
+- Cursor coverage: only `RelationshipCursor` (and modifiable variant) are present. There's no `NodeCursor` equivalent; consider whether a NodeCursor is needed for symmetry and future features.
+- Error coverage: `GraphStoreError` usage is present but it's unclear whether all failure modes are represented (e.g., invalid selectors, type mismatches when requesting property values, builder misuse).
+- Missing MSRV and platform guarantees: Minimum Rust Version (MSRV) is not documented and platform support (macOS/Windows) is not explicit.
+- CI and quality gates: clippy and rustfmt are not enforced in CI. Also integration tests are still planned but not implemented.
+- Performance unknowns at scale: topology offsets and precomputed vectors look fine for medium graphs but should be benchmarked for very large graphs (memory and traversal throughput).
+
+These observations are not all blockers, but they should be discussed and triaged before we start CoreGraphStore work.
+
+## ⚙️ Proposed Actions (short-term prioritized)
+
+1. ADR: Property selection and fallback semantics
+
+- Document how a property is chosen for traversal and what selectors mean.
+- Define explicit behavior when multiple properties exist (prefer explicit selector; otherwise error or deterministic selection).
+
+2. ADR: Property value typing
+
+- Clarify `ValueType` vs `PropertyValue` (currently appears numeric-centric).
+- Decide whether to support fully dynamic typed property values or a typed trait-based approach (ValueType enum + trait accessors).
+
+3. Improve builder ergonomics
+
+- Consider re-exporting builder traits at higher-level modules or providing convenience helper methods on stores to reduce required imports.
+
+4. Concurrency contract
+
+- Add a short document or comments specifying which operations are safe concurrently and where Arc::make_mut is used for copy-on-write.
+
+5. Add integration tests (Phase 1)
+
+- Cover graph lifecycle, property selection, and concurrent reads.
+
+6. Add CI steps
+
+- Run `cargo fmt --all`, `cargo clippy -- -D warnings`, `cargo test --lib`, and a small integration job.
+
+7. Performance micro-benchmarks
+
+- Add small benches for topology traversal, property access, and graph view creation on larger synthetic graphs.
+
+8. Documentation updates
+
+- Add MSRV, platform support, and a short section on snapshot vs live-view semantics for `graph()` and filtered graphs.
+
+These actions are intentionally small and concrete; we can triage and implement them incrementally. If you'd like, I can start by adding an ADR for property selection or by re-exporting builder traits to reduce friction.
+
+**Status**: Checklist created, ready for review  
+**Owner**: Pat  
+**Last Updated**: October 5, 2025

@@ -21,6 +21,8 @@ use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("\n=== GraphStore Walkthrough ===\n");
+    println!("This example demonstrates the core GraphStore construction and inspection APIs.");
+    println!("We'll build a graph manually (showing all components) and via Random generation.\n");
 
     manual_walkthrough()?;
     println!("\n---\n");
@@ -30,9 +32,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn manual_walkthrough() -> GraphStoreResult<()> {
-    println!("Manual construction of a small in-memory graph store\n");
+    println!("=== Manual Construction: Building a GraphStore from Scratch ===\n");
+    println!("The GraphStore is the central container managing:");
+    println!("  - Schema (node labels, relationship types, property definitions)");
+    println!("  - Topology (adjacency structure via RelationshipTopology)");
+    println!("  - Properties (columnar PropertyValues attached to graph/nodes/relationships)");
+    println!("  - Metadata (capabilities, timestamps, database info)\n");
 
-    println!("1. Naming, database info, and capabilities");
+    println!("Step 1: Naming, database info, and capabilities");
+    println!("  GraphName identifies this store; DatabaseInfo tracks provenance.");
     let graph_name = GraphName::new("neo4j-movies");
     let database_info = DatabaseInfo::new(
         DatabaseId::new("movies"),
@@ -42,7 +50,9 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     capabilities.add_feature("transient");
     capabilities.add_feature("write");
 
-    println!("2. Schema with node labels, properties, and relationship types");
+    println!("\nStep 2: Schema with node labels, properties, and relationship types");
+    println!("  Schema defines the 'shape' of the graph: what labels/types exist,");
+    println!("  what properties they can have, and their value types (Long/Double/etc).");
     let person = NodeLabel::of("Person");
     let movie = NodeLabel::of("Movie");
     let acted_in = RelationshipType::of("ACTED_IN");
@@ -69,7 +79,9 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     );
     let schema = schema_builder.build();
 
-    println!("3. ID mapping between original IDs and compact node IDs");
+    println!("\nStep 3: ID mapping between original IDs and compact node IDs");
+    println!("  IdMap translates original node IDs (e.g., from Neo4j) to compact 0..N range.");
+    println!("  This enables efficient columnar storage and array-based topology.");
     let mut id_map = SimpleIdMap::from_original_ids([0, 1, 2, 3]);
     id_map.add_node_label(person_schema.clone());
     id_map.add_node_label(movie_schema.clone());
@@ -78,13 +90,18 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     id_map.add_node_id_to_label(2, movie_schema.clone());
     id_map.add_node_id_to_label(3, movie_schema.clone());
 
-    println!("4. Relationship topology (adjacency lists)");
+    println!("\nStep 4: Relationship topology (adjacency lists)");
+    println!("  RelationshipTopology stores the graph structure as adjacency lists.");
+    println!("  For directed graphs: outgoing[node_id] = [target_ids...]");
+    println!("  Inverse indices (incoming edges) can be added for bidirectional traversal.");
     let outgoing = vec![vec![2, 3], vec![3], vec![], vec![]];
     let topology = RelationshipTopology::new(outgoing, None);
     let mut relationship_topologies = HashMap::new();
     relationship_topologies.insert(acted_in.clone(), topology);
 
-    println!("5. Assemble the DefaultGraphStore");
+    println!("\nStep 5: Assemble the DefaultGraphStore");
+    println!("  DefaultGraphStore::new combines all components into a mutable store.");
+    println!("  At this point, the graph structure is fixed; properties can be added/removed.");
     let mut store = DefaultGraphStore::new(
         graph_name,
         database_info,
@@ -94,7 +111,12 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
         relationship_topologies,
     );
 
-    println!("6. Attach graph and node properties");
+    println!("\nStep 6: Attach graph and node properties");
+    println!("  Properties are columnar: PropertyValues = Arc<dyn *PropertyValues>.");
+    println!("  Node properties are label-scoped; graph properties are global scalars.");
+    println!(
+        "  The store holds Arc clones; multiple views can share the same columns (zero-copy)."
+    );
     let experience = Arc::new(DefaultLongNodePropertyValues::new(vec![20, 12, 0, 0], 4));
     let mut person_only = HashSet::new();
     person_only.insert(person.clone());
@@ -103,7 +125,10 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     let density = Arc::new(DefaultDoubleGraphPropertyValues::singleton(0.5));
     store.add_graph_property("edge_density", density)?;
 
-    println!("7. Inspect the graph view for validation");
+    println!("\nStep 7: Inspect the graph view for validation");
+    println!("  GraphStore::graph() creates a lightweight, immutable Graph view.");
+    println!("  The Graph trait provides traversal, degree queries, and property access.");
+    println!("  Views share topology/properties via Arc; creating views is cheap.");
     let graph = store.graph();
     println!("  Nodes: {}", graph.node_count());
     println!("  Relationships: {}", graph.relationship_count());
@@ -120,7 +145,10 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
 }
 
 fn random_walkthrough() -> RandomGraphResult<()> {
-    println!("Random graph store generation via the new Random trait\n");
+    println!("=== Random Generation: Testing with Synthetic Graphs ===\n");
+    println!("The Random trait provides deterministic graph generation for testing.");
+    println!("RandomGraphConfig specifies: node count, labels, relationship types, density.");
+    println!("Seeded RNG ensures reproducibility across runs.\n");
 
     let config = RandomGraphConfig {
         graph_name: "demo-random".into(),

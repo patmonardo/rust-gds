@@ -4,6 +4,7 @@ use crate::types::properties::relationship::{
     relationship_property_values::RelationshipPropertyValues,
 };
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Default implementation of RelationshipPropertyStore.
 #[derive(Debug, Clone)]
@@ -140,5 +141,25 @@ impl DefaultRelationshipPropertyStore {
     /// Note: In TypeScript, this is called `relationshipProperties()`.
     pub fn relationship_properties(&self) -> &HashMap<String, RelationshipProperty> {
         &self.properties
+    }
+}
+
+// Inherent convenience methods for the builder (do not belong to the trait)
+impl DefaultRelationshipPropertyStoreBuilder {
+    /// Convenience method to add a property by supplying property values directly.
+    /// Reduces imports for callers who just want to add a property by values.
+    pub fn put_property(
+        mut self,
+        key: impl Into<String>,
+        values: impl Into<Arc<dyn RelationshipPropertyValues>>,
+    ) -> Self {
+        let key_str = key.into();
+        let values = values.into();
+        use crate::types::properties::property::Property;
+        use crate::types::property::PropertyState;
+
+        let prop = Property::of(key_str.clone(), PropertyState::Normal, values);
+        self.properties.insert(key_str, prop);
+        self
     }
 }

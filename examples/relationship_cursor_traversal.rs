@@ -16,6 +16,13 @@ use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("\n=== Relationship Cursor Traversal ===\n");
+    println!("This example demonstrates the cursor-based relationship traversal model.");
+    println!("Key concepts:");
+    println!("  - RelationshipCursor: lightweight accessor to (source, target, property)");
+    println!("  - stream_relationships: iterator over outgoing edges from a node");
+    println!("  - stream_inverse_relationships: incoming edges (requires inverse index)");
+    println!("  - PropertyValue fallback: default used when property is missing\n");
+    println!("Cursors are ephemeral views; freezing a cursor creates an immutable snapshot.\n");
 
     let mut store = build_sample_store();
     let relationship_type = RelationshipType::of("KNOWS");
