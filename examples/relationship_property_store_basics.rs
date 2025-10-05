@@ -1,7 +1,11 @@
-use rust_gds::types::properties::relationship::{
-    DefaultRelationshipPropertyValues, RelationshipPropertyStoreBuilder, RelationshipPropertyValues,
+use rust_gds::types::properties::property::{Property, PropertyTrait};
+use rust_gds::types::properties::relationship::impls::default_relationship_property_store::DefaultRelationshipPropertyStore;
+use rust_gds::types::properties::relationship::relationship_property_store::{
+    RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
-use rust_gds::types::schema::Aggregation;
+use rust_gds::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
+use rust_gds::types::properties::relationship::DefaultRelationshipPropertyValues;
+use rust_gds::types::property::PropertyState;
 use std::sync::Arc;
 
 fn main() {
@@ -14,17 +18,30 @@ fn main() {
         DefaultRelationshipPropertyValues::new(vec![100.0, 80.0, 120.0], 0.0, 3),
     );
 
-    let store = RelationshipPropertyStoreBuilder::new()
-        .put_property("weight", Arc::clone(&weight_values))
-        .put_property_with_aggregation("capacity", Arc::clone(&capacity_values), Aggregation::Max)
+    // Create properties using Property::of
+    let weight_property = Property::of("weight", PropertyState::Normal, Arc::clone(&weight_values));
+    let capacity_property = Property::of(
+        "capacity",
+        PropertyState::Normal,
+        Arc::clone(&capacity_values),
+    );
+
+    let store = DefaultRelationshipPropertyStore::builder()
+        .put("weight", weight_property)
+        .put("capacity", capacity_property)
         .build();
 
-    println!("Property keys: {:?}", store.key_set());
+    let keys: Vec<&str> = store
+        .relationship_properties()
+        .keys()
+        .map(|s| s.as_str())
+        .collect();
+    println!("Property keys: {:?}", keys);
     println!("Length: {}\n", store.len());
 
-    for property in store.values() {
-        println!("Property `{}`", property.key());
-        println!("  aggregation: {:?}", property.aggregation());
+    for (key, property) in store.relationship_properties() {
+        println!("Property `{}`", key);
+        println!("  key from property: {}", property.key());
         println!("  default value: {}", property.values().default_value());
 
         let count = property.values().relationship_count();
@@ -38,12 +55,6 @@ fn main() {
         println!();
     }
 
-    let filtered = store.filter("capacity");
-    println!(
-        "Filtered store keys: {:?} (len = {})",
-        filtered.key_set(),
-        filtered.len()
-    );
     println!(
         "Contains weight? {}  Contains capacity? {}",
         store.contains_key("weight"),

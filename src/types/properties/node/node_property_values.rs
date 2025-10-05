@@ -88,3 +88,14 @@ impl PropertyValues for Box<dyn NodePropertyValues> {
         (**self).element_count()
     }
 }
+
+// Implement PropertyValues for Arc<dyn NodePropertyValues> to allow trait objects
+impl PropertyValues for std::sync::Arc<dyn NodePropertyValues> {
+    fn value_type(&self) -> ValueType {
+        (**self).value_type()
+    }
+
+    fn element_count(&self) -> usize {
+        (**self).element_count()
+    }
+}

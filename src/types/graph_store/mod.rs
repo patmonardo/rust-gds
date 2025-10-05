@@ -3,14 +3,6 @@
 //!
 //! The GraphStore module provides the main orchestration layer for graph data management,
 //! including schema, properties, topology, and filtered views.
-//!
-//! # Main Types
-//! - [`GraphStore`] - The central trait for graph management
-//! - [`GraphName`] - Immutable graph name representation
-//! - [`DatabaseId`] - Unique database identifier
-//! - [`DatabaseInfo`] - Database location and metadata
-//! - [`Capabilities`] - Backend capabilities
-//! - [`DeletionResult`] - Result of deletion operations
 
 mod capabilities;
 mod database_id;

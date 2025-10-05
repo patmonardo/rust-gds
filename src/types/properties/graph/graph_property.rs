@@ -1,5 +1,7 @@
-pub use super::impls::DefaultGraphProperty;
+use super::graph_property_values::GraphPropertyValues;
+use crate::types::properties::property::Property;
+use std::sync::Arc;
 
-/// Historical alias maintained for backwards compatibility with the previous
-/// graph property type.
-pub type GraphProperty = DefaultGraphProperty;
+/// Represents a property of the graph.
+/// Specializes the Property trait for graph-specific property values.
+pub type GraphProperty = Property<Arc<dyn GraphPropertyValues>>;

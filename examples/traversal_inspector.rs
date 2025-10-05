@@ -8,7 +8,7 @@ use rust_gds::types::graph::{Graph, GraphExt, GraphResult};
 use rust_gds::types::graph_store::DefaultGraphStore;
 use rust_gds::types::properties::relationship::PropertyValue;
 use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
-use rust_gds::types::MappedNodeId;
+use rust_gds::types::graph::id_map::MappedNodeId;
 use std::collections::HashSet;
 use std::error::Error;
 

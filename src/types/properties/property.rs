@@ -53,6 +53,38 @@ impl<V: PropertyValues> Property<V> {
     pub fn new(values: V, schema: PropertySchema) -> Self {
         Property { values, schema }
     }
+
+    /// Convenience constructor that auto-computes the default value from the value type.
+    pub fn of(key: impl Into<String>, state: PropertyState, values: V) -> Self {
+        let value_type = values.value_type();
+        let default_value = DefaultValue::of(value_type);
+        let schema = PropertySchema::new(key, value_type, default_value, state);
+        Property { values, schema }
+    }
+
+    /// Convenience constructor with an explicit default value.
+    pub fn with_default(
+        key: impl Into<String>,
+        state: PropertyState,
+        values: V,
+        default_value: DefaultValue,
+    ) -> Self {
+        let value_type = values.value_type();
+        let schema = PropertySchema::new(key, value_type, default_value, state);
+        Property { values, schema }
+    }
+
+    /// Returns a reference to the underlying property values.
+    /// Public accessor that doesn't require importing PropertyTrait.
+    pub fn values(&self) -> &V {
+        &self.values
+    }
+
+    /// Returns a reference to the property schema.
+    /// Public accessor that doesn't require importing PropertyTrait.
+    pub fn property_schema(&self) -> &PropertySchema {
+        &self.schema
+    }
 }
 impl<V: PropertyValues> PropertyTrait for Property<V> {
     type Values = V;

@@ -25,3 +25,25 @@ pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug + Send + 
     /// Returns whether the relationship has a value.
     fn has_value(&self, rel_index: u64) -> bool;
 }
+
+// Implement PropertyValues for Box<dyn RelationshipPropertyValues> to allow trait objects
+impl PropertyValues for Box<dyn RelationshipPropertyValues> {
+    fn value_type(&self) -> crate::types::property::ValueType {
+        (**self).value_type()
+    }
+
+    fn element_count(&self) -> usize {
+        (**self).element_count()
+    }
+}
+
+// Implement PropertyValues for Arc<dyn RelationshipPropertyValues> to allow trait objects
+impl PropertyValues for std::sync::Arc<dyn RelationshipPropertyValues> {
+    fn value_type(&self) -> crate::types::property::ValueType {
+        (**self).value_type()
+    }
+
+    fn element_count(&self) -> usize {
+        (**self).element_count()
+    }
+}

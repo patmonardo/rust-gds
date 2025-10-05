@@ -6,6 +6,7 @@
 //! typing around property containers.
 
 use rust_gds::projection::{NodeLabel, RelationshipType};
+use rust_gds::types::graph::id_map::{IdMap, MappedNodeId, SimpleIdMap};
 use rust_gds::types::graph::topology::RelationshipTopology;
 use rust_gds::types::graph::Graph;
 use rust_gds::types::graph_store::{
@@ -13,17 +14,16 @@ use rust_gds::types::graph_store::{
     GraphStore, GraphStoreResult,
 };
 use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
+use rust_gds::types::properties::node::impls::default_node_property_values::DefaultDoubleNodePropertyValues;
 use rust_gds::types::properties::node::{
-    DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues, NodePropertyContainer,
-    NodePropertyValues,
+    DefaultLongNodePropertyValues, NodePropertyContainer, NodePropertyValues,
 };
 use rust_gds::types::properties::relationship::PropertyValue;
+use rust_gds::types::property::ValueType;
 use rust_gds::types::schema::{
     Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
     RelationshipType as SchemaRelationshipType,
 };
-use rust_gds::types::ValueType;
-use rust_gds::types::{IdMap, MappedNodeId, SimpleIdMap};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;

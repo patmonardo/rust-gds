@@ -8,15 +8,10 @@ pub mod graph_property_store;
 pub mod graph_property_values;
 pub mod impls;
 
-// Re-export public API
-pub use graph_property::GraphProperty;
+// Re-export commonly used items
 pub use graph_property_store::{GraphPropertyStore, GraphPropertyStoreBuilder};
-pub use graph_property_values::{
-    DoubleArrayGraphPropertyValues, DoubleGraphPropertyValues, FloatArrayGraphPropertyValues,
-    GraphPropertyValues, LongArrayGraphPropertyValues, LongGraphPropertyValues,
-};
+pub use graph_property_values::GraphPropertyValues;
 pub use impls::{
-    DefaultDoubleArrayGraphPropertyValues, DefaultDoubleGraphPropertyValues,
-    DefaultFloatArrayGraphPropertyValues, DefaultGraphProperty, DefaultGraphPropertyStore,
-    DefaultLongArrayGraphPropertyValues, DefaultLongGraphPropertyValues,
+    DefaultDoubleGraphPropertyValues, DefaultGraphPropertyStore,
+    DefaultGraphPropertyStoreBuilder, DefaultLongGraphPropertyValues,
 };

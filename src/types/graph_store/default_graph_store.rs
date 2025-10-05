@@ -7,11 +7,19 @@ use crate::types::graph::{
     id_map::{IdMap, SimpleIdMap},
     DefaultGraph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
 };
-use crate::types::properties::graph::GraphPropertyValues;
-use crate::types::properties::node::NodePropertyValues;
-use crate::types::properties::relationship::{
-    RelationshipProperty, RelationshipPropertyStore, RelationshipPropertyValues,
+use crate::types::properties::graph::graph_property_values::GraphPropertyValues;
+
+// FIXED: use explicit module path for node property values (re-exports removed)
+use crate::types::properties::node::node_property_values::NodePropertyValues;
+
+// FIXED: expand relationship module imports explicitly (no broad pub use now)
+use crate::types::properties::relationship::impls::default_relationship_property_store::DefaultRelationshipPropertyStore;
+use crate::types::properties::relationship::relationship_property::RelationshipProperty;
+use crate::types::properties::relationship::relationship_property_store::{
+    RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
+use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
+
 use crate::types::property::PropertyState;
 use crate::types::schema::{
     Direction, GraphSchema, NodeLabel as SchemaNodeLabel, PropertySchemaTrait,
@@ -39,7 +47,7 @@ pub struct DefaultGraphStore {
     graph_properties: HashMap<String, Arc<dyn GraphPropertyValues>>,
     node_properties: HashMap<String, Arc<dyn NodePropertyValues>>,
     node_properties_by_label: HashMap<String, HashSet<String>>,
-    relationship_property_stores: HashMap<RelationshipType, RelationshipPropertyStore>,
+    relationship_property_stores: HashMap<RelationshipType, DefaultRelationshipPropertyStore>,
     has_relationship_properties: bool,
 }
 
@@ -445,7 +453,7 @@ impl GraphStore for DefaultGraphStore {
         self.relationship_property_stores
             .get(relationship_type)
             .and_then(|store| store.get(property_key))
-            .map(|property| property.values_arc())
+            .map(|property| Arc::clone(property.values()))
             .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))
     }
 
@@ -456,16 +464,17 @@ impl GraphStore for DefaultGraphStore {
         property_values: Arc<dyn RelationshipPropertyValues>,
     ) -> GraphStoreResult<()> {
         let key = property_key.into();
-        let property = RelationshipProperty::with_default_aggregation(
-            key.clone(),
-            PropertyState::Normal,
-            property_values,
-        );
+        let property =
+            RelationshipProperty::of(key.clone(), PropertyState::Normal, property_values);
 
+        let store = self
+            .relationship_property_stores
+            .remove(&relationship_type)
+            .unwrap_or_else(RelationshipPropertyStore::empty);
+
+        let updated_store = store.to_builder().put(key, property).build();
         self.relationship_property_stores
-            .entry(relationship_type)
-            .or_insert_with(RelationshipPropertyStore::empty)
-            .put_property_entry(property);
+            .insert(relationship_type, updated_store);
 
         self.refresh_relationship_property_state();
         self.set_modified();
@@ -477,21 +486,23 @@ impl GraphStore for DefaultGraphStore {
         relationship_type: &RelationshipType,
         property_key: &str,
     ) -> GraphStoreResult<()> {
-        let should_remove_entry = {
-            let store = self
-                .relationship_property_stores
-                .get_mut(relationship_type)
-                .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))?;
+        let store = self
+            .relationship_property_stores
+            .remove(relationship_type)
+            .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))?;
 
-            if store.remove_property(property_key).is_none() {
-                return Err(GraphStoreError::PropertyNotFound(property_key.to_string()));
-            }
+        if !store.has_property(property_key) {
+            // Restore the store since the property wasn't found
+            self.relationship_property_stores
+                .insert(relationship_type.clone(), store);
+            return Err(GraphStoreError::PropertyNotFound(property_key.to_string()));
+        }
 
-            store.is_empty()
-        };
+        let updated_store = store.to_builder().remove_property(property_key).build();
 
-        if should_remove_entry {
-            self.relationship_property_stores.remove(relationship_type);
+        if !updated_store.is_empty() {
+            self.relationship_property_stores
+                .insert(relationship_type.clone(), updated_store);
         }
 
         self.refresh_relationship_property_state();

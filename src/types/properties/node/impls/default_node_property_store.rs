@@ -1,109 +1,188 @@
-use crate::types::properties::node::NodeProperty;
-use crate::types::properties::node::NodePropertyValues;
-use crate::types::properties::property_store::GenericPropertyStore;
-use crate::types::property::PropertyState;
+use crate::types::properties::node::node_property::NodeProperty;
+use crate::types::properties::node::node_property_store::{
+    NodePropertyStore, NodePropertyStoreBuilder,
+};
+use crate::types::properties::node::node_property_values::NodePropertyValues;
 use std::collections::HashMap;
 
-/// Represents a store for node properties.
-/// Each property is identified by a string key and holds NodePropertyValues.
-pub type NodePropertyStore = GenericPropertyStore<Box<dyn NodePropertyValues>>;
-
-impl NodePropertyStore {
-    /// Creates a builder for constructing a NodePropertyStore.
-    pub fn builder() -> NodePropertyStoreBuilder {
-        NodePropertyStoreBuilder::new()
-    }
-}
-
-/// Builder for NodePropertyStore.
-#[derive(Debug)]
-pub struct NodePropertyStoreBuilder {
+/// Concrete node property store implementation.
+#[derive(Debug, Clone, Default)]
+pub struct DefaultNodePropertyStore {
     properties: HashMap<String, NodeProperty>,
 }
 
-impl NodePropertyStoreBuilder {
-    /// Creates a new empty builder.
-    pub fn new() -> Self {
-        NodePropertyStoreBuilder {
+/// Builder for DefaultNodePropertyStore.
+#[derive(Debug, Clone, Default)]
+pub struct DefaultNodePropertyStoreBuilder {
+    properties: HashMap<String, NodeProperty>,
+}
+
+/* Store trait implementation */
+impl NodePropertyStore for DefaultNodePropertyStore {
+    type Property = NodeProperty;
+    type Builder = DefaultNodePropertyStoreBuilder;
+
+    fn empty() -> Self {
+        Self {
             properties: HashMap::new(),
         }
     }
 
-    /// Adds a property to the store.
-    pub fn put_property(
-        mut self,
-        key: impl Into<String>,
-        values: Box<dyn NodePropertyValues>,
-    ) -> Self {
-        let key_str = key.into();
-        let property = NodeProperty::of(key_str.clone(), PropertyState::Normal, values);
-        self.properties.insert(key_str, property);
+    fn new(properties: HashMap<String, Self::Property>) -> Self {
+        Self { properties }
+    }
+
+    fn builder() -> Self::Builder {
+        DefaultNodePropertyStoreBuilder {
+            properties: HashMap::new(),
+        }
+    }
+
+    fn has_property(&self, property_key: &str) -> bool {
+        self.properties.contains_key(property_key)
+    }
+
+    fn property_key_set(&self) -> Vec<&str> {
+        self.properties.keys().map(|k| k.as_str()).collect()
+    }
+
+    fn get_property(&self, property_key: &str) -> Option<&Self::Property> {
+        self.properties.get(property_key)
+    }
+
+    fn get_all_properties(&self) -> Vec<&Self::Property> {
+        self.properties.values().collect()
+    }
+
+    fn get_property_values(&self, property_key: &str) -> Option<&dyn NodePropertyValues> {
+        self.properties
+            .get(property_key)
+            .map(|p| p.values().as_ref())
+    }
+
+    fn count(&self) -> usize {
+        self.properties.len()
+    }
+
+    fn is_empty(&self) -> bool {
+        self.properties.is_empty()
+    }
+
+    fn to_builder(&self) -> Self::Builder {
+        DefaultNodePropertyStoreBuilder {
+            properties: self.properties.clone(),
+        }
+    }
+}
+
+/* Builder trait implementation */
+impl NodePropertyStoreBuilder for DefaultNodePropertyStoreBuilder {
+    type Store = DefaultNodePropertyStore;
+    type Property = NodeProperty;
+
+    fn new() -> Self {
+        Self {
+            properties: HashMap::new(),
+        }
+    }
+
+    fn from_store(store: &Self::Store) -> Self {
+        Self {
+            properties: store.properties.clone(),
+        }
+    }
+
+    fn properties(mut self, props: HashMap<String, Self::Property>) -> Self {
+        self.properties = props;
         self
     }
 
-    /// Adds a property with a specific state to the store.
-    pub fn put_property_with_state(
-        mut self,
-        key: impl Into<String>,
-        state: PropertyState,
-        values: Box<dyn NodePropertyValues>,
-    ) -> Self {
-        let key_str = key.into();
-        let property = NodeProperty::of(key_str.clone(), state, values);
-        self.properties.insert(key_str, property);
+    fn put_if_absent(mut self, key: impl Into<String>, property: Self::Property) -> Self {
+        let k = key.into();
+        self.properties.entry(k).or_insert(property);
         self
     }
 
-    /// Adds an already constructed property to the store.
-    pub fn put(mut self, key: impl Into<String>, property: NodeProperty) -> Self {
+    fn put(mut self, key: impl Into<String>, property: Self::Property) -> Self {
         self.properties.insert(key.into(), property);
         self
     }
 
-    /// Builds the NodePropertyStore.
-    pub fn build(self) -> NodePropertyStore {
-        NodePropertyStore::new(self.properties)
+    fn remove_property(mut self, key: &str) -> Self {
+        self.properties.remove(key);
+        self
     }
-}
 
-impl Default for NodePropertyStoreBuilder {
-    fn default() -> Self {
-        Self::new()
+    fn build(self) -> Self::Store {
+        DefaultNodePropertyStore::new(self.properties)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::properties::node::{
-        DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues,
-    };
-    use crate::types::properties::property::PropertyTrait;
-    use crate::types::properties::property_store::PropertyStore;
+    use crate::types::properties::node::DefaultLongNodePropertyValues;
+    use crate::types::properties::property::Property;
+    use crate::types::property::PropertyState;
+    use crate::types::schema::DefaultValue;
 
-    #[test]
-    fn test_empty_node_property_store() {
-        let store = NodePropertyStore::builder().build();
-        assert!(store.is_empty());
-        assert_eq!(store.len(), 0);
+    fn sample_prop(key: &str) -> NodeProperty {
+        use crate::types::properties::property_values::PropertyValues;
+        use std::sync::Arc;
+
+        let values: Arc<dyn NodePropertyValues> =
+            Arc::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
+        let default_value = DefaultValue::of(values.value_type());
+        Property::with_default(
+            key.to_string(),
+            PropertyState::Normal,
+            values,
+            default_value,
+        )
     }
 
     #[test]
-    fn test_node_property_store_builder() {
-        let age_values = DefaultLongNodePropertyValues::new(vec![25, 30, 35], 3);
-        let score_values = DefaultDoubleNodePropertyValues::new(vec![1.5, 2.0, 2.5], 3);
+    fn empty_builder() {
+        let store = DefaultNodePropertyStore::builder().build();
+        assert!(store.is_empty());
+        assert_eq!(store.count(), 0);
+    }
 
-        let store = NodePropertyStore::builder()
-            .put_property("age", Box::new(age_values))
-            .put_property("score", Box::new(score_values))
+    #[test]
+    fn put_and_get() {
+        let p1 = sample_prop("age");
+        let store = DefaultNodePropertyStore::builder().put("age", p1).build();
+        assert!(store.has_property("age"));
+        assert_eq!(store.property_key_set(), vec!["age"]);
+        assert!(store.get_property_values("age").is_some());
+    }
+
+    #[test]
+    fn put_if_absent_behavior() {
+        let p1 = sample_prop("level");
+        let p2 = sample_prop("level");
+        let store = DefaultNodePropertyStore::builder()
+            .put_if_absent("level", p1)
+            .put_if_absent("level", p2) // ignored
             .build();
+        assert_eq!(store.count(), 1);
+    }
 
-        assert!(!store.is_empty());
-        assert_eq!(store.len(), 2);
-        assert!(store.contains_key("age"));
-        assert!(store.contains_key("score"));
+    #[test]
+    fn remove_property() {
+        let p1 = sample_prop("rank");
+        let store = DefaultNodePropertyStore::builder()
+            .put("rank", p1)
+            .remove_property("rank")
+            .build();
+        assert!(store.is_empty());
+    }
 
-        let age_prop = store.get("age").unwrap();
-        assert_eq!(age_prop.key(), "age");
+    #[test]
+    fn to_builder_round_trip() {
+        let p1 = sample_prop("score");
+        let store = DefaultNodePropertyStore::builder().put("score", p1).build();
+        let rebuilt = store.to_builder().build();
+        assert!(rebuilt.has_property("score"));
     }
 }

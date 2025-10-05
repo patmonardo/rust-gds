@@ -8,8 +8,8 @@ pub mod graph;
 pub mod id_map;
 pub mod topology;
 
-pub use characteristics::{GraphCharacteristics, GraphCharacteristicsBuilder};
-pub use default_graph::DefaultGraph;
-pub use degrees::Degrees;
-pub use graph::{Graph, GraphExt, GraphResult};
-pub use topology::RelationshipTopology;
+pub use characteristics::*;
+pub use default_graph::*;
+pub use degrees::*;
+pub use graph::*;
+pub use topology::*;

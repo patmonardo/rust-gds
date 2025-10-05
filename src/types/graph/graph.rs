@@ -5,8 +5,8 @@ use crate::types::graph::{
     id_map::{FilteredIdMap, IdMap, MappedNodeId, NOT_FOUND},
 };
 use crate::types::properties::{
-    node::{NodePropertyContainer, NodePropertyContainerExt},
-    relationship::{RelationshipIterator, RelationshipProperties},
+    node::traits::node_property_container::{NodePropertyContainer, NodePropertyContainerExt},
+    relationship::{relationship_properties::RelationshipProperties, traits::RelationshipIterator},
 };
 use crate::types::schema::GraphSchema;
 use std::collections::HashSet;

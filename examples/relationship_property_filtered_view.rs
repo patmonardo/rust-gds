@@ -1,15 +1,14 @@
 use rust_gds::projection::RelationshipType;
+use rust_gds::types::graph::id_map::SimpleIdMap;
 use rust_gds::types::graph::topology::RelationshipTopology;
 use rust_gds::types::graph::Graph;
 use rust_gds::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore,
 };
-use rust_gds::types::properties::relationship::{
-    DefaultRelationshipPropertyValues, PropertyValue, RelationshipPropertyValues,
-};
+use rust_gds::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
+use rust_gds::types::properties::relationship::{DefaultRelationshipPropertyValues, PropertyValue};
 use rust_gds::types::schema::GraphSchema;
-use rust_gds::types::SimpleIdMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 

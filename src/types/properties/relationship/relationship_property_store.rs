@@ -1,6 +1,46 @@
-pub use super::impls::default_relationship_property_store::DefaultRelationshipPropertyStore;
-pub use super::impls::default_relationship_property_store::RelationshipPropertyStoreBuilder;
+// filepath: /home/pat/VSCode/rust-gds/src/types/properties/relationship/relationship_property_store.rs
+use super::relationship_property_values::RelationshipPropertyValues;
+use std::collections::HashMap;
 
-/// Historical alias maintained for backwards compatibility while the
-/// implementation lives in the `impls` module.
-pub type RelationshipPropertyStore = DefaultRelationshipPropertyStore;
+/// Trait-first contract for relationship property stores.
+pub trait RelationshipPropertyStore {
+    type Property;
+    type Builder: RelationshipPropertyStoreBuilder<Store = Self, Property = Self::Property>;
+
+    fn empty() -> Self
+    where
+        Self: Sized;
+
+    fn new(properties: HashMap<String, Self::Property>) -> Self
+    where
+        Self: Sized;
+
+    fn builder() -> Self::Builder
+    where
+        Self: Sized;
+
+    fn has_property(&self, property_key: &str) -> bool;
+    fn property_key_set(&self) -> Vec<&str>;
+    fn get_property(&self, property_key: &str) -> Option<&Self::Property>;
+    fn get_all_properties(&self) -> Vec<&Self::Property>;
+    fn get_property_values(&self, property_key: &str) -> Option<&dyn RelationshipPropertyValues>;
+    fn size(&self) -> usize;
+    fn is_empty(&self) -> bool;
+    fn to_builder(&self) -> Self::Builder;
+}
+
+/// Builder trait for constructing relationship property stores.
+pub trait RelationshipPropertyStoreBuilder {
+    type Store: RelationshipPropertyStore<Builder = Self, Property = Self::Property>;
+    type Property;
+
+    fn new() -> Self;
+    fn from_store(store: &Self::Store) -> Self;
+
+    fn properties(self, props: HashMap<String, Self::Property>) -> Self;
+    fn put_if_absent(self, key: impl Into<String>, property: Self::Property) -> Self;
+    fn put(self, key: impl Into<String>, property: Self::Property) -> Self;
+    fn remove_property(self, key: &str) -> Self;
+
+    fn build(self) -> Self::Store;
+}

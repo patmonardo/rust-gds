@@ -1,7 +1,7 @@
+use super::property_cursor::PropertyValue;
 use super::relationship_cursor::RelationshipCursorBox;
 use super::relationship_predicate::RelationshipPredicate;
 use crate::types::graph::id_map::MappedNodeId;
-use crate::types::properties::relationship::PropertyValue;
 
 /// Relationship traversal exposed through cursor streams.
 pub trait RelationshipIterator: RelationshipPredicate + Send + Sync {

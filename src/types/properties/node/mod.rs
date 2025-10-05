@@ -9,16 +9,11 @@ pub mod node_property_store;
 pub mod node_property_values;
 pub mod traits;
 
-// Re-export public API
+// Re-export commonly used items
 pub use impls::{
-    DefaultDoubleArrayNodePropertyValues, DefaultDoubleNodePropertyValues,
-    DefaultFloatArrayNodePropertyValues, DefaultLongArrayNodePropertyValues,
-    DefaultLongNodePropertyValues, NodePropertyStoreBuilder,
+    DefaultLongNodePropertyValues, DefaultNodePropertyStore, DefaultNodePropertyStoreBuilder,
 };
-pub use node_property::NodeProperty;
-pub use node_property_store::NodePropertyStore;
-pub use node_property_values::{
-    DoubleArrayNodePropertyValues, DoubleNodePropertyValues, FloatArrayNodePropertyValues,
-    LongArrayNodePropertyValues, LongNodePropertyValues, NodePropertyValues,
-};
-pub use traits::{EmptyNodePropertyContainer, NodePropertyContainer, NodePropertyContainerExt};
+
+pub use node_property_store::{NodePropertyStore, NodePropertyStoreBuilder};
+pub use node_property_values::NodePropertyValues;
+pub use traits::node_property_container::{NodePropertyContainer, NodePropertyContainerExt};

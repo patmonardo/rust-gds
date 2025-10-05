@@ -1,4 +1,5 @@
 use rust_gds::projection::{NodeLabel, RelationshipType};
+use rust_gds::types::graph::id_map::{IdMap, MappedNodeId, SimpleIdMap};
 use rust_gds::types::graph::topology::RelationshipTopology;
 use rust_gds::types::graph::Graph;
 use rust_gds::types::graph_store::{
@@ -8,13 +9,12 @@ use rust_gds::types::graph_store::{
 use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use rust_gds::types::properties::node::DefaultLongNodePropertyValues;
 use rust_gds::types::properties::relationship::PropertyValue;
+use rust_gds::types::property::ValueType;
 use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use rust_gds::types::schema::{
     Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
     RelationshipType as SchemaRelationshipType,
 };
-use rust_gds::types::ValueType;
-use rust_gds::types::{IdMap, MappedNodeId, SimpleIdMap};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;

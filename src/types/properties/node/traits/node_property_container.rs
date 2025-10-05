@@ -1,4 +1,4 @@
-use crate::types::properties::node::NodePropertyValues;
+use crate::types::properties::node::node_property_values::NodePropertyValues;
 use std::collections::HashSet;
 use std::sync::Arc;
 

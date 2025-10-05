@@ -1,5 +1,5 @@
+use super::property_cursor::PropertyValue;
 use crate::types::graph::id_map::MappedNodeId;
-use crate::types::properties::relationship::PropertyValue;
 use std::fmt::Debug;
 
 /// Represents a relationship between two nodes with an associated property value.

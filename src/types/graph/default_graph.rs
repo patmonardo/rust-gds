@@ -7,10 +7,11 @@ use crate::types::graph::id_map::{
 };
 use crate::types::properties::node::{NodePropertyContainer, NodePropertyValues};
 use crate::types::properties::relationship::{
-    DefaultModifiableRelationshipCursor, DefaultRelationshipCursor, ModifiableRelationshipCursor,
+    relationship_properties::RelationshipProperties,
+    relationship_property_values::RelationshipPropertyValues, DefaultModifiableRelationshipCursor,
+    DefaultRelationshipCursor, DefaultRelationshipPropertyStore, ModifiableRelationshipCursor,
     PropertyValue, RelationshipCursor, RelationshipCursorBox, RelationshipIterator,
-    RelationshipPredicate, RelationshipProperties, RelationshipPropertyStore,
-    RelationshipPropertyValues, RelationshipStream,
+    RelationshipPredicate, RelationshipStream,
 };
 use crate::types::schema::{GraphSchema, NodeLabel, RelationshipType as SchemaRelationshipType};
 use std::collections::{HashMap, HashSet};
@@ -28,7 +29,7 @@ pub struct DefaultGraph {
     relationship_count: usize,
     has_parallel_edges: bool,
     node_properties: HashMap<String, Arc<dyn NodePropertyValues>>,
-    relationship_properties: HashMap<RelationshipType, RelationshipPropertyStore>,
+    relationship_properties: HashMap<RelationshipType, DefaultRelationshipPropertyStore>,
     selected_relationship_properties: HashMap<RelationshipType, SelectedRelationshipProperty>,
     relationship_property_selectors: HashMap<RelationshipType, String>,
     topology_offsets: HashMap<RelationshipType, Arc<Vec<usize>>>,
@@ -48,7 +49,7 @@ impl DefaultGraph {
         relationship_count: usize,
         has_parallel_edges: bool,
         node_properties: HashMap<String, Arc<dyn NodePropertyValues>>,
-        relationship_properties: HashMap<RelationshipType, RelationshipPropertyStore>,
+        relationship_properties: HashMap<RelationshipType, DefaultRelationshipPropertyStore>,
         relationship_property_selectors: HashMap<RelationshipType, String>,
     ) -> Self {
         let topology_offsets = compute_topology_offsets(&topologies);
@@ -325,7 +326,7 @@ fn compute_topology_offsets(
 
 fn build_selected_relationship_properties(
     ordered_types: &[RelationshipType],
-    stores: &HashMap<RelationshipType, RelationshipPropertyStore>,
+    stores: &HashMap<RelationshipType, DefaultRelationshipPropertyStore>,
     selectors: &HashMap<RelationshipType, String>,
 ) -> (
     HashMap<RelationshipType, SelectedRelationshipProperty>,
@@ -348,7 +349,7 @@ fn build_selected_relationship_properties(
         if let Some(key) = chosen_key {
             if let Some(property) = store.get(&key) {
                 let selection = SelectedRelationshipProperty::new(
-                    property.values_arc(),
+                    Arc::clone(property.values()),
                     property.values().default_value(),
                 );
                 selected.insert(rel_type.clone(), selection);
@@ -360,7 +361,7 @@ fn build_selected_relationship_properties(
     (selected, effective)
 }
 
-fn auto_select_property_key(store: &RelationshipPropertyStore) -> Option<String> {
+fn auto_select_property_key(store: &DefaultRelationshipPropertyStore) -> Option<String> {
     if store.len() == 1 {
         store.relationship_properties().keys().next().cloned()
     } else {
