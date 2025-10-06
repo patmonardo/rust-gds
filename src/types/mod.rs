@@ -1,4 +1,3 @@
-// pub mod cursor;  // TODO: Disabled - needs redesign after PropertyValue enum removal
 pub mod default_value;
 pub mod graph;
 pub mod graph_store;

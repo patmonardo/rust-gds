@@ -9,11 +9,8 @@ pub mod node_property_store;
 pub mod node_property_values;
 pub mod traits;
 
-// Re-export commonly used items
-pub use impls::{
-    DefaultLongNodePropertyValues, DefaultNodePropertyStore, DefaultNodePropertyStoreBuilder,
-};
-
-pub use node_property_store::{NodePropertyStore, NodePropertyStoreBuilder};
-pub use node_property_values::NodePropertyValues;
-pub use traits::node_property_container::{NodePropertyContainer, NodePropertyContainerExt};
+pub use impls::*;
+pub use node_property::*;
+pub use node_property_store::*;
+pub use node_property_values::*;
+pub use traits::*;

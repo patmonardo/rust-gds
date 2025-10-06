@@ -1,117 +1,118 @@
+//! PrimitiveValues - The Mega Macro Factory
+//!
+//! This is the runtime type system for GDSL (Graph Data Science Language).
+//! Like Zod for TypeScript, this provides runtime validation, transformation,
+//! and type-safe extraction of graph property values.
+//!
+//! The factory provides:
+//! - Runtime parsing/validation (of(), create())
+//! - Type inference (GdsValue trait hierarchy)
+//! - Transformation (widening conversions i32→i64, f32→f64)
+//! - Data extraction (IntegralValue::long_value(), FloatingPointValue::double_value())
+//! - Default value support
+//! - Error handling for validation failures
+
+use crate::values::impls::*;
+use crate::values::traits::*;
 use serde_json::Value as JsonValue;
 use std::sync::Arc;
 
-use crate::types::default_value::DefaultValue;
-use crate::types::node_property_values::NodePropertyValues;
-use crate::types::value_type::ValueType;
-
-/// Trait marker for a GDS value wrapper (scalar or array)
-pub trait GdsValue: Send + Sync {
-    fn value_type(&self) -> ValueType;
-    fn as_json(&self) -> JsonValue;
-}
-
-/// No-value singleton
-#[derive(Debug, Clone)]
-pub struct NoValue;
-impl NoValue {
-    pub const fn instance() -> Self {
-        NoValue
-    }
-}
-impl GdsValue for NoValue {
-    fn value_type(&self) -> ValueType {
-        ValueType::Unknown
-    }
-    fn as_json(&self) -> JsonValue {
-        JsonValue::Null
-    }
-}
-
-/// Example LongValue wrapper
-#[derive(Debug, Clone)]
-pub struct LongValue(pub i64);
-impl GdsValue for LongValue {
-    fn value_type(&self) -> ValueType {
-        ValueType::Long
-    }
-    fn as_json(&self) -> JsonValue {
-        JsonValue::from(self.0)
-    }
-}
-
-/// Example DoubleArray wrapper (owns Vec<f64> or can wrap Arc<Vec<f64>>)
-#[derive(Debug, Clone)]
-pub struct DoubleArrayValue(pub Arc<Vec<f64>>);
-impl GdsValue for DoubleArrayValue {
-    fn value_type(&self) -> ValueType {
-        ValueType::DoubleArray
-    }
-    fn as_json(&self) -> JsonValue {
-        JsonValue::from(self.0.as_ref().clone())
-    }
-}
-
-/// High-level factory similar to PrimitiveValues.of/create
+/// PrimitiveValues factory - the entry point for the Second Macro System
+///
+/// This factory creates GdsValue instances from various input types,
+/// providing runtime type validation and transformation.
 pub struct PrimitiveValues;
-impl PrimitiveValues {
-    /// of -> Option<Arc<dyn GdsValue>> : non-panicking, returns None if not convertible
-    pub fn of(input: &JsonValue) -> Option<Arc<dyn GdsValue>> {
-        use JsonValue::*;
-        match input {
-            Null => Some(Arc::new(NoValue::instance())),
-            Number(n) => {
-                if let Some(i) = n.as_i64() {
-                    Some(Arc::new(LongValue(i)))
-                } else if let Some(f) = n.as_f64() {
-                    // decide float vs double semantics; here treat all non-integer as double
-                    let v = vec![*f];
-                    Some(Arc::new(DoubleArrayValue(Arc::new(v))))
-                } else {
-                    None
-                }
-            }
-            String(s) => {
-                // try parse as number, fallback to string wrapper if you implement one
-                if let Ok(i) = s.parse::<i64>() {
-                    Some(Arc::new(LongValue(i)))
-                } else if let Ok(f) = s.parse::<f64>() {
-                    Some(Arc::new(DoubleArrayValue(Arc::new(vec![f]))))
-                } else {
-                    None
-                }
-            }
-            Array(arr) => {
-                if arr.is_empty() {
-                    // convention: empty -> empty long array
-                    Some(Arc::new(DoubleArrayValue(Arc::new(Vec::new()))))
-                } else if arr.iter().all(|v| v.is_number()) {
-                    // choose integer vs float
-                    if arr.iter().all(|v| v.as_i64().is_some()) {
-                        let mut out = Vec::with_capacity(arr.len());
-                        for v in arr {
-                            out.push(v.as_i64().unwrap());
-                        }
-                        // wrap as LongArray (not implemented here)
-                        // placeholder: return None to indicate need for concrete impl
-                        None
-                    } else {
-                        let mut out = Vec::with_capacity(arr.len());
-                        for v in arr {
-                            out.push(v.as_f64().unwrap());
-                        }
-                        Some(Arc::new(DoubleArrayValue(Arc::new(out))))
-                    }
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        }
+
+// Generate all factory methods using the mega macro
+generate_primitive_values_factory!();
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_null_value() {
+        let val = PrimitiveValues::of(&json!(null)).unwrap();
+        assert_eq!(
+            val.value_type(),
+            crate::types::value_type::ValueType::Unknown
+        );
     }
 
-    /// create -> Result: fails with error if not convertible (mirrors TS create)
-    pub fn create(input: &JsonValue) -> Result<Arc<dyn GdsValue>, String> {
-        Self::of(input).ok_or_else(|| format!("Unsupported value: {}", input))
+    #[test]
+    fn test_long_value() {
+        let val = PrimitiveValues::of(&json!(42)).unwrap();
+        let integral = val.as_any().downcast_ref::<DefaultLongValue>().unwrap();
+        assert_eq!(integral.long_value(), 42);
+    }
+
+    #[test]
+    fn test_double_value() {
+        let val = PrimitiveValues::of(&json!(3.14)).unwrap();
+        let fp = val
+            .as_any()
+            .downcast_ref::<DefaultFloatingPointValue>()
+            .unwrap();
+        assert!((fp.double_value() - 3.14).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_long_array() {
+        let val = PrimitiveValues::of(&json!([1, 2, 3])).unwrap();
+        let arr = val.as_any().downcast_ref::<DefaultLongArray>().unwrap();
+        assert_eq!(arr.length(), 3);
+        assert_eq!(arr.long_value(0), 1);
+        assert_eq!(arr.long_value(2), 3);
+    }
+
+    #[test]
+    fn test_double_array() {
+        let val = PrimitiveValues::of(&json!([1.1, 2.2, 3.3])).unwrap();
+        let arr = val.as_any().downcast_ref::<DefaultDoubleArray>().unwrap();
+        assert_eq!(arr.length(), 3);
+        assert!((arr.double_value(1) - 2.2).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_empty_array() {
+        let val = PrimitiveValues::of(&json!([])).unwrap();
+        let arr = val.as_any().downcast_ref::<DefaultLongArray>().unwrap();
+        assert_eq!(arr.length(), 0);
+    }
+
+    #[test]
+    fn test_string_parse_int() {
+        let val = PrimitiveValues::of(&json!("123")).unwrap();
+        let integral = val.as_any().downcast_ref::<DefaultLongValue>().unwrap();
+        assert_eq!(integral.long_value(), 123);
+    }
+
+    #[test]
+    fn test_string_parse_float() {
+        let val = PrimitiveValues::of(&json!("3.14")).unwrap();
+        let fp = val
+            .as_any()
+            .downcast_ref::<DefaultFloatingPointValue>()
+            .unwrap();
+        assert!((fp.double_value() - 3.14).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_null_in_array_returns_none() {
+        let val = PrimitiveValues::of(&json!([1, null, 3]));
+        assert!(val.is_none());
+    }
+
+    #[test]
+    fn test_unsupported_type_returns_none() {
+        let val = PrimitiveValues::of(&json!({"key": "value"}));
+        assert!(val.is_none());
+    }
+
+    #[test]
+    fn test_create_panics_on_invalid() {
+        let result = PrimitiveValues::create(&json!({"key": "value"}));
+        assert!(result.is_err());
     }
 }

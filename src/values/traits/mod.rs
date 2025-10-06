@@ -1,6 +1,3 @@
-pub mod traits;
+pub mod gds_value;
 
-pub use traits::{
-    no_value, ArrayTrait, DoubleArrayTrait, FloatArrayTrait, FloatingPointArray,
-    FloatingPointValue, GdsNoValue, GdsValue, IntegralArray, IntegralValue, LongArrayTrait,
-};
+pub use gds_value::*;

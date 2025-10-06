@@ -10,6 +10,9 @@ pub trait GdsValue: Send + Sync {
     fn value_type(&self) -> ValueType;
     fn as_object(&self) -> JsonValue;
 
+    /// For downcasting to concrete types
+    fn as_any(&self) -> &dyn std::any::Any;
+
     /// Default equality: compare object representations
     fn equals(&self, other: &dyn GdsValue) -> bool {
         self.as_object() == other.as_object()
@@ -39,11 +42,11 @@ impl GdsNoValue {
 }
 
 /// Global static reference for NO_VALUE
-pub static NO_VALUE_SINGLETON: Lazy<GdsNoValue> = Lazy::new(|| GdsNoValue::new());
+pub static NO_VALUE_SINGLETON: Lazy<GdsNoValue> = Lazy::new(GdsNoValue::new);
 
 /// Convenience accessor
 pub fn no_value() -> &'static GdsNoValue {
-    &*NO_VALUE_SINGLETON
+    &NO_VALUE_SINGLETON
 }
 
 impl GdsValue for GdsNoValue {
@@ -52,6 +55,9 @@ impl GdsValue for GdsNoValue {
     }
     fn as_object(&self) -> JsonValue {
         JsonValue::Null
+    }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
     fn equals(&self, other: &dyn GdsValue) -> bool {
         matches!(other.as_object(), JsonValue::Null)
@@ -70,8 +76,8 @@ impl fmt::Display for GdsNoValue {
     }
 }
 
-/// Base array trait (maps TS Array)
-pub trait ArrayTrait: GdsValue {
+/// Base array interface (maps TS Array)
+pub trait Array: GdsValue {
     fn length(&self) -> usize;
 
     fn equals_bytes(&self, _other: &[u8]) -> bool {
@@ -92,44 +98,28 @@ pub trait ArrayTrait: GdsValue {
     fn equals_doubles(&self, _other: &[f64]) -> bool {
         false
     }
-
-    fn to_string(&self) -> String {
-        self.as_object().to_string()
-    }
 }
 
-/// IntegralArray extends ArrayTrait (maps TS IntegralArray)
-pub trait IntegralArray: ArrayTrait {
+/// IntegralArray - array of integer values (maps TS IntegralArray)
+pub trait IntegralArray: Array {
     fn long_value(&self, idx: usize) -> i64;
     fn long_array_value(&self) -> Vec<i64>;
 }
 
-/// FloatingPointArray extends ArrayTrait
-pub trait FloatingPointArray: ArrayTrait {
+/// FloatingPointArray - array of floating point values
+pub trait FloatingPointArray: Array {
     fn double_value(&self, idx: usize) -> f64;
     fn double_array_value(&self) -> Vec<f64>;
 }
 
-/// LongArray interface (maps TS LongArray)
-pub trait LongArrayTrait: IntegralArray {
-    fn type_name(&self) -> ValueType {
-        ValueType::LongArray
-    }
-}
+/// LongArray - specialized integral array (maps TS LongArray)
+pub trait LongArray: IntegralArray {}
 
-/// FloatArray interface (maps TS FloatArray)
-pub trait FloatArrayTrait: FloatingPointArray {
-    fn type_name(&self) -> ValueType {
-        ValueType::FloatArray
-    }
-}
+/// FloatArray - specialized floating point array (maps TS FloatArray)
+pub trait FloatArray: FloatingPointArray {}
 
-/// DoubleArray interface (maps TS DoubleArray)
-pub trait DoubleArrayTrait: FloatingPointArray {
-    fn type_name(&self) -> ValueType {
-        ValueType::DoubleArray
-    }
-}
+/// DoubleArray - specialized floating point array (maps TS DoubleArray)
+pub trait DoubleArray: FloatingPointArray {}
 
 /// Scalar integral value (maps TS IntegralValue)
 pub trait IntegralValue: GdsValue {
