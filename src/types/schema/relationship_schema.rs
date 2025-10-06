@@ -1,8 +1,8 @@
-use crate::types::property::ValueType;
 use crate::types::schema::{
     Direction, PropertySchemaTrait, RelationshipPropertySchema, RelationshipType, SchemaError,
     SchemaResult,
 };
+use crate::types::value_type::ValueType;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 

@@ -1,6 +1,6 @@
 use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
-use crate::types::property::ValueType;
 use crate::types::property_value::PropertyValue;
+use crate::types::value_type::ValueType;
 
 /// Interface for accessing property values for nodes in a graph.
 /// Provides methods for retrieving values of different types for specific nodes.

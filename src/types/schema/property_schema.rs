@@ -1,5 +1,6 @@
-use crate::types::property::{PropertyState, ValueType};
-use crate::types::schema::DefaultValue;
+use crate::types::default_value::DefaultValue;
+use crate::types::property_state::PropertyState;
+use crate::types::value_type::ValueType;
 use serde::{Deserialize, Serialize};
 
 /// Aggregation strategy for relationship properties.
@@ -85,7 +86,7 @@ impl PropertySchema {
             key,
             value_type,
             DefaultValue::of(value_type),
-            PropertyState::Normal,
+            PropertyState::Persistent,
         )
     }
 
@@ -112,7 +113,7 @@ impl PropertySchema {
     }
 
     pub fn state(&self) -> PropertyState {
-        self.state.clone()
+        self.state // PropertyState is Copy, no need to clone
     }
 }
 
@@ -130,7 +131,7 @@ impl PropertySchemaTrait for PropertySchema {
     }
 
     fn state(&self) -> PropertyState {
-        self.state.clone()
+        self.state // PropertyState is Copy, no need to clone
     }
 }
 
@@ -212,7 +213,7 @@ mod tests {
         let schema = PropertySchema::of("name", ValueType::String);
         assert_eq!(schema.key(), "name");
         assert_eq!(schema.value_type(), ValueType::String);
-        assert_eq!(schema.default_value(), &DefaultValue::String(String::new()));
+        assert_eq!(schema.default_value(), &DefaultValue::of(ValueType::String));
     }
 
     #[test]
@@ -237,8 +238,8 @@ mod tests {
         let schema = RelationshipPropertySchema::with_aggregation(
             "weight",
             ValueType::Double,
-            DefaultValue::Double(0.0),
-            PropertyState::Normal,
+            DefaultValue::double(0.0), // Use the clean API
+            PropertyState::Persistent,
             Aggregation::Default,
         );
 

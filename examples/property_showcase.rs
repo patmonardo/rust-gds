@@ -19,11 +19,11 @@ use rust_gds::types::properties::node::{
     DefaultLongNodePropertyValues, NodePropertyContainer, NodePropertyValues,
 };
 use rust_gds::types::properties::relationship::PropertyValue;
-use rust_gds::types::property::ValueType;
 use rust_gds::types::schema::{
     Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
     RelationshipType as SchemaRelationshipType,
 };
+use rust_gds::types::value_type::ValueType;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;

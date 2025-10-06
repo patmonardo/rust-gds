@@ -1,7 +1,8 @@
+use crate::types::default_value::DefaultValue;
 use crate::types::properties::property::Property;
 use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use crate::types::property::PropertyState;
-use crate::types::schema::{DefaultValue, PropertySchema};
+use crate::types::property_state::PropertyState;
+use crate::types::schema::PropertySchema;
 use std::sync::Arc;
 
 /// Concrete relationship property implementation that mirrors the structure of
@@ -14,9 +15,9 @@ pub struct DefaultRelationshipProperty {
 }
 
 impl DefaultRelationshipProperty {
-    /// Construct a relationship property using the default `PropertyState::Normal`.
+    /// Construct a relationship property using the default `PropertyState::Persistent`.
     pub fn of(key: impl Into<String>, values: Arc<dyn RelationshipPropertyValues>) -> Self {
-        Self::with_state(key, PropertyState::Normal, values)
+        Self::with_state(key, PropertyState::Persistent, values)
     }
 
     /// Construct a property with an explicit property state.
@@ -88,12 +89,12 @@ impl Property for DefaultRelationshipProperty {
             as Arc<dyn crate::types::properties::property_values::PropertyValues>
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::types::properties::property_values::PropertyValues;
     use crate::types::properties::relationship::impls::values::DefaultRelationshipPropertyValues;
+    use crate::types::value_type::ValueType;
 
     #[test]
     fn default_relationship_property_creation() {
@@ -103,8 +104,11 @@ mod tests {
         let property = DefaultRelationshipProperty::of("weight", values.clone());
 
         assert_eq!(property.key(), "weight");
-        assert_eq!(property.property_schema().state(), PropertyState::Normal);
-        assert_eq!(property.property_schema().value_type(), values.value_type());
+        assert_eq!(
+            property.property_schema().state(),
+            PropertyState::Persistent
+        );
+        assert_eq!(property.property_schema().value_type(), ValueType::Double);
         assert!(Arc::ptr_eq(&property.values_arc(), &values));
     }
 
@@ -114,10 +118,10 @@ mod tests {
             DefaultRelationshipPropertyValues::new(vec![10.0, 20.0], 0.0, 2),
         );
         let property =
-            DefaultRelationshipProperty::with_state("distance", PropertyState::Deleted, values);
+            DefaultRelationshipProperty::with_state("distance", PropertyState::Transient, values);
 
         assert_eq!(property.key(), "distance");
-        assert_eq!(property.property_schema().state(), PropertyState::Deleted);
+        assert_eq!(property.property_schema().state(), PropertyState::Transient);
     }
 
     #[test]
@@ -125,10 +129,10 @@ mod tests {
         let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
             DefaultRelationshipPropertyValues::new(vec![5.5, 6.6], 1.0, 2),
         );
-        let default_value = DefaultValue::Double(1.0);
+        let default_value = DefaultValue::double(1.0); // ← CLEAN API!
         let property = DefaultRelationshipProperty::with_default(
             "score",
-            PropertyState::Normal,
+            PropertyState::Persistent,
             values,
             default_value.clone(),
         );
@@ -151,5 +155,17 @@ mod tests {
         // Test Arc access
         let values_arc = property.values_arc();
         assert_eq!(values_arc.element_count(), 3);
+    }
+
+    #[test]
+    fn relationship_property_schema_defaults() {
+        let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
+            DefaultRelationshipPropertyValues::new(vec![1.0, 2.0], 0.0, 2),
+        );
+        let property = DefaultRelationshipProperty::of("test", values);
+
+        // Should use system default for Double type
+        let schema = property.property_schema();
+        assert!(schema.default_value().double_value().unwrap().is_nan());
     }
 }

@@ -4,7 +4,7 @@ use crate::types::properties::graph::graph_property_values::{
     GraphPropertyValues, LongArrayGraphPropertyValues, LongGraphPropertyValues,
 };
 use crate::types::properties::property_values::PropertyValues;
-use crate::types::property::ValueType;
+use crate::types::value_type::ValueType;
 use crate::types::property_value::PropertyValue;
 use std::any::Any;
 

@@ -4,7 +4,7 @@ use crate::types::properties::node::node_property_values::{
 use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
-use crate::types::property::ValueType;
+use crate::types::value_type::ValueType;
 use crate::types::property_value::PropertyValue;
 use crate::{node_double_array_property_values_impl, property_values_impl};
 
@@ -54,7 +54,7 @@ impl DoubleArrayNodePropertyValues for DefaultDoubleArrayNodePropertyValues {
 mod tests {
     use super::*;
     use crate::types::properties::property_values::PropertyValues;
-    use crate::types::property::ValueType;
+    use crate::types::value_type::ValueType;
 
     #[test]
     fn test_double_array_node_property_values() {

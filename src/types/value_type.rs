@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Represents the data types that can be used for properties.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ValueType {
     Byte,
     Short,
@@ -118,7 +119,16 @@ impl ValueType {
             ValueType::DateArray => Ok("date[]"),
             ValueType::DateTimeArray => Ok("datetime[]"),
             ValueType::UntypedArray => Ok("Any[]"),
-            ValueType::Unknown => Err("ValueType::UNKNOWN has no CSV name"),
+            ValueType::Unknown => Err("ValueType::UNKNOWN has no CSV name"), // Changed
+            ValueType::StringMap => Ok("string{}"),                          // Added
+            ValueType::LongMap => Ok("long{}"),                              // Added
+            ValueType::DoubleMap => Ok("double{}"),
+            ValueType::BooleanMap => Ok("boolean{}"),
+            ValueType::StringMapArray => Ok("string{}[]"),
+            ValueType::LongMapArray => Ok("long{}[]"),
+            ValueType::DoubleMapArray => Ok("double{}[]"),
+            ValueType::BooleanMapArray => Ok("boolean{}[]"),
+            ValueType::UntypedMap => Ok("Any{}"),
         }
     }
 
@@ -169,74 +179,7 @@ impl ValueType {
         if self == other {
             return true;
         }
-        if other == ValueType::UntypedArray {
-            matches!(
-                self,
-                ValueType::LongArray
-                    | ValueType::FloatArray
-                    | ValueType::DoubleArray
-                    | ValueType::BooleanArray
-                    | ValueType::StringArray
-                    | ValueType::BigIntArray
-                    | ValueType::UntypedArray
-            )
-        } else if self == ValueType::Float && other == ValueType::Double {
-            true
-        } else if self == ValueType::Long && other == ValueType::BigInt {
-            true
-        } else {
-            false
-        }
-    }
 
-    /// Try to construct ValueType from a CSV name (e.g. "long", "double[]")
-    pub fn from_csv_name(csv_name: &str) -> Option<ValueType> {
-        match csv_name {
-            "byte" => Some(ValueType::Byte),
-            "short" => Some(ValueType::Short),
-            "int" => Some(ValueType::Int),
-            "long" => Some(ValueType::Long),
-            "float" => Some(ValueType::Float),
-            "double" => Some(ValueType::Double),
-            "boolean" => Some(ValueType::Boolean),
-            "char" => Some(ValueType::Char),
-            "string" => Some(ValueType::String),
-            "bigint" => Some(ValueType::BigInt),
-            "decimal" => Some(ValueType::Decimal),
-            "date" => Some(ValueType::Date),
-            "datetime" => Some(ValueType::DateTime),
-            "null" => Some(ValueType::Null),
-            "byte[]" => Some(ValueType::ByteArray),
-            "short[]" => Some(ValueType::ShortArray),
-            "int[]" => Some(ValueType::IntArray),
-            "long[]" => Some(ValueType::LongArray),
-            "float[]" => Some(ValueType::FloatArray),
-            "double[]" => Some(ValueType::DoubleArray),
-            "boolean[]" => Some(ValueType::BooleanArray),
-            "char[]" => Some(ValueType::CharArray),
-            "string[]" => Some(ValueType::StringArray),
-            "bigint[]" => Some(ValueType::BigIntArray),
-            "decimal[]" => Some(ValueType::DecimalArray),
-            "date[]" => Some(ValueType::DateArray),
-            "datetime[]" => Some(ValueType::DateTimeArray),
-            "Any[]" => Some(ValueType::UntypedArray),
-            "string{}" => Some(ValueType::StringMap),
-            "long{}" => Some(ValueType::LongMap),
-            "double{}" => Some(ValueType::DoubleMap),
-            "boolean{}" => Some(ValueType::BooleanMap),
-            "string{}[]" => Some(ValueType::StringMapArray),
-            "long{}[]" => Some(ValueType::LongMapArray),
-            "double{}[]" => Some(ValueType::DoubleMapArray),
-            "boolean{}[]" => Some(ValueType::BooleanMapArray),
-            "Any{}" => Some(ValueType::UntypedMap),
-            _ => None,
-        }
-    }
-
-    pub fn is_compatible_with(self, other: ValueType) -> bool {
-        if self == other {
-            return true;
-        }
         if other == ValueType::UntypedArray {
             matches!(
                 self,
@@ -257,12 +200,9 @@ impl ValueType {
                     | ValueType::BooleanMap
                     | ValueType::UntypedMap
             )
-        } else if self == ValueType::Float && other == ValueType::Double {
-            true
-        } else if self == ValueType::Long && other == ValueType::BigInt {
-            true
         } else {
-            false
+            (self == ValueType::Float && other == ValueType::Double)
+                || (self == ValueType::Long && other == ValueType::BigInt)
         }
     }
 }

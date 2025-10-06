@@ -1,5 +1,6 @@
 use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
 use crate::types::property_value::PropertyValue;
+use crate::types::value_type::ValueType;
 
 /// Represents properties of relationships in a graph.
 /// Provides access to relationship property values and metadata.
@@ -29,7 +30,7 @@ pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug + Send + 
 
 // Implement PropertyValues for Box<dyn RelationshipPropertyValues> to allow trait objects
 impl PropertyValues for Box<dyn RelationshipPropertyValues> {
-    fn value_type(&self) -> crate::types::property::ValueType {
+    fn value_type(&self) -> ValueType {
         (**self).value_type()
     }
 
@@ -44,7 +45,7 @@ impl PropertyValues for Box<dyn RelationshipPropertyValues> {
 
 // Implement PropertyValues for Arc<dyn RelationshipPropertyValues> to allow trait objects
 impl PropertyValues for std::sync::Arc<dyn RelationshipPropertyValues> {
-    fn value_type(&self) -> crate::types::property::ValueType {
+    fn value_type(&self) -> ValueType {
         (**self).value_type()
     }
 

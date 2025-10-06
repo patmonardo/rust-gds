@@ -1,6 +1,6 @@
 use crate::types::properties::node::node_property_values::NodePropertyValues;
 use crate::types::properties::property::Property;
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
 use std::sync::Arc;
 

@@ -9,11 +9,11 @@ use crate::types::graph_store::{
 };
 use crate::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use crate::types::properties::node::impls::default_node_property_values::DefaultDoubleNodePropertyValues;
-use crate::types::property::ValueType;
 use crate::types::schema::{
     Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
     RelationshipType as SchemaRelationshipType,
 };
+use crate::types::value_type::ValueType;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::cmp::Ordering;

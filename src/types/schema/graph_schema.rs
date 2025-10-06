@@ -323,7 +323,7 @@ fn relationship_properties_to_map(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::property::ValueType;
+    use crate::types::value_type::ValueType;
 
     #[test]
     fn test_empty_graph_schema() {

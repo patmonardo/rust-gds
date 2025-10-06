@@ -1,6 +1,8 @@
 use super::property_values::PropertyValues;
-use crate::types::property::PropertyState;
-use crate::types::schema::{DefaultValue, PropertySchema};
+use crate::types::default_value::DefaultValue;
+use crate::types::property_state::PropertyState;
+use crate::types::schema::PropertySchema;
+use crate::types::value_type::ValueType;
 use std::sync::Arc;
 
 /// Canonical trait representing a property (no "Trait" suffix).
@@ -48,7 +50,7 @@ impl DefaultProperty {
         self.schema.key()
     }
 
-    pub fn value_type(&self) -> crate::types::property::ValueType {
+    pub fn value_type(&self) -> ValueType {
         self.schema.value_type()
     }
 
@@ -74,7 +76,6 @@ impl Property for DefaultProperty {
 mod tests {
     use super::*;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
-    use crate::types::property::ValueType;
 
     #[test]
     fn test_property_creation() {
@@ -82,13 +83,13 @@ mod tests {
         let schema = PropertySchema::new(
             "test_prop",
             ValueType::Long,
-            DefaultValue::Long(0),
-            PropertyState::Normal,
+            DefaultValue::of(ValueType::Long),
+            PropertyState::Persistent, // Changed from PropertyState::Normal
         );
 
         let prop = DefaultProperty::new(schema, Arc::new(values));
         assert_eq!(prop.key(), "test_prop");
         assert_eq!(prop.value_type(), ValueType::Long);
-        assert_eq!(prop.property_state(), PropertyState::Normal);
+        assert_eq!(prop.property_state(), PropertyState::Persistent);
     }
 }

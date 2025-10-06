@@ -155,9 +155,9 @@ impl DefaultRelationshipPropertyStoreBuilder {
         let key_str = key.into();
         let values = values.into();
         use crate::types::properties::property::DefaultProperty;
-        use crate::types::property::PropertyState;
+        use crate::types::property_state::PropertyState;
 
-        let prop = DefaultProperty::of(key_str.clone(), PropertyState::Normal, values);
+        let prop = DefaultProperty::of(key_str.clone(), PropertyState::Persistent, values);
         self.properties.insert(key_str, prop);
         self
     }

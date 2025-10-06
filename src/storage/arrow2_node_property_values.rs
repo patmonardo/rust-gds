@@ -6,7 +6,7 @@ use arrow2::types::NativeType;
 use serde_json::Value as JsonValue;
 
 use crate::types::node_property_values::NodePropertyValues;
-use crate::types::property::ValueType;
+use crate::types::value_type::ValueType;
 
 /// Adapter that wraps an Arrow2 Array (zero-copy) and implements NodePropertyValues.
 ///

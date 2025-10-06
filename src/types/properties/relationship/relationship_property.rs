@@ -1,6 +1,6 @@
 use super::relationship_property_values::RelationshipPropertyValues;
 use crate::types::properties::property::DefaultProperty;
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use std::sync::Arc;
 
 /// Alias for ergonomics: RelationshipProperty is the canonical DefaultProperty instance.

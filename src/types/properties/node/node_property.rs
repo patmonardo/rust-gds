@@ -1,6 +1,6 @@
 use super::node_property_values::NodePropertyValues;
 use crate::types::properties::property::DefaultProperty;
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use std::sync::Arc;
 
 /// Alias for ergonomics: NodeProperty is the canonical DefaultProperty instance.

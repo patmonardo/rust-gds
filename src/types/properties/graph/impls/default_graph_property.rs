@@ -1,6 +1,6 @@
 use crate::types::properties::graph::graph_property_values::GraphPropertyValues;
 use crate::types::properties::property::Property;
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
 use std::sync::Arc;
 

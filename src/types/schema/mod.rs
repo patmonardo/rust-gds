@@ -3,7 +3,6 @@
 // This module provides schema definitions for graph elements (nodes, relationships, and graphs).
 // It mirrors the TypeScript GDS schema API structure with Rust idioms.
 
-pub mod default_value;
 pub mod direction;
 pub mod element_identifier;
 pub mod graph_schema;
@@ -11,21 +10,13 @@ pub mod node_schema;
 pub mod property_schema;
 pub mod relationship_schema;
 
-// Re-export core types for convenience
-pub use default_value::DefaultValue;
-pub use direction::Direction;
-pub use element_identifier::{ElementIdentifier, NodeLabel, RelationshipType};
-pub use graph_schema::{GraphSchema, MutableGraphSchema};
-pub use node_schema::{MutableNodeSchema, MutableNodeSchemaEntry, NodeSchema, NodeSchemaEntry};
-pub use property_schema::{
-    Aggregation, PropertySchema, PropertySchemaTrait, RelationshipPropertySchema,
-};
-pub use relationship_schema::{
-    MutableRelationshipSchema, MutableRelationshipSchemaEntry, RelationshipSchema,
-    RelationshipSchemaEntry,
-};
-
-use crate::types::property::ValueType;
+pub use crate::types::value_type::ValueType;
+pub use direction::*;
+pub use element_identifier::*;
+pub use graph_schema::*;
+pub use node_schema::*;
+pub use property_schema::*;
+pub use relationship_schema::*;
 
 /// Error type for schema operations
 #[derive(Debug, Clone, thiserror::Error)]

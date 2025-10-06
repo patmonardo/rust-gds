@@ -1,6 +1,6 @@
 use super::graph_property_values::GraphPropertyValues;
 use crate::types::properties::property::DefaultProperty;
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use std::sync::Arc;
 
 /// Alias for ergonomics: GraphProperty is the canonical DefaultProperty instance.

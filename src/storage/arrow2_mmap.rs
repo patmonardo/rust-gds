@@ -7,7 +7,7 @@ use arrow2::error::Result as Arrow2Result;
 use arrow2::io::ipc::read::{read_file, read_file_metadata};
 use memmap2::{Mmap, MmapOptions};
 
-use crate::types::property::PropertySchema;
+use crate::types::schema::PropertySchema;
 
 /// Memory-mapped Arrow IPC column. Keeps mmap alive so Arrow2 arrays can reference the mmap bytes.
 #[derive(Debug, Clone)]

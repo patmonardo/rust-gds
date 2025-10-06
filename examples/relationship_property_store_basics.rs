@@ -5,7 +5,7 @@ use rust_gds::types::properties::relationship::relationship_property_store::{
 };
 use rust_gds::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
 use rust_gds::types::properties::relationship::DefaultRelationshipPropertyValues;
-use rust_gds::types::property::PropertyState;
+use rust_gds::types::property_state::PropertyState;
 use std::sync::Arc;
 
 fn main() {
@@ -29,13 +29,13 @@ fn main() {
     // Note: We need to upcast to Arc<dyn PropertyValues>
     let weight_property = DefaultProperty::of(
         "weight",
-        PropertyState::Normal,
+        PropertyState::Persistent,
         weight_values.clone()
             as Arc<dyn rust_gds::types::properties::property_values::PropertyValues>,
     );
     let capacity_property = DefaultProperty::of(
         "capacity",
-        PropertyState::Normal,
+        PropertyState::Persistent,
         capacity_values.clone()
             as Arc<dyn rust_gds::types::properties::property_values::PropertyValues>,
     );

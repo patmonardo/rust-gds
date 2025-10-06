@@ -1,6 +1,6 @@
 use crate::types::properties::property_values::PropertyValues;
-use crate::types::property::ValueType;
 use crate::types::property_value::PropertyValue;
+use crate::types::value_type::ValueType;
 use std::any::Any;
 use std::sync::Arc;
 

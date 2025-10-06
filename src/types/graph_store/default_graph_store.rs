@@ -8,6 +8,7 @@ use crate::types::graph::{
     DefaultGraph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
 };
 use crate::types::properties::graph::graph_property_values::GraphPropertyValues;
+use crate::types::value_type::ValueType;
 
 // FIXED: use explicit module path for node property values (re-exports removed)
 use crate::types::properties::node::node_property_values::NodePropertyValues;
@@ -20,7 +21,7 @@ use crate::types::properties::relationship::relationship_property_store::{
 };
 use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
 
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use crate::types::schema::{
     Direction, GraphSchema, NodeLabel as SchemaNodeLabel, PropertySchemaTrait,
 };
@@ -423,10 +424,7 @@ impl GraphStore for DefaultGraphStore {
             .unwrap_or(false)
     }
 
-    fn relationship_property_type(
-        &self,
-        property_key: &str,
-    ) -> GraphStoreResult<crate::types::property::ValueType> {
+    fn relationship_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType> {
         if let Some(value_type) = self
             .relationship_property_stores
             .values()
@@ -475,7 +473,7 @@ impl GraphStore for DefaultGraphStore {
     ) -> GraphStoreResult<()> {
         let key = property_key.into();
         let property =
-            RelationshipProperty::of(key.clone(), PropertyState::Normal, property_values);
+            RelationshipProperty::of(key.clone(), PropertyState::Persistent, property_values);
 
         let store = self
             .relationship_property_stores

@@ -1,5 +1,5 @@
-use crate::types::property::ValueType;
 use crate::types::property_value::PropertyValue;
+use crate::types::value_type::ValueType;
 use thiserror::Error;
 
 /// Macro to generate PropertyValues implementations for different value types.

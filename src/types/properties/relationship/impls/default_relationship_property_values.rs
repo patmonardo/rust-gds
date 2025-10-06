@@ -3,8 +3,8 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use crate::types::property::ValueType;
 use crate::types::property_value::PropertyValue;
+use crate::types::value_type::ValueType;
 
 /// Default implementation for relationship property values storing `f64`
 /// entries with an optional default value.

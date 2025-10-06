@@ -4,7 +4,7 @@ use crate::types::properties::node::node_property_store::{
 };
 use crate::types::properties::node::node_property_values::NodePropertyValues;
 use crate::types::properties::property_store::PropertyStore;
-use crate::types::property::PropertyState;
+use crate::types::property_state::PropertyState;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -160,7 +160,7 @@ impl DefaultNodePropertyStoreBuilder {
     ) -> Self {
         use crate::types::properties::property::DefaultProperty;
         let key_str = key.into();
-        let prop = DefaultProperty::of(key_str.clone(), PropertyState::Normal, values);
+        let prop = DefaultProperty::of(key_str.clone(), PropertyState::Persistent, values);
         self.properties.insert(key_str, prop);
         self
     }
@@ -169,10 +169,10 @@ impl DefaultNodePropertyStoreBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::default_value::DefaultValue;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
     use crate::types::properties::property::DefaultProperty;
-    use crate::types::property::PropertyState;
-    use crate::types::schema::DefaultValue;
+    use crate::types::property_state::PropertyState;
 
     fn sample_prop(key: &str) -> NodeProperty {
         use crate::types::properties::property_values::PropertyValues;
@@ -183,7 +183,7 @@ mod tests {
         let default_value = DefaultValue::of(values.value_type());
         DefaultProperty::with_default(
             key.to_string(),
-            PropertyState::Normal,
+            PropertyState::Persistent,
             values,
             default_value,
         )

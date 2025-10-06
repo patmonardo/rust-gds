@@ -1,4 +1,4 @@
-use crate::types::property::ValueType;
+use crate::types::value_type::ValueType;
 use std::collections::HashMap;
 
 /// A unified value representation that can hold scalars, arrays, and maps.

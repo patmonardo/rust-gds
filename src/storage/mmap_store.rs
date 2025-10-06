@@ -3,7 +3,7 @@ use std::{collections::HashMap, fs::File, path::PathBuf, sync::Arc};
 use memmap2::{Mmap, MmapOptions};
 use polars::prelude::*;
 
-use crate::types::property::PropertySchema;
+use crate::types::schema::PropertySchema;
 
 /// A single column persisted as an Arrow IPC file and memory-mapped on demand.
 /// `column_name` is the column inside the IPC file that holds the Series we want.
