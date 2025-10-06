@@ -5,7 +5,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use crate::{node_double_property_values_impl, property_values_impl};
 
 /// Default implementation for double node property values.
@@ -25,12 +24,7 @@ impl DefaultDoubleNodePropertyValues {
 }
 
 // Generate PropertyValues trait implementation
-property_values_impl!(
-    DefaultDoubleNodePropertyValues,
-    Double,
-    f64,
-    PropertyValue::Double
-);
+property_values_impl!(DefaultDoubleNodePropertyValues, Double);
 
 // Generate complete NodePropertyValues trait implementation with all conversions and errors
 node_double_property_values_impl!(DefaultDoubleNodePropertyValues);

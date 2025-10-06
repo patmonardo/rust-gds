@@ -1,10 +1,9 @@
-pub mod cursor;
+// pub mod cursor;  // TODO: Disabled - needs redesign after PropertyValue enum removal
 pub mod default_value;
 pub mod graph;
 pub mod graph_store;
 pub mod properties;
 pub mod property_state;
-pub mod property_value;
 pub mod random;
 pub mod schema;
 pub mod value_type;

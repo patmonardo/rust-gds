@@ -4,7 +4,6 @@ use crate::types::properties::graph::graph_property_values::{
 };
 use crate::types::properties::property_values::PropertyValues;
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for float array graph property values.
@@ -33,13 +32,7 @@ impl DefaultFloatArrayGraphPropertyValues {
 }
 
 // Generate PropertyValues trait implementation for arrays
-property_values_impl!(
-    DefaultFloatArrayGraphPropertyValues,
-    FloatArray,
-    Vec<f32>,
-    PropertyValue::FloatArray,
-    graph_array
-);
+property_values_impl!(DefaultFloatArrayGraphPropertyValues, FloatArray, graph_array);
 
 // Manual GraphPropertyValues implementation (iterator-based)
 impl GraphPropertyValues for DefaultFloatArrayGraphPropertyValues {

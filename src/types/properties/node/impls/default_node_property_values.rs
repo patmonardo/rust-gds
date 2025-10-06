@@ -6,7 +6,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use crate::{
     node_double_array_property_values_impl, node_double_property_values_impl,
     node_float_array_property_values_impl, node_long_array_property_values_impl,
@@ -26,12 +25,7 @@ impl DefaultLongNodePropertyValues {
     }
 }
 
-property_values_impl!(
-    DefaultLongNodePropertyValues,
-    Long,
-    i64,
-    PropertyValue::Long
-);
+property_values_impl!(DefaultLongNodePropertyValues, Long);
 
 node_long_property_values_impl!(DefaultLongNodePropertyValues);
 
@@ -54,12 +48,7 @@ impl DefaultDoubleNodePropertyValues {
     }
 }
 
-property_values_impl!(
-    DefaultDoubleNodePropertyValues,
-    Double,
-    f64,
-    PropertyValue::Double
-);
+property_values_impl!(DefaultDoubleNodePropertyValues, Double);
 
 node_double_property_values_impl!(DefaultDoubleNodePropertyValues);
 
@@ -88,13 +77,7 @@ impl DefaultDoubleArrayNodePropertyValues {
     }
 }
 
-property_values_impl!(
-    DefaultDoubleArrayNodePropertyValues,
-    DoubleArray,
-    Vec<f64>,
-    PropertyValue::DoubleArray,
-    array
-);
+property_values_impl!(DefaultDoubleArrayNodePropertyValues, DoubleArray, array);
 
 node_double_array_property_values_impl!(DefaultDoubleArrayNodePropertyValues);
 
@@ -123,13 +106,7 @@ impl DefaultFloatArrayNodePropertyValues {
     }
 }
 
-property_values_impl!(
-    DefaultFloatArrayNodePropertyValues,
-    FloatArray,
-    Vec<f32>,
-    PropertyValue::FloatArray,
-    array
-);
+property_values_impl!(DefaultFloatArrayNodePropertyValues, FloatArray, array);
 
 node_float_array_property_values_impl!(DefaultFloatArrayNodePropertyValues);
 
@@ -158,13 +135,7 @@ impl DefaultLongArrayNodePropertyValues {
     }
 }
 
-property_values_impl!(
-    DefaultLongArrayNodePropertyValues,
-    LongArray,
-    Vec<i64>,
-    PropertyValue::LongArray,
-    array
-);
+property_values_impl!(DefaultLongArrayNodePropertyValues, LongArray, array);
 
 node_long_array_property_values_impl!(DefaultLongArrayNodePropertyValues);
 

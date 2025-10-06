@@ -477,13 +477,13 @@ mod tests {
     #[test]
     fn test_user_defined_values() {
         assert_eq!(DefaultValue::long(42).long_value().unwrap(), 42);
-        assert_eq!(DefaultValue::double(3.14).double_value().unwrap(), 3.14);
+        assert_eq!(DefaultValue::double(2.5).double_value().unwrap(), 2.5);
         assert_eq!(DefaultValue::int(100).long_value().unwrap(), 100);
         assert_eq!(
             DefaultValue::string("hello").string_value().unwrap(),
             "hello"
         );
-        assert_eq!(DefaultValue::boolean(true).boolean_value().unwrap(), true);
+        assert!(DefaultValue::boolean(true).boolean_value().unwrap());
     }
 
     #[test]
@@ -517,7 +517,7 @@ mod tests {
         assert!(long_val.validate_for_type(ValueType::Long).is_ok());
         assert!(long_val.validate_for_type(ValueType::Double).is_err());
 
-        let double_val = DefaultValue::double(3.14);
+        let double_val = DefaultValue::double(2.5);
         assert!(double_val.validate_for_type(ValueType::Double).is_ok());
     }
 

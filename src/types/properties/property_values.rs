@@ -1,4 +1,3 @@
-use crate::types::property_value::PropertyValue;
 use crate::types::value_type::ValueType;
 use thiserror::Error;
 
@@ -21,7 +20,8 @@ use thiserror::Error;
 /// - `src/types/properties/relationship/impls/values/`
 #[macro_export]
 macro_rules! property_values_impl {
-    ($struct_name:ident, $value_type:ident, $rust_type:ty, $property_value_variant:expr) => {
+    // Base variant: For node properties with node_count field
+    ($struct_name:ident, $value_type:ident) => {
         impl PropertyValues for $struct_name {
             fn value_type(&self) -> ValueType {
                 ValueType::$value_type
@@ -30,13 +30,10 @@ macro_rules! property_values_impl {
             fn element_count(&self) -> usize {
                 self.node_count
             }
-
-            fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
-                self.values.get(index).map(|&v| $property_value_variant(v))
-            }
         }
     };
-    ($struct_name:ident, $value_type:ident, $rust_type:ty, $property_value_variant:expr, relationship) => {
+    // Relationship variant: Uses element_count field instead of node_count
+    ($struct_name:ident, $value_type:ident, relationship) => {
         impl PropertyValues for $struct_name {
             fn value_type(&self) -> ValueType {
                 ValueType::$value_type
@@ -45,13 +42,10 @@ macro_rules! property_values_impl {
             fn element_count(&self) -> usize {
                 self.element_count
             }
-
-            fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
-                self.values.get(index).map(|&v| $property_value_variant(v))
-            }
         }
     };
-    ($struct_name:ident, $value_type:ident, $rust_type:ty, $property_value_variant:expr, array) => {
+    // Array variant: For node array properties (same as base, using node_count)
+    ($struct_name:ident, $value_type:ident, array) => {
         impl PropertyValues for $struct_name {
             fn value_type(&self) -> ValueType {
                 ValueType::$value_type
@@ -60,15 +54,10 @@ macro_rules! property_values_impl {
             fn element_count(&self) -> usize {
                 self.node_count
             }
-
-            fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
-                self.values
-                    .get(index)
-                    .and_then(|v| v.as_ref().map(|arr| $property_value_variant(arr.clone())))
-            }
         }
     };
-    ($struct_name:ident, $value_type:ident, $rust_type:ty, $property_value_variant:expr, graph) => {
+    // Graph variant: element_count based on values.len()
+    ($struct_name:ident, $value_type:ident, graph) => {
         impl PropertyValues for $struct_name {
             fn value_type(&self) -> ValueType {
                 ValueType::$value_type
@@ -77,13 +66,10 @@ macro_rules! property_values_impl {
             fn element_count(&self) -> usize {
                 self.values.len()
             }
-
-            fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
-                self.values.get(index).map(|&v| $property_value_variant(v))
-            }
         }
     };
-    ($struct_name:ident, $value_type:ident, $rust_type:ty, $property_value_variant:expr, graph_array) => {
+    // Graph array variant: element_count based on values.len()
+    ($struct_name:ident, $value_type:ident, graph_array) => {
         impl PropertyValues for $struct_name {
             fn value_type(&self) -> ValueType {
                 ValueType::$value_type
@@ -91,12 +77,6 @@ macro_rules! property_values_impl {
 
             fn element_count(&self) -> usize {
                 self.values.len()
-            }
-
-            fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
-                self.values
-                    .get(index)
-                    .map(|v| $property_value_variant(v.clone()))
             }
         }
     };
@@ -457,10 +437,6 @@ pub trait PropertyValues: Send + Sync + std::fmt::Debug {
     /// For node properties, this is the node count.
     /// For graph properties, this is the value count.
     fn element_count(&self) -> usize;
-
-    /// Unified accessor that returns a PropertyValue enum variant for the given index.
-    /// This provides a single interface for accessing all property value types.
-    fn get_property_value(&self, index: usize) -> Option<PropertyValue>;
 }
 
 impl PropertyValuesError {
@@ -485,10 +461,6 @@ impl PropertyValues for Box<dyn PropertyValues> {
 
     fn element_count(&self) -> usize {
         (**self).element_count()
-    }
-
-    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
-        (**self).get_property_value(index)
     }
 }
 

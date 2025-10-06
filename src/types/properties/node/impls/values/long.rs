@@ -5,7 +5,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use crate::{node_long_property_values_impl, property_values_impl};
 
 /// Default implementation for long node property values.
@@ -25,12 +24,7 @@ impl DefaultLongNodePropertyValues {
 }
 
 // Generate PropertyValues trait implementation
-property_values_impl!(
-    DefaultLongNodePropertyValues,
-    Long,
-    i64,
-    PropertyValue::Long
-);
+property_values_impl!(DefaultLongNodePropertyValues, Long);
 
 // Generate complete NodePropertyValues trait implementation with all conversions and errors
 node_long_property_values_impl!(DefaultLongNodePropertyValues);

@@ -5,7 +5,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use crate::{node_double_array_property_values_impl, property_values_impl};
 
 /// Default implementation for double array node property values.
@@ -32,13 +31,7 @@ impl DefaultDoubleArrayNodePropertyValues {
 }
 
 // Generate PropertyValues trait implementation for arrays
-property_values_impl!(
-    DefaultDoubleArrayNodePropertyValues,
-    DoubleArray,
-    Vec<f64>,
-    PropertyValue::DoubleArray,
-    array
-);
+property_values_impl!(DefaultDoubleArrayNodePropertyValues, DoubleArray, array);
 
 // Generate complete NodePropertyValues trait implementation with all conversions and errors
 node_double_array_property_values_impl!(DefaultDoubleArrayNodePropertyValues);

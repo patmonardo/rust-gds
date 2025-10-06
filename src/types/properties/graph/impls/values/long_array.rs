@@ -4,7 +4,6 @@ use crate::types::properties::graph::graph_property_values::{
 };
 use crate::types::properties::property_values::PropertyValues;
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for long array graph property values.
@@ -33,13 +32,8 @@ impl DefaultLongArrayGraphPropertyValues {
 }
 
 // Generate PropertyValues trait implementation for arrays
-property_values_impl!(
-    DefaultLongArrayGraphPropertyValues,
-    LongArray,
-    Vec<i64>,
-    PropertyValue::LongArray,
-    graph_array
-);
+// Generate PropertyValues trait implementation for graph-level long arrays
+property_values_impl!(DefaultLongArrayGraphPropertyValues, LongArray, graph_array);
 
 // Manual GraphPropertyValues implementation (iterator-based)
 impl GraphPropertyValues for DefaultLongArrayGraphPropertyValues {

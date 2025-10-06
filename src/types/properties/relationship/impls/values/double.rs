@@ -3,7 +3,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use crate::types::property_value::PropertyValue;
 use crate::types::value_type::ValueType;
 
 /// Default implementation for relationship property values storing `f64` entries.
@@ -46,13 +45,7 @@ impl DefaultRelationshipPropertyValues {
 }
 
 // Generate PropertyValues trait implementation
-property_values_impl!(
-    DefaultRelationshipPropertyValues,
-    Double,
-    f64,
-    PropertyValue::Double,
-    relationship
-);
+property_values_impl!(DefaultRelationshipPropertyValues, Double, relationship);
 
 // Manual RelationshipPropertyValues implementation
 impl RelationshipPropertyValues for DefaultRelationshipPropertyValues {
@@ -140,19 +133,5 @@ mod tests {
         let obj = values.get_object(0).unwrap();
         let double_val = obj.downcast_ref::<f64>().unwrap();
         assert_eq!(*double_val, 42.0);
-    }
-
-    #[test]
-    fn test_unified_property_value_accessor() {
-        let values = DefaultRelationshipPropertyValues::new(vec![1.5, 2.5, 3.5], 0.0, 3);
-
-        let val0 = values.get_property_value(0);
-        assert!(matches!(val0, Some(PropertyValue::Double(v)) if v == 1.5));
-
-        let val1 = values.get_property_value(1);
-        assert!(matches!(val1, Some(PropertyValue::Double(v)) if v == 2.5));
-
-        let val_oob = values.get_property_value(10);
-        assert!(val_oob.is_none());
     }
 }

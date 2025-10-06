@@ -5,7 +5,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use crate::{node_float_array_property_values_impl, property_values_impl};
 
 /// Default implementation for float array node property values.
@@ -32,13 +31,7 @@ impl DefaultFloatArrayNodePropertyValues {
 }
 
 // Generate PropertyValues trait implementation for arrays
-property_values_impl!(
-    DefaultFloatArrayNodePropertyValues,
-    FloatArray,
-    Vec<f32>,
-    PropertyValue::FloatArray,
-    array
-);
+property_values_impl!(DefaultFloatArrayNodePropertyValues, FloatArray, array);
 
 // Generate complete NodePropertyValues trait implementation with all conversions and errors
 node_float_array_property_values_impl!(DefaultFloatArrayNodePropertyValues);

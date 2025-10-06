@@ -4,7 +4,6 @@ use crate::types::properties::graph::graph_property_values::{
 };
 use crate::types::properties::property_values::PropertyValues;
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for double array graph property values.
@@ -39,8 +38,6 @@ impl DefaultDoubleArrayGraphPropertyValues {
 property_values_impl!(
     DefaultDoubleArrayGraphPropertyValues,
     DoubleArray,
-    Vec<f64>,
-    PropertyValue::DoubleArray,
     graph_array
 );
 

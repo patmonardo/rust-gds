@@ -3,7 +3,6 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use crate::types::property_value::PropertyValue;
 use crate::types::value_type::ValueType;
 
 /// Default implementation for relationship property values storing `f64`
@@ -29,13 +28,7 @@ impl DefaultRelationshipPropertyValues {
     }
 }
 
-property_values_impl!(
-    DefaultRelationshipPropertyValues,
-    Double,
-    f64,
-    PropertyValue::Double,
-    relationship
-);
+property_values_impl!(DefaultRelationshipPropertyValues, Double, relationship);
 
 impl RelationshipPropertyValues for DefaultRelationshipPropertyValues {
     fn double_value(&self, rel_index: u64) -> PropertyValuesResult<f64> {

@@ -4,7 +4,6 @@ use crate::types::properties::graph::graph_property_values::{
 };
 use crate::types::properties::property_values::PropertyValues;
 use crate::types::value_type::ValueType;
-use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for double graph property values.
@@ -31,13 +30,7 @@ impl DefaultDoubleGraphPropertyValues {
 }
 
 // Generate PropertyValues trait implementation
-property_values_impl!(
-    DefaultDoubleGraphPropertyValues,
-    Double,
-    f64,
-    PropertyValue::Double,
-    graph
-);
+property_values_impl!(DefaultDoubleGraphPropertyValues, Double, graph);
 
 // Manual GraphPropertyValues implementation (iterator-based)
 impl GraphPropertyValues for DefaultDoubleGraphPropertyValues {
