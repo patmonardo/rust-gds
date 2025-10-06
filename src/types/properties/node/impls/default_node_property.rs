@@ -1,5 +1,5 @@
 use crate::types::properties::node::node_property_values::NodePropertyValues;
-use crate::types::properties::property::PropertyTrait;
+use crate::types::properties::property::Property;
 use crate::types::property::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
 use std::sync::Arc;
@@ -73,7 +73,7 @@ impl DefaultNodeProperty {
     }
 }
 
-impl PropertyTrait for DefaultNodeProperty {
+impl Property for DefaultNodeProperty {
     type Values = Arc<dyn NodePropertyValues>;
 
     fn values(&self) -> &Self::Values {

@@ -1,5 +1,5 @@
 use crate::types::properties::graph::graph_property_values::GraphPropertyValues;
-use crate::types::properties::property::PropertyTrait;
+use crate::types::properties::property::Property;
 use crate::types::property::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
 use std::sync::Arc;
@@ -75,7 +75,7 @@ impl DefaultGraphProperty {
     }
 }
 
-impl PropertyTrait for DefaultGraphProperty {
+impl Property for DefaultGraphProperty {
     type Values = Arc<dyn GraphPropertyValues>;
 
     fn values(&self) -> &Self::Values {
