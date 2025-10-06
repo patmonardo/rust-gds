@@ -23,7 +23,7 @@ pub trait NodePropertyStore {
     fn get_property(&self, property_key: &str) -> Option<&Self::Property>;
     fn get_all_properties(&self) -> Vec<&Self::Property>;
     fn get_property_values(&self, property_key: &str) -> Option<&dyn NodePropertyValues>;
-    fn count(&self) -> usize;
+    fn size(&self) -> usize;
     fn is_empty(&self) -> bool;
     fn to_builder(&self) -> Self::Builder;
 }

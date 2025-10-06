@@ -6,6 +6,12 @@ use crate::types::properties::property_values::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
 use crate::types::property::ValueType;
+use crate::types::property_value::PropertyValue;
+use crate::{
+    node_double_array_property_values_impl, node_double_property_values_impl,
+    node_float_array_property_values_impl, node_long_array_property_values_impl,
+    node_long_property_values_impl, property_values_impl,
+};
 
 /// Default implementation for long node property values.
 #[derive(Debug, Clone)]
@@ -20,69 +26,14 @@ impl DefaultLongNodePropertyValues {
     }
 }
 
-impl PropertyValues for DefaultLongNodePropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::Long
-    }
+property_values_impl!(
+    DefaultLongNodePropertyValues,
+    Long,
+    i64,
+    PropertyValue::Long
+);
 
-    fn element_count(&self) -> usize {
-        self.node_count
-    }
-}
-
-impl NodePropertyValues for DefaultLongNodePropertyValues {
-    fn double_value(&self, node_id: u64) -> PropertyValuesResult<f64> {
-        Ok(self.long_value(node_id)? as f64)
-    }
-
-    fn long_value(&self, node_id: u64) -> PropertyValuesResult<i64> {
-        self.values
-            .get(node_id as usize)
-            .copied()
-            .ok_or(PropertyValuesError::InvalidNodeId(node_id))
-    }
-
-    fn double_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::DoubleArray,
-        ))
-    }
-
-    fn float_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f32>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::FloatArray,
-        ))
-    }
-
-    fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::LongArray,
-        ))
-    }
-
-    fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.long_value(node_id)?))
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        Some(1)
-    }
-
-    fn get_max_long_property_value(&self) -> Option<i64> {
-        self.values.iter().max().copied()
-    }
-
-    fn get_max_double_property_value(&self) -> Option<f64> {
-        self.get_max_long_property_value().map(|v| v as f64)
-    }
-
-    fn has_value(&self, node_id: u64) -> bool {
-        (node_id as usize) < self.values.len()
-    }
-}
+node_long_property_values_impl!(DefaultLongNodePropertyValues);
 
 impl LongNodePropertyValues for DefaultLongNodePropertyValues {
     fn long_value_unchecked(&self, node_id: u64) -> i64 {
@@ -103,72 +54,14 @@ impl DefaultDoubleNodePropertyValues {
     }
 }
 
-impl PropertyValues for DefaultDoubleNodePropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::Double
-    }
+property_values_impl!(
+    DefaultDoubleNodePropertyValues,
+    Double,
+    f64,
+    PropertyValue::Double
+);
 
-    fn element_count(&self) -> usize {
-        self.node_count
-    }
-}
-
-impl NodePropertyValues for DefaultDoubleNodePropertyValues {
-    fn double_value(&self, node_id: u64) -> PropertyValuesResult<f64> {
-        self.values
-            .get(node_id as usize)
-            .copied()
-            .ok_or(PropertyValuesError::InvalidNodeId(node_id))
-    }
-
-    fn long_value(&self, node_id: u64) -> PropertyValuesResult<i64> {
-        Ok(self.double_value(node_id)? as i64)
-    }
-
-    fn double_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::DoubleArray,
-        ))
-    }
-
-    fn float_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f32>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::FloatArray,
-        ))
-    }
-
-    fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::LongArray,
-        ))
-    }
-
-    fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.double_value(node_id)?))
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        Some(1)
-    }
-
-    fn get_max_long_property_value(&self) -> Option<i64> {
-        self.get_max_double_property_value().map(|v| v as i64)
-    }
-
-    fn get_max_double_property_value(&self) -> Option<f64> {
-        self.values
-            .iter()
-            .copied()
-            .fold(None, |max, v| Some(max.map_or(v, |m| f64::max(m, v))))
-    }
-
-    fn has_value(&self, node_id: u64) -> bool {
-        (node_id as usize) < self.values.len()
-    }
-}
+node_double_property_values_impl!(DefaultDoubleNodePropertyValues);
 
 impl DoubleNodePropertyValues for DefaultDoubleNodePropertyValues {
     fn double_value_unchecked(&self, node_id: u64) -> f64 {
@@ -195,76 +88,15 @@ impl DefaultDoubleArrayNodePropertyValues {
     }
 }
 
-impl PropertyValues for DefaultDoubleArrayNodePropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::DoubleArray
-    }
+property_values_impl!(
+    DefaultDoubleArrayNodePropertyValues,
+    DoubleArray,
+    Vec<f64>,
+    PropertyValue::DoubleArray,
+    array
+);
 
-    fn element_count(&self) -> usize {
-        self.node_count
-    }
-}
-
-impl NodePropertyValues for DefaultDoubleArrayNodePropertyValues {
-    fn double_value(&self, _node_id: u64) -> PropertyValuesResult<f64> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::Double,
-        ))
-    }
-
-    fn long_value(&self, _node_id: u64) -> PropertyValuesResult<i64> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::Long,
-        ))
-    }
-
-    fn double_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f64>> {
-        self.values
-            .get(node_id as usize)
-            .and_then(|v| v.clone())
-            .ok_or(PropertyValuesError::InvalidNodeId(node_id))
-    }
-
-    fn float_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f32>> {
-        Ok(self
-            .double_array_value(node_id)?
-            .iter()
-            .map(|&v| v as f32)
-            .collect())
-    }
-
-    fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::LongArray,
-        ))
-    }
-
-    fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.double_array_value(node_id)?))
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        self.dimension
-    }
-
-    fn get_max_long_property_value(&self) -> Option<i64> {
-        None
-    }
-
-    fn get_max_double_property_value(&self) -> Option<f64> {
-        None
-    }
-
-    fn has_value(&self, node_id: u64) -> bool {
-        self.values
-            .get(node_id as usize)
-            .and_then(|v| v.as_ref())
-            .is_some()
-    }
-}
+node_double_array_property_values_impl!(DefaultDoubleArrayNodePropertyValues);
 
 impl DoubleArrayNodePropertyValues for DefaultDoubleArrayNodePropertyValues {
     fn double_array_value_unchecked(&self, node_id: u64) -> Option<Vec<f64>> {
@@ -291,76 +123,15 @@ impl DefaultFloatArrayNodePropertyValues {
     }
 }
 
-impl PropertyValues for DefaultFloatArrayNodePropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::FloatArray
-    }
+property_values_impl!(
+    DefaultFloatArrayNodePropertyValues,
+    FloatArray,
+    Vec<f32>,
+    PropertyValue::FloatArray,
+    array
+);
 
-    fn element_count(&self) -> usize {
-        self.node_count
-    }
-}
-
-impl NodePropertyValues for DefaultFloatArrayNodePropertyValues {
-    fn double_value(&self, _node_id: u64) -> PropertyValuesResult<f64> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::Double,
-        ))
-    }
-
-    fn long_value(&self, _node_id: u64) -> PropertyValuesResult<i64> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::Long,
-        ))
-    }
-
-    fn double_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f64>> {
-        Ok(self
-            .float_array_value(node_id)?
-            .iter()
-            .map(|&v| v as f64)
-            .collect())
-    }
-
-    fn float_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f32>> {
-        self.values
-            .get(node_id as usize)
-            .and_then(|v| v.clone())
-            .ok_or(PropertyValuesError::InvalidNodeId(node_id))
-    }
-
-    fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::LongArray,
-        ))
-    }
-
-    fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.float_array_value(node_id)?))
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        self.dimension
-    }
-
-    fn get_max_long_property_value(&self) -> Option<i64> {
-        None
-    }
-
-    fn get_max_double_property_value(&self) -> Option<f64> {
-        None
-    }
-
-    fn has_value(&self, node_id: u64) -> bool {
-        self.values
-            .get(node_id as usize)
-            .and_then(|v| v.as_ref())
-            .is_some()
-    }
-}
+node_float_array_property_values_impl!(DefaultFloatArrayNodePropertyValues);
 
 impl FloatArrayNodePropertyValues for DefaultFloatArrayNodePropertyValues {
     fn float_array_value_unchecked(&self, node_id: u64) -> Option<Vec<f32>> {
@@ -387,75 +158,15 @@ impl DefaultLongArrayNodePropertyValues {
     }
 }
 
-impl PropertyValues for DefaultLongArrayNodePropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::LongArray
-    }
+property_values_impl!(
+    DefaultLongArrayNodePropertyValues,
+    LongArray,
+    Vec<i64>,
+    PropertyValue::LongArray,
+    array
+);
 
-    fn element_count(&self) -> usize {
-        self.node_count
-    }
-}
-
-impl NodePropertyValues for DefaultLongArrayNodePropertyValues {
-    fn double_value(&self, _node_id: u64) -> PropertyValuesResult<f64> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::Double,
-        ))
-    }
-
-    fn long_value(&self, _node_id: u64) -> PropertyValuesResult<i64> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::Long,
-        ))
-    }
-
-    fn double_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f64>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::DoubleArray,
-        ))
-    }
-
-    fn float_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f32>> {
-        Err(PropertyValuesError::unsupported_type(
-            self.value_type(),
-            ValueType::FloatArray,
-        ))
-    }
-
-    fn long_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<i64>> {
-        self.values
-            .get(node_id as usize)
-            .and_then(|v| v.clone())
-            .ok_or(PropertyValuesError::InvalidNodeId(node_id))
-    }
-
-    fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.long_array_value(node_id)?))
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        self.dimension
-    }
-
-    fn get_max_long_property_value(&self) -> Option<i64> {
-        None
-    }
-
-    fn get_max_double_property_value(&self) -> Option<f64> {
-        None
-    }
-
-    fn has_value(&self, node_id: u64) -> bool {
-        self.values
-            .get(node_id as usize)
-            .and_then(|v| v.as_ref())
-            .is_some()
-    }
-}
+node_long_array_property_values_impl!(DefaultLongArrayNodePropertyValues);
 
 impl LongArrayNodePropertyValues for DefaultLongArrayNodePropertyValues {
     fn long_array_value_unchecked(&self, node_id: u64) -> Option<Vec<i64>> {

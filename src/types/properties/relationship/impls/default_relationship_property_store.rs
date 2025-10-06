@@ -18,6 +18,7 @@ pub struct DefaultRelationshipPropertyStoreBuilder {
     properties: HashMap<String, RelationshipProperty>,
 }
 
+/* Store trait implementation */
 impl RelationshipPropertyStore for DefaultRelationshipPropertyStore {
     type Property = RelationshipProperty;
     type Builder = DefaultRelationshipPropertyStoreBuilder;
@@ -71,6 +72,7 @@ impl RelationshipPropertyStore for DefaultRelationshipPropertyStore {
     }
 }
 
+/* Builder trait implementation */
 impl RelationshipPropertyStoreBuilder for DefaultRelationshipPropertyStoreBuilder {
     type Store = DefaultRelationshipPropertyStore;
     type Property = RelationshipProperty;
@@ -115,7 +117,7 @@ impl RelationshipPropertyStoreBuilder for DefaultRelationshipPropertyStoreBuilde
     }
 }
 
-// Direct method implementations for convenience (without requiring trait import)
+/* Inherent convenience methods for the store (ergonomics without trait import) */
 impl DefaultRelationshipPropertyStore {
     /// Returns the number of properties in this store.
     pub fn len(&self) -> usize {
@@ -144,7 +146,7 @@ impl DefaultRelationshipPropertyStore {
     }
 }
 
-// Inherent convenience methods for the builder (do not belong to the trait)
+/* Inherent convenience methods for the builder (do not belong to the trait) */
 impl DefaultRelationshipPropertyStoreBuilder {
     /// Convenience method to add a property by supplying property values directly.
     /// Reduces imports for callers who just want to add a property by values.

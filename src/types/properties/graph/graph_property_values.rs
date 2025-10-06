@@ -1,5 +1,6 @@
 use crate::types::properties::property_values::PropertyValues;
 use crate::types::property::ValueType;
+use crate::types::property_value::PropertyValue;
 use std::any::Any;
 use std::sync::Arc;
 
@@ -81,6 +82,10 @@ impl PropertyValues for Box<dyn GraphPropertyValues> {
     fn element_count(&self) -> usize {
         (**self).element_count()
     }
+
+    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
+        (**self).get_property_value(index)
+    }
 }
 
 impl PropertyValues for Arc<dyn GraphPropertyValues> {
@@ -90,5 +95,9 @@ impl PropertyValues for Arc<dyn GraphPropertyValues> {
 
     fn element_count(&self) -> usize {
         (**self).element_count()
+    }
+
+    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
+        (**self).get_property_value(index)
     }
 }

@@ -1,6 +1,5 @@
 use super::graph_property_values::GraphPropertyValues;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 /// Abstraction describing the behaviour expected from any graph property store.
 pub trait GraphPropertyStore {
@@ -46,9 +45,10 @@ pub trait GraphPropertyStoreBuilder {
     fn new() -> Self;
     fn from_store(store: &Self::Store) -> Self;
 
-    fn put_property(self, key: impl Into<String>, values: Arc<dyn GraphPropertyValues>) -> Self;
-
+    fn properties(self, props: HashMap<String, Self::Property>) -> Self;
+    fn put_if_absent(self, key: impl Into<String>, property: Self::Property) -> Self;
     fn put(self, key: impl Into<String>, property: Self::Property) -> Self;
+    fn remove_property(self, key: &str) -> Self;
 
     fn build(self) -> Self::Store;
 }

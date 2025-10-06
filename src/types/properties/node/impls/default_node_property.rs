@@ -1,72 +1,83 @@
-use crate::types::properties::node::node_property::NodeProperty;
 use crate::types::properties::node::node_property_values::NodePropertyValues;
 use crate::types::properties::property::PropertyTrait;
 use crate::types::property::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
+use std::sync::Arc;
 
 /// Default concrete implementation of a node property.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DefaultNodeProperty {
-    values: Box<dyn NodePropertyValues>,
+    values: Arc<dyn NodePropertyValues>,
     schema: PropertySchema,
 }
 
 impl DefaultNodeProperty {
-    /// Creates a new node property with an auto-computed default value.
-    pub fn of(
-        key: impl Into<String>,
-        state: PropertyState,
-        values: Box<dyn NodePropertyValues>,
-    ) -> Self {
-        let value_type = values.value_type();
-        let default_value = DefaultValue::of(value_type);
-        let schema = PropertySchema::new(key, value_type, default_value, state);
-        Self { values, schema }
+    /// Construct a node property using the default `PropertyState::Normal`.
+    pub fn of(key: impl Into<String>, values: Arc<dyn NodePropertyValues>) -> Self {
+        Self::with_state(key, PropertyState::Normal, values)
     }
 
-    /// Creates a node property with an explicit default value.
+    /// Construct a property with an explicit property state.
+    pub fn with_state(
+        key: impl Into<String>,
+        state: PropertyState,
+        values: Arc<dyn NodePropertyValues>,
+    ) -> Self {
+        let key_str = key.into();
+        let value_type = values.value_type();
+        let default_value = DefaultValue::of(value_type);
+        Self::with_schema(
+            PropertySchema::new(key_str, value_type, default_value, state),
+            values,
+        )
+    }
+
+    /// Construct a property with a provided default value in addition to the state.
     pub fn with_default(
         key: impl Into<String>,
         state: PropertyState,
-        values: Box<dyn NodePropertyValues>,
+        values: Arc<dyn NodePropertyValues>,
         default_value: DefaultValue,
     ) -> Self {
+        let key_str = key.into();
         let value_type = values.value_type();
-        let schema = PropertySchema::new(key, value_type, default_value, state);
+        Self::with_schema(
+            PropertySchema::new(key_str, value_type, default_value, state),
+            values,
+        )
+    }
+
+    /// Construct a property from an existing schema, reusing the provided values.
+    pub fn with_schema(schema: PropertySchema, values: Arc<dyn NodePropertyValues>) -> Self {
         Self { values, schema }
     }
 
-    /// Borrow the raw boxed values (internal helper if needed).
-    pub fn values_box(&self) -> &Box<dyn NodePropertyValues> {
-        &self.values
-    }
-}
-
-impl NodeProperty for DefaultNodeProperty {
-    fn key(&self) -> &str {
-        self.schema.key()
+    /// Returns the property values as a shared trait object.
+    pub fn values(&self) -> &dyn NodePropertyValues {
+        self.values.as_ref()
     }
 
-    fn property_state(&self) -> PropertyState {
-        self.schema.state()
+    /// Returns a cloned `Arc` handle to the underlying property values.
+    pub fn values_arc(&self) -> Arc<dyn NodePropertyValues> {
+        Arc::clone(&self.values)
     }
 
-    fn property_schema(&self) -> &PropertySchema {
+    /// Returns the node property schema.
+    pub fn property_schema(&self) -> &PropertySchema {
         &self.schema
     }
 
-    fn values(&self) -> &dyn NodePropertyValues {
-        self.values.as_ref()
+    /// Convenience accessor for the property key.
+    pub fn key(&self) -> &str {
+        self.schema.key()
     }
 }
 
 impl PropertyTrait for DefaultNodeProperty {
-    fn key(&self) -> &str {
-        self.schema.key()
-    }
+    type Values = Arc<dyn NodePropertyValues>;
 
-    fn property_state(&self) -> PropertyState {
-        self.schema.state()
+    fn values(&self) -> &Self::Values {
+        &self.values
     }
 
     fn property_schema(&self) -> &PropertySchema {
@@ -78,25 +89,58 @@ impl PropertyTrait for DefaultNodeProperty {
 mod tests {
     use super::*;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
+    use crate::types::properties::property_values::PropertyValues;
 
     #[test]
-    fn create_default_node_property() {
-        let values = Box::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
-        let prop = DefaultNodeProperty::of("age", PropertyState::Normal, values);
-        assert_eq!(prop.key(), "age");
-        assert_eq!(prop.property_state(), PropertyState::Normal);
+    fn default_node_property_creation() {
+        let values: Arc<dyn NodePropertyValues> =
+            Arc::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
+        let property = DefaultNodeProperty::of("age", values.clone());
+
+        assert_eq!(property.key(), "age");
+        assert_eq!(property.property_schema().state(), PropertyState::Normal);
+        assert_eq!(property.property_schema().value_type(), values.value_type());
+        assert!(Arc::ptr_eq(&property.values_arc(), &values));
     }
 
     #[test]
-    fn create_with_explicit_default() {
-        let values = Box::new(DefaultLongNodePropertyValues::new(vec![10, 20], 2));
-        let default_value = DefaultValue::of(values.value_type());
-        let prop = DefaultNodeProperty::with_default(
+    fn node_property_with_state() {
+        let values: Arc<dyn NodePropertyValues> =
+            Arc::new(DefaultLongNodePropertyValues::new(vec![10, 20], 2));
+        let property = DefaultNodeProperty::with_state("rank", PropertyState::Deleted, values);
+
+        assert_eq!(property.key(), "rank");
+        assert_eq!(property.property_schema().state(), PropertyState::Deleted);
+    }
+
+    #[test]
+    fn node_property_with_explicit_default() {
+        let values: Arc<dyn NodePropertyValues> =
+            Arc::new(DefaultLongNodePropertyValues::new(vec![5, 6], 2));
+        let default_value = DefaultValue::Long(0);
+        let property = DefaultNodeProperty::with_default(
             "score",
             PropertyState::Normal,
             values,
-            default_value,
+            default_value.clone(),
         );
-        assert_eq!(prop.key(), "score");
+
+        assert_eq!(property.key(), "score");
+        assert_eq!(property.property_schema().default_value(), &default_value);
+    }
+
+    #[test]
+    fn node_property_values_access() {
+        let values: Arc<dyn NodePropertyValues> =
+            Arc::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
+        let property = DefaultNodeProperty::of("age", values);
+
+        // Test trait object access
+        let values_ref = property.values();
+        assert_eq!(values_ref.element_count(), 3);
+
+        // Test Arc access
+        let values_arc = property.values_arc();
+        assert_eq!(values_arc.element_count(), 3);
     }
 }

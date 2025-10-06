@@ -1,4 +1,5 @@
 use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
+use crate::types::property_value::PropertyValue;
 
 /// Represents properties of relationships in a graph.
 /// Provides access to relationship property values and metadata.
@@ -35,6 +36,10 @@ impl PropertyValues for Box<dyn RelationshipPropertyValues> {
     fn element_count(&self) -> usize {
         (**self).element_count()
     }
+
+    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
+        (**self).get_property_value(index)
+    }
 }
 
 // Implement PropertyValues for Arc<dyn RelationshipPropertyValues> to allow trait objects
@@ -45,5 +50,9 @@ impl PropertyValues for std::sync::Arc<dyn RelationshipPropertyValues> {
 
     fn element_count(&self) -> usize {
         (**self).element_count()
+    }
+
+    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
+        (**self).get_property_value(index)
     }
 }

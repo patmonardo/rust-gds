@@ -75,6 +75,7 @@ impl GraphPropertyStore for DefaultGraphPropertyStore {
     }
 }
 
+/* Builder trait implementation */
 impl GraphPropertyStoreBuilder for DefaultGraphPropertyStoreBuilder {
     type Store = DefaultGraphPropertyStore;
     type Property = GraphProperty;
@@ -91,7 +92,65 @@ impl GraphPropertyStoreBuilder for DefaultGraphPropertyStoreBuilder {
         }
     }
 
-    fn put_property(
+    fn properties(mut self, props: HashMap<String, Self::Property>) -> Self {
+        self.properties = props;
+        self
+    }
+
+    fn put_if_absent(mut self, key: impl Into<String>, property: Self::Property) -> Self {
+        let k = key.into();
+        self.properties.entry(k).or_insert(property);
+        self
+    }
+
+    fn put(mut self, key: impl Into<String>, property: Self::Property) -> Self {
+        self.properties.insert(key.into(), property);
+        self
+    }
+
+    fn remove_property(mut self, key: &str) -> Self {
+        self.properties.remove(key);
+        self
+    }
+
+    fn build(self) -> Self::Store {
+        DefaultGraphPropertyStore::new(self.properties)
+    }
+}
+
+/* Inherent convenience methods for the store (ergonomics without trait import) */
+impl DefaultGraphPropertyStore {
+    /// Returns the number of properties in this store.
+    pub fn len(&self) -> usize {
+        self.properties.len()
+    }
+
+    /// Returns whether this store is empty.
+    pub fn is_empty(&self) -> bool {
+        self.properties.is_empty()
+    }
+
+    /// Returns a reference to the property with the given key.
+    pub fn get(&self, key: &str) -> Option<&GraphProperty> {
+        self.properties.get(key)
+    }
+
+    /// Returns whether the store contains a property with the given key.
+    pub fn contains_key(&self, key: &str) -> bool {
+        self.properties.contains_key(key)
+    }
+
+    /// Returns a reference to the underlying properties map.
+    pub fn graph_properties(&self) -> &HashMap<String, GraphProperty> {
+        &self.properties
+    }
+}
+
+/* Inherent convenience methods for the builder (do not belong to the trait) */
+impl DefaultGraphPropertyStoreBuilder {
+    /// Convenience method to add a property by supplying property values directly.
+    /// This reduces imports for callers who just want to add values.
+    pub fn put_property(
         mut self,
         key: impl Into<String>,
         values: Arc<dyn GraphPropertyValues>,
@@ -103,14 +162,5 @@ impl GraphPropertyStoreBuilder for DefaultGraphPropertyStoreBuilder {
         let prop = Property::of(key_str.clone(), PropertyState::Normal, values);
         self.properties.insert(key_str, prop);
         self
-    }
-
-    fn put(mut self, key: impl Into<String>, property: Self::Property) -> Self {
-        self.properties.insert(key.into(), property);
-        self
-    }
-
-    fn build(self) -> Self::Store {
-        DefaultGraphPropertyStore::new(self.properties)
     }
 }

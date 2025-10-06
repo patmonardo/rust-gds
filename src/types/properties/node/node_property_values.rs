@@ -1,5 +1,6 @@
 use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
 use crate::types::property::ValueType;
+use crate::types::property_value::PropertyValue;
 
 /// Interface for accessing property values for nodes in a graph.
 /// Provides methods for retrieving values of different types for specific nodes.
@@ -87,6 +88,10 @@ impl PropertyValues for Box<dyn NodePropertyValues> {
     fn element_count(&self) -> usize {
         (**self).element_count()
     }
+
+    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
+        (**self).get_property_value(index)
+    }
 }
 
 // Implement PropertyValues for Arc<dyn NodePropertyValues> to allow trait objects
@@ -97,5 +102,9 @@ impl PropertyValues for std::sync::Arc<dyn NodePropertyValues> {
 
     fn element_count(&self) -> usize {
         (**self).element_count()
+    }
+
+    fn get_property_value(&self, index: usize) -> Option<PropertyValue> {
+        (**self).get_property_value(index)
     }
 }

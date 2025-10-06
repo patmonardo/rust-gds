@@ -1,9 +1,11 @@
+use crate::property_values_impl;
 use crate::types::properties::graph::graph_property_values::{
     DoubleArrayGraphPropertyValues, DoubleGraphPropertyValues, FloatArrayGraphPropertyValues,
     GraphPropertyValues, LongArrayGraphPropertyValues, LongGraphPropertyValues,
 };
 use crate::types::properties::property_values::PropertyValues;
 use crate::types::property::ValueType;
+use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 #[derive(Debug, Clone)]
@@ -25,15 +27,13 @@ impl DefaultLongGraphPropertyValues {
     }
 }
 
-impl PropertyValues for DefaultLongGraphPropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::Long
-    }
-
-    fn element_count(&self) -> usize {
-        self.values.len()
-    }
-}
+property_values_impl!(
+    DefaultLongGraphPropertyValues,
+    Long,
+    i64,
+    PropertyValue::Long,
+    graph
+);
 
 impl GraphPropertyValues for DefaultLongGraphPropertyValues {
     fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
@@ -96,15 +96,13 @@ impl DefaultDoubleGraphPropertyValues {
     }
 }
 
-impl PropertyValues for DefaultDoubleGraphPropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::Double
-    }
-
-    fn element_count(&self) -> usize {
-        self.values.len()
-    }
-}
+property_values_impl!(
+    DefaultDoubleGraphPropertyValues,
+    Double,
+    f64,
+    PropertyValue::Double,
+    graph
+);
 
 impl GraphPropertyValues for DefaultDoubleGraphPropertyValues {
     fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
@@ -169,15 +167,13 @@ impl DefaultDoubleArrayGraphPropertyValues {
     }
 }
 
-impl PropertyValues for DefaultDoubleArrayGraphPropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::DoubleArray
-    }
-
-    fn element_count(&self) -> usize {
-        self.values.len()
-    }
-}
+property_values_impl!(
+    DefaultDoubleArrayGraphPropertyValues,
+    DoubleArray,
+    Vec<f64>,
+    PropertyValue::DoubleArray,
+    graph_array
+);
 
 impl GraphPropertyValues for DefaultDoubleArrayGraphPropertyValues {
     fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
@@ -257,15 +253,13 @@ impl DefaultFloatArrayGraphPropertyValues {
     }
 }
 
-impl PropertyValues for DefaultFloatArrayGraphPropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::FloatArray
-    }
-
-    fn element_count(&self) -> usize {
-        self.values.len()
-    }
-}
+property_values_impl!(
+    DefaultFloatArrayGraphPropertyValues,
+    FloatArray,
+    Vec<f32>,
+    PropertyValue::FloatArray,
+    graph_array
+);
 
 impl GraphPropertyValues for DefaultFloatArrayGraphPropertyValues {
     fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
@@ -345,15 +339,13 @@ impl DefaultLongArrayGraphPropertyValues {
     }
 }
 
-impl PropertyValues for DefaultLongArrayGraphPropertyValues {
-    fn value_type(&self) -> ValueType {
-        ValueType::LongArray
-    }
-
-    fn element_count(&self) -> usize {
-        self.values.len()
-    }
-}
+property_values_impl!(
+    DefaultLongArrayGraphPropertyValues,
+    LongArray,
+    Vec<i64>,
+    PropertyValue::LongArray,
+    graph_array
+);
 
 impl GraphPropertyValues for DefaultLongArrayGraphPropertyValues {
     fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {

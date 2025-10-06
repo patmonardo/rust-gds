@@ -63,7 +63,7 @@ impl NodePropertyStore for DefaultNodePropertyStore {
             .map(|p| p.values().as_ref())
     }
 
-    fn count(&self) -> usize {
+    fn size(&self) -> usize {
         self.properties.len()
     }
 
@@ -123,7 +123,35 @@ impl NodePropertyStoreBuilder for DefaultNodePropertyStoreBuilder {
     }
 }
 
-// Inherent convenience methods for the builder (do not belong to the trait)
+/* Inherent convenience methods for the store (ergonomics without trait import) */
+impl DefaultNodePropertyStore {
+    /// Returns the number of properties in this store.
+    pub fn len(&self) -> usize {
+        self.properties.len()
+    }
+
+    /// Returns whether this store is empty.
+    pub fn is_empty(&self) -> bool {
+        self.properties.is_empty()
+    }
+
+    /// Returns a reference to the property with the given key.
+    pub fn get(&self, key: &str) -> Option<&NodeProperty> {
+        self.properties.get(key)
+    }
+
+    /// Returns whether the store contains a property with the given key.
+    pub fn contains_key(&self, key: &str) -> bool {
+        self.properties.contains_key(key)
+    }
+
+    /// Returns a reference to the underlying properties map.
+    pub fn node_properties(&self) -> &HashMap<String, NodeProperty> {
+        &self.properties
+    }
+}
+
+/* Inherent convenience methods for the builder (do not belong to the trait) */
 impl DefaultNodePropertyStoreBuilder {
     /// Convenience method to add a property by supplying property values directly.
     /// This mirrors `GraphPropertyStoreBuilder::put_property` and reduces imports for callers.
@@ -166,7 +194,7 @@ mod tests {
     fn empty_builder() {
         let store = DefaultNodePropertyStore::builder().build();
         assert!(store.is_empty());
-        assert_eq!(store.count(), 0);
+        assert_eq!(store.size(), 0);
     }
 
     #[test]
@@ -186,7 +214,7 @@ mod tests {
             .put_if_absent("level", p1)
             .put_if_absent("level", p2) // ignored
             .build();
-        assert_eq!(store.count(), 1);
+        assert_eq!(store.size(), 1);
     }
 
     #[test]
