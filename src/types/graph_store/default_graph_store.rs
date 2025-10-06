@@ -431,7 +431,7 @@ impl GraphStore for DefaultGraphStore {
             .relationship_property_stores
             .values()
             .find_map(|store| store.get(property_key))
-            .map(|property| property.values().value_type())
+            .map(|property| property.values.value_type())
         {
             return Ok(value_type);
         }
@@ -453,7 +453,17 @@ impl GraphStore for DefaultGraphStore {
         self.relationship_property_stores
             .get(relationship_type)
             .and_then(|store| store.get(property_key))
-            .map(|property| Arc::clone(property.values()))
+            .map(|property| {
+                // Cast Arc<dyn PropertyValues> to Arc<dyn RelationshipPropertyValues>
+                // SAFETY: By construction, RelationshipProperty only stores RelationshipPropertyValues
+                let arc_copy = Arc::clone(&property.values);
+                unsafe {
+                    std::mem::transmute::<
+                        Arc<dyn crate::types::properties::property_values::PropertyValues>,
+                        Arc<dyn RelationshipPropertyValues>,
+                    >(arc_copy)
+                }
+            })
             .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))
     }
 
@@ -491,7 +501,7 @@ impl GraphStore for DefaultGraphStore {
             .remove(relationship_type)
             .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))?;
 
-        if !store.has_property(property_key) {
+        if !store.contains_key(property_key) {
             // Restore the store since the property wasn't found
             self.relationship_property_stores
                 .insert(relationship_type.clone(), store);
@@ -594,9 +604,7 @@ mod tests {
             .expect("add relationship property");
 
         assert!(store.has_relationship_property(&rel_type, "weight"));
-        assert!(store
-            .relationship_property_keys()
-            .contains(&"weight".to_string()));
+        assert!(store.relationship_property_keys().contains("weight"));
         let retrieved = store
             .relationship_property_values(&rel_type, "weight")
             .expect("retrieve property");

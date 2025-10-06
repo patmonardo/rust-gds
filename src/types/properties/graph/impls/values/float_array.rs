@@ -8,7 +8,7 @@ use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for float array graph property values.
-/// 
+///
 /// Storage: Vec<Vec<f32>> - memory-efficient for graph-level array properties.
 /// Future: Can be replaced with Arrow2 ListArray<Float32Array> for columnar storage.
 #[derive(Debug, Clone)]

@@ -175,7 +175,9 @@ fn explore_graph_view(store: &DefaultGraphStore) -> GraphStoreResult<()> {
     println!("\n--- Graph View Access ---");
     println!("GraphStore::graph() creates an immutable Graph view.");
     println!("Graph views share property columns (Arc) and expose NodePropertyContainer trait.");
-    println!("This allows property queries directly on the graph without re-accessing the store.\n");
+    println!(
+        "This allows property queries directly on the graph without re-accessing the store.\n"
+    );
     let graph = store.graph();
     println!("Graph characteristics: {:?}", graph.characteristics());
 

@@ -8,7 +8,7 @@ use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for long array graph property values.
-/// 
+///
 /// Storage: Vec<Vec<i64>> - suitable for integer sequence graph properties.
 /// Future: Can be replaced with Arrow2 ListArray<Int64Array> for columnar storage.
 #[derive(Debug, Clone)]
@@ -121,10 +121,10 @@ mod tests {
     #[test]
     fn test_long_array_type_conversions() {
         let values = DefaultLongArrayGraphPropertyValues::new(vec![vec![1, 2], vec![3, 4]]);
-        
+
         let double_arrays: Vec<Vec<f64>> = values.double_array_values().collect();
         assert_eq!(double_arrays, vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-        
+
         let float_arrays: Vec<Vec<f32>> = values.float_array_values().collect();
         assert_eq!(float_arrays, vec![vec![1.0f32, 2.0], vec![3.0, 4.0]]);
     }

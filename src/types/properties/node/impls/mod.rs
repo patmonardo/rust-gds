@@ -8,9 +8,7 @@ pub mod default_node_property_values;
 // Modular value type implementations - each ValueType in its own file
 pub mod values;
 
-pub use default_node_property_store::{
-    DefaultNodePropertyStore, DefaultNodePropertyStoreBuilder,
-};
+pub use default_node_property_store::{DefaultNodePropertyStore, DefaultNodePropertyStoreBuilder};
 
 // Re-export all value types from the modular structure
 pub use values::{

@@ -1,9 +1,10 @@
 use super::graph_property_values::GraphPropertyValues;
+use crate::types::properties::property_store::PropertyStore;
 use std::collections::HashMap;
 
 /// Abstraction describing the behaviour expected from any graph property store.
-pub trait GraphPropertyStore {
-    type Property;
+/// Extends PropertyStore to inherit common map-like operations.
+pub trait GraphPropertyStore: PropertyStore {
     type Builder: GraphPropertyStoreBuilder<Store = Self, Property = Self::Property>;
 
     fn empty() -> Self
@@ -18,22 +19,9 @@ pub trait GraphPropertyStore {
     where
         Self: Sized;
 
-    fn has_property(&self, property_key: &str) -> bool;
-    fn property_key_set(&self) -> Vec<&str>;
-    fn get_property(&self, property_key: &str) -> Option<&Self::Property>;
-
-    fn get_property_or_null(&self, property_key: &str) -> Option<&Self::Property> {
-        self.get_property(property_key)
-    }
-
+    // Domain-specific methods
     fn get_all_properties(&self) -> Vec<&Self::Property>;
-
-    // Return a borrowed reference to the underlying values. Callers that need ownership
-    // can wrap it themselves if the concrete type exposes cloning.
     fn get_property_values(&self, property_key: &str) -> Option<&dyn GraphPropertyValues>;
-
-    fn size(&self) -> usize;
-    fn is_empty(&self) -> bool;
     fn to_builder(&self) -> Self::Builder;
 }
 

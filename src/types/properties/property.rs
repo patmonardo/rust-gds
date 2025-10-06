@@ -1,100 +1,72 @@
 use super::property_values::PropertyValues;
-use crate::types::property::{PropertyState, ValueType};
+use crate::types::property::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
+use std::sync::Arc;
 
-/// Trait representing a property in a graph element (node, relationship, or graph).
-/// Provides access to property values and schema information.
-///
-/// This mirrors the TypeScript Property interface.
-pub trait PropertyTrait: Send + Sync {
-    type Values: PropertyValues;
-
-    /// Returns the property values.
-    fn values(&self) -> &Self::Values;
-
-    /// Returns the schema for this property.
-    fn property_schema(&self) -> &PropertySchema;
-
-    /// Returns the property key.
-    /// Convenience method that delegates to the property schema.
-    fn key(&self) -> &str {
-        self.property_schema().key()
-    }
-
-    /// Returns the value type of this property.
-    /// Convenience method that delegates to the property schema.
-    fn value_type(&self) -> ValueType {
-        self.property_schema().value_type()
-    }
-
-    /// Returns the default value for this property.
-    /// Convenience method that delegates to the property schema.
-    fn default_value(&self) -> &DefaultValue {
-        self.property_schema().default_value()
-    }
-
-    /// Returns the state of this property.
-    /// Convenience method that delegates to the property schema.
-    fn property_state(&self) -> PropertyState {
-        self.property_schema().state()
-    }
+/// Canonical trait representing a property (no "Trait" suffix).
+pub trait Property: Send + Sync {
+    fn schema(&self) -> &PropertySchema;
+    fn values(&self) -> Arc<dyn PropertyValues>;
 }
 
-/// Generic property implementation that can hold any PropertyValues type.
-/// This is the default implementation used throughout the system.
-#[derive(Debug, Clone)]
-pub struct Property<V: PropertyValues> {
-    values: V,
-    schema: PropertySchema,
+// Concrete header+body property used by stores (non-generic, holds Arc dyn).
+#[derive(Clone, Debug)]
+pub struct DefaultProperty {
+    pub schema: PropertySchema,
+    pub values: Arc<dyn PropertyValues>,
 }
 
-impl<V: PropertyValues> Property<V> {
-    /// Creates a new property with the given values and schema.
-    pub fn new(values: V, schema: PropertySchema) -> Self {
-        Property { values, schema }
+impl DefaultProperty {
+    pub fn new(schema: PropertySchema, values: Arc<dyn PropertyValues>) -> Self {
+        Self { schema, values }
     }
 
-    /// Convenience constructor that auto-computes the default value from the value type.
-    pub fn of(key: impl Into<String>, state: PropertyState, values: V) -> Self {
-        let value_type = values.value_type();
-        let default_value = DefaultValue::of(value_type);
-        let schema = PropertySchema::new(key, value_type, default_value, state);
-        Property { values, schema }
+    pub fn of(
+        key: impl Into<String>,
+        state: PropertyState,
+        values: Arc<dyn PropertyValues>,
+    ) -> Self {
+        let vt = values.value_type();
+        let default_value = DefaultValue::of(vt);
+        let schema = PropertySchema::new(key.into(), vt, default_value, state);
+        Self::new(schema, values)
     }
 
-    /// Convenience constructor with an explicit default value.
     pub fn with_default(
         key: impl Into<String>,
         state: PropertyState,
-        values: V,
+        values: Arc<dyn PropertyValues>,
         default_value: DefaultValue,
     ) -> Self {
-        let value_type = values.value_type();
-        let schema = PropertySchema::new(key, value_type, default_value, state);
-        Property { values, schema }
+        let vt = values.value_type();
+        let schema = PropertySchema::new(key.into(), vt, default_value, state);
+        Self::new(schema, values)
     }
 
-    /// Returns a reference to the underlying property values.
-    /// Public accessor that doesn't require importing PropertyTrait.
-    pub fn values(&self) -> &V {
-        &self.values
+    // Convenience accessors
+    pub fn key(&self) -> &str {
+        self.schema.key()
     }
 
-    /// Returns a reference to the property schema.
-    /// Public accessor that doesn't require importing PropertyTrait.
-    pub fn property_schema(&self) -> &PropertySchema {
-        &self.schema
+    pub fn value_type(&self) -> crate::types::property::ValueType {
+        self.schema.value_type()
+    }
+
+    pub fn property_state(&self) -> PropertyState {
+        self.schema.state()
+    }
+
+    pub fn default_value(&self) -> &DefaultValue {
+        self.schema.default_value()
     }
 }
-impl<V: PropertyValues> PropertyTrait for Property<V> {
-    type Values = V;
 
-    fn values(&self) -> &Self::Values {
-        &self.values
-    }
-
-    fn property_schema(&self) -> &PropertySchema {
+impl Property for DefaultProperty {
+    fn schema(&self) -> &PropertySchema {
         &self.schema
+    }
+    fn values(&self) -> Arc<dyn PropertyValues> {
+        Arc::clone(&self.values)
     }
 }
 
@@ -102,6 +74,7 @@ impl<V: PropertyValues> PropertyTrait for Property<V> {
 mod tests {
     use super::*;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
+    use crate::types::property::ValueType;
 
     #[test]
     fn test_property_creation() {
@@ -113,7 +86,7 @@ mod tests {
             PropertyState::Normal,
         );
 
-        let prop = Property::new(values, schema);
+        let prop = DefaultProperty::new(schema, Arc::new(values));
         assert_eq!(prop.key(), "test_prop");
         assert_eq!(prop.value_type(), ValueType::Long);
         assert_eq!(prop.property_state(), PropertyState::Normal);

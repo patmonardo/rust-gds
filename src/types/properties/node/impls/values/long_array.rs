@@ -1,4 +1,3 @@
-use crate::{node_long_array_property_values_impl, property_values_impl};
 use crate::types::properties::node::node_property_values::{
     LongArrayNodePropertyValues, NodePropertyValues,
 };
@@ -7,9 +6,10 @@ use crate::types::properties::property_values::{
 };
 use crate::types::property::ValueType;
 use crate::types::property_value::PropertyValue;
+use crate::{node_long_array_property_values_impl, property_values_impl};
 
 /// Default implementation for long array node property values.
-/// 
+///
 /// Storage: Vec<Option<Vec<i64>>> - suitable for integer sequence properties.
 /// Future: Can be replaced with Arrow2 ListArray<Int64Array> for columnar storage,
 /// useful for storing sequences, paths, or multi-valued integer attributes.
@@ -53,8 +53,8 @@ impl LongArrayNodePropertyValues for DefaultLongArrayNodePropertyValues {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::property::ValueType;
     use crate::types::properties::property_values::PropertyValues;
+    use crate::types::property::ValueType;
 
     #[test]
     fn test_long_array_node_property_values() {
@@ -73,10 +73,8 @@ mod tests {
 
     #[test]
     fn test_variable_length_arrays() {
-        let values = DefaultLongArrayNodePropertyValues::new(
-            vec![Some(vec![1]), Some(vec![1, 2, 3, 4])],
-            2,
-        );
+        let values =
+            DefaultLongArrayNodePropertyValues::new(vec![Some(vec![1]), Some(vec![1, 2, 3, 4])], 2);
         // dimension is inferred from first element
         assert_eq!(values.dimension(), Some(1));
         assert_eq!(values.long_array_value(1).unwrap().len(), 4);
@@ -84,10 +82,7 @@ mod tests {
 
     #[test]
     fn test_unsupported_float_access() {
-        let values = DefaultLongArrayNodePropertyValues::new(
-            vec![Some(vec![1, 2])],
-            1,
-        );
+        let values = DefaultLongArrayNodePropertyValues::new(vec![Some(vec![1, 2])], 1);
         assert!(values.double_array_value(0).is_err());
         assert!(values.float_array_value(0).is_err());
     }

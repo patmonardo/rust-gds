@@ -8,7 +8,7 @@ use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for double graph property values.
-/// 
+///
 /// Storage: Vec<f64> - suitable for pure in-memory graph-level properties.
 /// Future: Can be replaced with Arrow2 Float64Array for columnar storage.
 #[derive(Debug, Clone)]
@@ -106,8 +106,8 @@ mod tests {
 
     #[test]
     fn test_singleton() {
-        let values = DefaultDoubleGraphPropertyValues::singleton(3.14);
+        let values = DefaultDoubleGraphPropertyValues::singleton(std::f64::consts::PI);
         assert_eq!(values.element_count(), 1);
-        assert_eq!(values.double_values_unchecked(), &[3.14]);
+        assert_eq!(values.double_values_unchecked(), &[std::f64::consts::PI]);
     }
 }

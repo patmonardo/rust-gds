@@ -1,4 +1,4 @@
-use rust_gds::types::properties::property::{Property, PropertyTrait};
+use rust_gds::types::properties::property::DefaultProperty;
 use rust_gds::types::properties::relationship::impls::default_relationship_property_store::DefaultRelationshipPropertyStore;
 use rust_gds::types::properties::relationship::relationship_property_store::{
     RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
@@ -25,12 +25,19 @@ fn main() {
         DefaultRelationshipPropertyValues::new(vec![100.0, 80.0, 120.0], 0.0, 3),
     );
 
-    // Create properties using Property::of
-    let weight_property = Property::of("weight", PropertyState::Normal, Arc::clone(&weight_values));
-    let capacity_property = Property::of(
+    // Create properties using DefaultProperty::of
+    // Note: We need to upcast to Arc<dyn PropertyValues>
+    let weight_property = DefaultProperty::of(
+        "weight",
+        PropertyState::Normal,
+        weight_values.clone()
+            as Arc<dyn rust_gds::types::properties::property_values::PropertyValues>,
+    );
+    let capacity_property = DefaultProperty::of(
         "capacity",
         PropertyState::Normal,
-        Arc::clone(&capacity_values),
+        capacity_values.clone()
+            as Arc<dyn rust_gds::types::properties::property_values::PropertyValues>,
     );
 
     let store = DefaultRelationshipPropertyStore::builder()
@@ -49,14 +56,20 @@ fn main() {
     for (key, property) in store.relationship_properties() {
         println!("Property `{}`", key);
         println!("  key from property: {}", property.key());
-        println!("  default value: {}", property.values().default_value());
 
-        let count = property.values().relationship_count();
+        // Cast to domain-specific type to access relationship methods
+        use rust_gds::types::properties::property::Property;
+        let values_arc = property.values();
+        let rel_values: Arc<dyn RelationshipPropertyValues> =
+            unsafe { std::mem::transmute(values_arc) };
+
+        println!("  default value: {}", rel_values.default_value());
+
+        let count = rel_values.relationship_count();
         for rel_index in 0..count {
-            let value = property
-                .values()
+            let value = rel_values
                 .double_value(rel_index as u64)
-                .unwrap_or(property.values().default_value());
+                .unwrap_or(rel_values.default_value());
             println!("  rel #{rel_index}: {value}");
         }
         println!();

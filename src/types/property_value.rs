@@ -174,7 +174,10 @@ mod tests {
     #[test]
     fn test_value_types() {
         assert_eq!(PropertyValue::Long(42).value_type(), ValueType::Long);
-        assert_eq!(PropertyValue::Double(3.14).value_type(), ValueType::Double);
+        assert_eq!(
+            PropertyValue::Double(std::f64::consts::PI).value_type(),
+            ValueType::Double
+        );
         assert_eq!(
             PropertyValue::LongArray(vec![1, 2, 3]).value_type(),
             ValueType::LongArray

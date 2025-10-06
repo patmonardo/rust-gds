@@ -449,7 +449,7 @@ pub enum PropertyValuesError {
 /// Provides access to the value type and common utilities.
 ///
 /// This mirrors the TypeScript PropertyValues interface.
-pub trait PropertyValues: Send + Sync {
+pub trait PropertyValues: Send + Sync + std::fmt::Debug {
     /// Returns the value type of the property values.
     fn value_type(&self) -> ValueType;
 

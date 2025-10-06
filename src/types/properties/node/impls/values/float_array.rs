@@ -1,4 +1,3 @@
-use crate::{node_float_array_property_values_impl, property_values_impl};
 use crate::types::properties::node::node_property_values::{
     FloatArrayNodePropertyValues, NodePropertyValues,
 };
@@ -7,9 +6,10 @@ use crate::types::properties::property_values::{
 };
 use crate::types::property::ValueType;
 use crate::types::property_value::PropertyValue;
+use crate::{node_float_array_property_values_impl, property_values_impl};
 
 /// Default implementation for float array node property values.
-/// 
+///
 /// Storage: Vec<Option<Vec<f32>>> - suitable for memory-efficient embeddings.
 /// Future: Can be replaced with Arrow2 ListArray<Float32Array> for columnar storage,
 /// particularly useful for ML embeddings where f32 precision is sufficient.
@@ -53,15 +53,13 @@ impl FloatArrayNodePropertyValues for DefaultFloatArrayNodePropertyValues {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::property::ValueType;
     use crate::types::properties::property_values::PropertyValues;
+    use crate::types::property::ValueType;
 
     #[test]
     fn test_float_array_node_property_values() {
-        let values = DefaultFloatArrayNodePropertyValues::new(
-            vec![Some(vec![1.0, 2.0, 3.0]), None],
-            2,
-        );
+        let values =
+            DefaultFloatArrayNodePropertyValues::new(vec![Some(vec![1.0, 2.0, 3.0]), None], 2);
 
         assert_eq!(values.value_type(), ValueType::FloatArray);
         assert_eq!(values.node_count(), 2);
@@ -73,10 +71,7 @@ mod tests {
 
     #[test]
     fn test_float_array_to_double_array_conversion() {
-        let values = DefaultFloatArrayNodePropertyValues::new(
-            vec![Some(vec![1.5f32, 2.5f32])],
-            1,
-        );
+        let values = DefaultFloatArrayNodePropertyValues::new(vec![Some(vec![1.5f32, 2.5f32])], 1);
         let double_arr = values.double_array_value(0).unwrap();
         assert_eq!(double_arr, vec![1.5f64, 2.5f64]);
     }

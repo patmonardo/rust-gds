@@ -4,11 +4,11 @@
 //! metrics, and materialize filtered sub-graphs using the `Graph` trait.
 
 use rust_gds::projection::RelationshipType;
+use rust_gds::types::graph::id_map::MappedNodeId;
 use rust_gds::types::graph::{Graph, GraphExt, GraphResult};
 use rust_gds::types::graph_store::DefaultGraphStore;
 use rust_gds::types::properties::relationship::PropertyValue;
 use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
-use rust_gds::types::graph::id_map::MappedNodeId;
 use std::collections::HashSet;
 use std::error::Error;
 
@@ -20,7 +20,9 @@ fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("  - Cursor-based neighbor enumeration (stream_relationships)");
     println!("  - Relationship type filtering (creating sub-graph projections)");
     println!("  - Inverse traversal (stream_inverse_relationships)\n");
-    println!("Key insight: Graph = read-only view; all traversal is zero-allocation where possible.\n");
+    println!(
+        "Key insight: Graph = read-only view; all traversal is zero-allocation where possible.\n"
+    );
 
     let store =
         generate_sample_graph().map_err(|err| -> Box<dyn Error + Send + Sync> { Box::new(err) })?;

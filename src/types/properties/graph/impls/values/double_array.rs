@@ -8,10 +8,10 @@ use crate::types::property_value::PropertyValue;
 use std::any::Any;
 
 /// Default implementation for double array graph property values.
-/// 
+///
 /// Storage: Vec<Vec<f64>> - suitable for pure in-memory graph-level array properties.
 /// Future: Can be replaced with Arrow2 ListArray<Float64Array> for columnar storage.
-/// 
+///
 /// Note: Unlike node properties, graph array properties don't use Option wrapping
 /// since graph properties are expected to always have values.
 #[derive(Debug, Clone)]

@@ -1,4 +1,4 @@
-use crate::types::properties::property::PropertyTrait;
+use crate::types::properties::property::Property;
 use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
 use crate::types::property::PropertyState;
 use crate::types::schema::{DefaultValue, PropertySchema};
@@ -78,15 +78,14 @@ impl DefaultRelationshipProperty {
     }
 }
 
-impl PropertyTrait for DefaultRelationshipProperty {
-    type Values = Arc<dyn RelationshipPropertyValues>;
-
-    fn values(&self) -> &Self::Values {
-        &self.values
+impl Property for DefaultRelationshipProperty {
+    fn schema(&self) -> &PropertySchema {
+        &self.schema
     }
 
-    fn property_schema(&self) -> &PropertySchema {
-        &self.schema
+    fn values(&self) -> Arc<dyn crate::types::properties::property_values::PropertyValues> {
+        Arc::clone(&self.values)
+            as Arc<dyn crate::types::properties::property_values::PropertyValues>
     }
 }
 

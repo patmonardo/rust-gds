@@ -1,10 +1,11 @@
 // filepath: /home/pat/VSCode/rust-gds/src/types/properties/relationship/relationship_property_store.rs
 use super::relationship_property_values::RelationshipPropertyValues;
+use crate::types::properties::property_store::PropertyStore;
 use std::collections::HashMap;
 
 /// Trait-first contract for relationship property stores.
-pub trait RelationshipPropertyStore {
-    type Property;
+/// Extends PropertyStore to inherit common map-like operations.
+pub trait RelationshipPropertyStore: PropertyStore {
     type Builder: RelationshipPropertyStoreBuilder<Store = Self, Property = Self::Property>;
 
     fn empty() -> Self
@@ -19,13 +20,9 @@ pub trait RelationshipPropertyStore {
     where
         Self: Sized;
 
-    fn has_property(&self, property_key: &str) -> bool;
-    fn property_key_set(&self) -> Vec<&str>;
-    fn get_property(&self, property_key: &str) -> Option<&Self::Property>;
+    // Domain-specific methods
     fn get_all_properties(&self) -> Vec<&Self::Property>;
     fn get_property_values(&self, property_key: &str) -> Option<&dyn RelationshipPropertyValues>;
-    fn size(&self) -> usize;
-    fn is_empty(&self) -> bool;
     fn to_builder(&self) -> Self::Builder;
 }
 
