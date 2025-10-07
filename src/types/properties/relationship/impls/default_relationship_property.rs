@@ -1,6 +1,7 @@
 use crate::types::default_value::DefaultValue;
-use crate::types::properties::property::Property;
-use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
+use crate::types::properties::relationship::RelationshipPropertyValues;
+use crate::types::properties::Property;
+use crate::types::properties::PropertyValues;
 use crate::types::property_state::PropertyState;
 use crate::types::schema::PropertySchema;
 use std::sync::Arc;
@@ -80,15 +81,15 @@ impl DefaultRelationshipProperty {
 }
 
 impl Property for DefaultRelationshipProperty {
+    fn values(&self) -> Arc<dyn PropertyValues> {
+        Arc::clone(&self.values) as Arc<dyn PropertyValues>
+    }
+
     fn schema(&self) -> &PropertySchema {
         &self.schema
     }
-
-    fn values(&self) -> Arc<dyn crate::types::properties::property_values::PropertyValues> {
-        Arc::clone(&self.values)
-            as Arc<dyn crate::types::properties::property_values::PropertyValues>
-    }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,5 +1,5 @@
-use super::adjacency_cursor::{AdjacencyCursor, NOT_FOUND_TARGET};
-use crate::types::graph::id_map::MappedNodeId;
+use super::{AdjacencyCursor, NOT_FOUND_TARGET};
+use crate::types::graph::MappedNodeId;
 
 /// Type alias describing the scalar value associated with a weighted relationship.
 pub type EdgeWeight = f64;

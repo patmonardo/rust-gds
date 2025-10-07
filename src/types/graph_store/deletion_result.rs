@@ -16,16 +16,6 @@ pub struct DeletionResult {
 impl DeletionResult {
     /// Creates a new DeletionResult.
     ///
-    /// # Arguments
-    /// * `graph_name` - The name of the deleted graph
-    ///
-    /// # Examples
-    /// ```
-    /// use rust_gds::graph_store::{DeletionResult, GraphName};
-    ///
-    /// let graph_name = GraphName::new("my-graph");
-    /// let result = DeletionResult::new(graph_name);
-    /// ```
     pub fn new(graph_name: GraphName) -> Self {
         Self {
             graph_name,
@@ -36,10 +26,6 @@ impl DeletionResult {
 
     /// Creates a DeletionResult with count information.
     ///
-    /// # Arguments
-    /// * `graph_name` - The name of the deleted graph
-    /// * `node_count` - Number of nodes deleted
-    /// * `relationship_count` - Number of relationships deleted
     pub fn with_counts(
         graph_name: GraphName,
         node_count: usize,

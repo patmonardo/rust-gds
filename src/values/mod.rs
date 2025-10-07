@@ -11,7 +11,6 @@ pub mod traits;
 pub mod primitive_values;
 
 // Re-export everything for convenient access
-// Note: macros are automatically available due to #[macro_use], no need for pub use macros::*
 pub use impls::*;
 pub use primitive_values::*;
 pub use traits::*;

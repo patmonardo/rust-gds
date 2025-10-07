@@ -8,8 +8,10 @@ pub mod graph;
 pub mod id_map;
 pub mod topology;
 
+pub use adj_list::*;
 pub use characteristics::*;
 pub use default_graph::*;
 pub use degrees::*;
 pub use graph::*;
+pub use id_map::*;
 pub use topology::*;

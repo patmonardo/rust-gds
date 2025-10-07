@@ -1,4 +1,3 @@
-
 /// Generate a GdsValue implementation for an array type with direct storage (no conversion).
 ///
 /// # Parameters
@@ -9,10 +8,6 @@
 /// - `$accessor_method`: The method name for single element access (e.g., long_value)
 /// - `$array_method`: The method name for array access (e.g., long_array_value)
 ///
-/// # Example
-/// ```ignore
-/// gds_value_array_direct!(DefaultLongArray, i64, LongArray, IntegralArray, long_value, long_array_value);
-/// ```
 #[macro_export]
 macro_rules! gds_value_array_direct {
     ($name:ident, $storage_ty:ty, $value_type:ident, $array_trait:ident, $accessor_method:ident, $array_method:ident) => {
@@ -69,10 +64,6 @@ macro_rules! gds_value_array_direct {
 /// - `$accessor_method`: The method name for single element access (e.g., long_value)
 /// - `$array_method`: The method name for array access (e.g., long_array_value)
 ///
-/// # Example
-/// ```ignore
-/// gds_value_array_convert!(DefaultIntLongArray, i32, i64, LongArray, IntegralArray, long_value, long_array_value);
-/// ```
 #[macro_export]
 macro_rules! gds_value_array_convert {
     ($name:ident, $storage_ty:ty, $accessor_ty:ty, $value_type:ident, $array_trait:ident, $accessor_method:ident, $array_method:ident) => {
@@ -126,11 +117,6 @@ macro_rules! gds_value_array_convert {
 /// - `$value_type`: The ValueType variant (e.g., Long)
 /// - `$scalar_trait`: The scalar trait to implement (e.g., IntegralValue)
 /// - `$accessor_method`: The method name for value access (e.g., long_value)
-///
-/// # Example
-/// ```ignore
-/// gds_value_scalar!(DefaultLongValue, i64, Long, IntegralValue, long_value);
-/// ```
 #[macro_export]
 macro_rules! gds_value_scalar {
     ($name:ident, $storage_ty:ty, $value_type:ident, $scalar_trait:ident, $accessor_method:ident) => {

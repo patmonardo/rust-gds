@@ -9,9 +9,7 @@ pub mod graph_property_values;
 pub mod impls;
 
 // Re-export commonly used items
-pub use graph_property_store::{GraphPropertyStore, GraphPropertyStoreBuilder};
-pub use graph_property_values::GraphPropertyValues;
-pub use impls::{
-    DefaultDoubleGraphPropertyValues, DefaultGraphPropertyStore, DefaultGraphPropertyStoreBuilder,
-    DefaultLongGraphPropertyValues,
-};
+pub use graph_property::*;
+pub use graph_property_store::*;
+pub use graph_property_values::*;
+pub use impls::*;

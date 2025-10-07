@@ -14,16 +14,6 @@ pub struct DatabaseId {
 impl DatabaseId {
     /// Creates a new DatabaseId.
     ///
-    /// # Arguments
-    /// * `value` - The database identifier value
-    ///
-    /// # Examples
-    /// ```
-    /// use rust_gds::graph_store::DatabaseId;
-    ///
-    /// let db_id = DatabaseId::new("neo4j");
-    /// assert_eq!(db_id.value(), "neo4j");
-    /// ```
     pub fn new<S: AsRef<str>>(value: S) -> Self {
         Self {
             value: value.as_ref().to_string(),

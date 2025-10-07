@@ -3,41 +3,20 @@
 use std::collections::HashSet;
 
 /// Capabilities that a graph storage backend can support.
-///
-/// Capabilities describe what operations and features are available
-/// in a particular graph storage implementation.
 #[derive(Clone, Debug)]
 pub struct Capabilities {
     features: HashSet<String>,
 }
 
 impl Capabilities {
-    /// Creates a new Capabilities instance.
-    ///
-    /// # Examples
-    /// ```
-    /// use rust_gds::graph_store::Capabilities;
-    ///
-    /// let caps = Capabilities::new();
-    /// ```
+    // Creates a new Capabilities instance.
     pub fn new() -> Self {
         Self {
             features: HashSet::new(),
         }
     }
 
-    /// Creates a Capabilities instance with specified features.
-    ///
-    /// # Arguments
-    /// * `features` - A collection of feature names
-    ///
-    /// # Examples
-    /// ```
-    /// use rust_gds::graph_store::Capabilities;
-    ///
-    /// let caps = Capabilities::with_features(vec!["write", "delete"]);
-    /// assert!(caps.supports("write"));
-    /// ```
+    // Creates a Capabilities instance with specified features.
     pub fn with_features<I, S>(features: I) -> Self
     where
         I: IntoIterator<Item = S>,

@@ -11,15 +11,9 @@ pub mod relationship_property_values;
 pub mod traits;
 
 // Re-export commonly used items from traits
-pub use traits::{
-    EmptyPropertyCursor, ModifiableRelationshipCursor, PropertyCursor, PropertyValue,
-    RelationshipCursor, RelationshipCursorBox, RelationshipIterator, RelationshipPredicate,
-    RelationshipStream,
-};
-
-// Re-export commonly used items from impls
-pub use impls::{
-    DefaultModifiableRelationshipCursor, DefaultRelationshipCursor,
-    DefaultRelationshipPropertyStore, DefaultRelationshipPropertyStoreBuilder,
-    DefaultRelationshipPropertyValues,
-};
+pub use impls::*;
+pub use relationship_properties::*;
+pub use relationship_property::*;
+pub use relationship_property_store::*;
+pub use relationship_property_values::*;
+pub use traits::*;

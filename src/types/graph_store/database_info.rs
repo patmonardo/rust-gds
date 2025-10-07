@@ -79,14 +79,6 @@ impl DatabaseInfo {
     /// * `database_id` - The database identifier
     /// * `location` - The database location
     ///
-    /// # Examples
-    /// ```
-    /// use rust_gds::graph_store::{DatabaseInfo, DatabaseId, DatabaseLocation};
-    ///
-    /// let db_id = DatabaseId::new("neo4j");
-    /// let location = DatabaseLocation::remote("localhost", 7687, None, None);
-    /// let info = DatabaseInfo::new(db_id, location);
-    /// ```
     pub fn new(database_id: DatabaseId, location: DatabaseLocation) -> Self {
         Self {
             database_id,

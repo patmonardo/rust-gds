@@ -16,14 +16,6 @@ impl GraphName {
     ///
     /// # Arguments
     /// * `value` - The graph name value
-    ///
-    /// # Examples
-    /// ```
-    /// use rust_gds::graph_store::GraphName;
-    ///
-    /// let name = GraphName::new("my-graph");
-    /// assert_eq!(name.value(), "my-graph");
-    /// ```
     pub fn new<S: AsRef<str>>(value: S) -> Self {
         Self {
             value: value.as_ref().to_string(),

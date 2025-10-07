@@ -1,7 +1,9 @@
-use crate::types::properties::node::node_property_values::NodePropertyValues;
-use crate::types::properties::property::Property;
-use crate::types::property_state::PropertyState;
-use crate::types::schema::{DefaultValue, PropertySchema};
+use crate::types::properties::node::NodePropertyValues;
+use crate::types::properties::Property;
+use crate::types::properties::PropertyValues;
+use crate::types::schema::PropertySchema;
+use crate::types::DefaultValue;
+use crate::types::PropertyState;
 use std::sync::Arc;
 
 /// Default concrete implementation of a node property.
@@ -12,9 +14,9 @@ pub struct DefaultNodeProperty {
 }
 
 impl DefaultNodeProperty {
-    /// Construct a node property using the default `PropertyState::Normal`.
+    /// Construct a node property using the default `PropertyState::Persistent`.
     pub fn of(key: impl Into<String>, values: Arc<dyn NodePropertyValues>) -> Self {
-        Self::with_state(key, PropertyState::Normal, values)
+        Self::with_state(key, PropertyState::Persistent, values)
     }
 
     /// Construct a property with an explicit property state.
@@ -74,13 +76,11 @@ impl DefaultNodeProperty {
 }
 
 impl Property for DefaultNodeProperty {
-    type Values = Arc<dyn NodePropertyValues>;
-
-    fn values(&self) -> &Self::Values {
-        &self.values
+    fn values(&self) -> Arc<dyn PropertyValues> {
+        Arc::clone(&self.values) as Arc<dyn PropertyValues>
     }
 
-    fn property_schema(&self) -> &PropertySchema {
+    fn schema(&self) -> &PropertySchema {
         &self.schema
     }
 }
@@ -98,7 +98,10 @@ mod tests {
         let property = DefaultNodeProperty::of("age", values.clone());
 
         assert_eq!(property.key(), "age");
-        assert_eq!(property.property_schema().state(), PropertyState::Normal);
+        assert_eq!(
+            property.property_schema().state(),
+            PropertyState::Persistent
+        );
         assert_eq!(property.property_schema().value_type(), values.value_type());
         assert!(Arc::ptr_eq(&property.values_arc(), &values));
     }
@@ -107,20 +110,23 @@ mod tests {
     fn node_property_with_state() {
         let values: Arc<dyn NodePropertyValues> =
             Arc::new(DefaultLongNodePropertyValues::new(vec![10, 20], 2));
-        let property = DefaultNodeProperty::with_state("rank", PropertyState::Deleted, values);
+        let property = DefaultNodeProperty::with_state("rank", PropertyState::Persistent, values);
 
         assert_eq!(property.key(), "rank");
-        assert_eq!(property.property_schema().state(), PropertyState::Deleted);
+        assert_eq!(
+            property.property_schema().state(),
+            PropertyState::Persistent
+        );
     }
 
     #[test]
     fn node_property_with_explicit_default() {
         let values: Arc<dyn NodePropertyValues> =
             Arc::new(DefaultLongNodePropertyValues::new(vec![5, 6], 2));
-        let default_value = DefaultValue::Long(0);
+        let default_value = DefaultValue::long(0);
         let property = DefaultNodeProperty::with_default(
             "score",
-            PropertyState::Normal,
+            PropertyState::Persistent,
             values,
             default_value.clone(),
         );

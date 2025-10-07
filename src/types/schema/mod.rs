@@ -10,7 +10,7 @@ pub mod node_schema;
 pub mod property_schema;
 pub mod relationship_schema;
 
-pub use crate::types::value_type::ValueType;
+pub use crate::types::ValueType;
 pub use direction::*;
 pub use element_identifier::*;
 pub use graph_schema::*;

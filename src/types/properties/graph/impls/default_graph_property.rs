@@ -1,7 +1,9 @@
-use crate::types::properties::graph::graph_property_values::GraphPropertyValues;
-use crate::types::properties::property::Property;
+use crate::types::default_value::DefaultValue;
+use crate::types::properties::graph::GraphPropertyValues;
+use crate::types::properties::Property;
+use crate::types::properties::PropertyValues;
 use crate::types::property_state::PropertyState;
-use crate::types::schema::{DefaultValue, PropertySchema};
+use crate::types::schema::PropertySchema;
 use std::sync::Arc;
 
 /// Concrete graph property implementation that mirrors the structure of the
@@ -14,9 +16,9 @@ pub struct DefaultGraphProperty {
 }
 
 impl DefaultGraphProperty {
-    /// Construct a graph property using the default `PropertyState::Normal`.
+    /// Construct a graph property using the default `PropertyState::Persistent`.
     pub fn of(key: impl Into<String>, values: Arc<dyn GraphPropertyValues>) -> Self {
-        Self::with_state(key, PropertyState::Normal, values)
+        Self::with_state(key, PropertyState::Persistent, values)
     }
 
     /// Construct a property with an explicit property state.
@@ -76,13 +78,11 @@ impl DefaultGraphProperty {
 }
 
 impl Property for DefaultGraphProperty {
-    type Values = Arc<dyn GraphPropertyValues>;
-
-    fn values(&self) -> &Self::Values {
-        &self.values
+    fn values(&self) -> Arc<dyn PropertyValues> {
+        Arc::clone(&self.values) as Arc<dyn PropertyValues>
     }
 
-    fn property_schema(&self) -> &PropertySchema {
+    fn schema(&self) -> &PropertySchema {
         &self.schema
     }
 }
@@ -90,7 +90,7 @@ impl Property for DefaultGraphProperty {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::properties::graph::impls::default_graph_property_values::DefaultLongGraphPropertyValues;
+    use crate::types::properties::graph::DefaultLongGraphPropertyValues;
     use crate::types::properties::property_values::PropertyValues;
 
     #[test]
@@ -100,7 +100,10 @@ mod tests {
         let property = DefaultGraphProperty::of("node_count", values.clone());
 
         assert_eq!(property.key(), "node_count");
-        assert_eq!(property.property_schema().state(), PropertyState::Normal);
+        assert_eq!(
+            property.property_schema().state(),
+            PropertyState::Persistent
+        );
         assert_eq!(property.property_schema().value_type(), values.value_type());
         assert!(Arc::ptr_eq(&property.values_arc(), &values));
     }

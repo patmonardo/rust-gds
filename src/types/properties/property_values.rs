@@ -1,4 +1,4 @@
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 use thiserror::Error;
 
 /// Macro to generate PropertyValues implementations for different value types.
@@ -12,12 +12,6 @@ use thiserror::Error;
 /// - `graph`: For graph properties with direct `Vec<T>`
 /// - `graph_array`: For graph array properties with `Vec<Vec<T>>`
 ///
-/// # Examples
-///
-/// See the modular value type implementations in:
-/// - `src/types/properties/node/impls/values/`
-/// - `src/types/properties/graph/impls/values/`
-/// - `src/types/properties/relationship/impls/values/`
 #[macro_export]
 macro_rules! property_values_impl {
     // Base variant: For node properties with node_count field
