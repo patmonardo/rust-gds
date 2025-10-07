@@ -1,5 +1,6 @@
 pub mod impls;
 pub mod node_label;
+pub mod orientation;
 pub mod relationship_type;
 /// Projection-related types for graph data science.
 ///
@@ -8,6 +9,7 @@ pub mod relationship_type;
 pub mod traits;
 
 pub use node_label::NodeLabel;
+pub use orientation::Orientation;
 pub use relationship_type::RelationshipType;
 
 // Re-export trait types
@@ -15,4 +17,11 @@ pub use traits::{
     AbstractProjections, Aggregation, ElementProjection, InlineProperties, Projections,
     ProjectionsBuilder, PropertyMapping, PropertyMappingBuilder, PropertyMappings,
     PropertyMappingsBuilder,
+};
+
+// Re-export implementation types
+pub use impls::{
+    NodeProjection, NodeProjectionBuilder, NodeProjections, NodeProjectionsBuilder,
+    RelationshipProjection, RelationshipProjectionBuilder, RelationshipProjections,
+    RelationshipProjectionsBuilder,
 };

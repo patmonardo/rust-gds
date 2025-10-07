@@ -1,5 +1,11 @@
+// Load submodules
 pub mod array_equals;
-pub mod default_gds_value;
 
+// Re-export for flat API
 pub use array_equals::*;
-pub use default_gds_value::*;
+
+// Generate all Default* types here using the mega macro
+// This generates: DefaultLongValue, DefaultFloatingPointValue,
+// DefaultLongArray, DefaultIntLongArray, DefaultShortLongArray,
+// DefaultByteLongArray, DefaultDoubleArray, DefaultFloatArray
+generate_primitive_values!();
