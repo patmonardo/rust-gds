@@ -6,7 +6,6 @@ use crate::types::graph::id_map::{
     NodeIdIterator, NodeIterator, OriginalNodeId, PartialIdMap, SimpleIdMap,
 };
 use crate::types::properties::node::{NodePropertyContainer, NodePropertyValues};
-use crate::types::properties::property::Property;
 use crate::types::properties::relationship::{
     relationship_properties::RelationshipProperties,
     relationship_property_values::RelationshipPropertyValues, DefaultModifiableRelationshipCursor,
@@ -349,14 +348,7 @@ fn build_selected_relationship_properties(
 
         if let Some(key) = chosen_key {
             if let Some(property) = store.get(&key) {
-                let values_arc = property.values();
-                // SAFETY: By construction, RelationshipProperty stores RelationshipPropertyValues
-                let rel_values = unsafe {
-                    std::mem::transmute::<
-                        Arc<dyn crate::types::properties::property_values::PropertyValues>,
-                        Arc<dyn RelationshipPropertyValues>,
-                    >(values_arc)
-                };
+                let rel_values = property.values_arc();
                 let selection = SelectedRelationshipProperty::new(
                     rel_values.clone(),
                     rel_values.default_value(),

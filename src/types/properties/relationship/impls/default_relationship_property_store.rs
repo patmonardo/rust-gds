@@ -51,17 +51,9 @@ impl RelationshipPropertyStore for DefaultRelationshipPropertyStore {
     }
 
     fn get_property_values(&self, property_key: &str) -> Option<&dyn RelationshipPropertyValues> {
-        self.properties.get(property_key).map(|p| {
-            let trait_obj: &dyn crate::types::properties::property_values::PropertyValues =
-                &*p.values;
-            // SAFETY: By construction, RelationshipProperty only stores RelationshipPropertyValues
-            unsafe {
-                std::mem::transmute::<
-                    &dyn crate::types::properties::property_values::PropertyValues,
-                    &dyn RelationshipPropertyValues,
-                >(trait_obj)
-            }
-        })
+        self.properties
+            .get(property_key)
+            .map(|property| property.values())
     }
 
     fn to_builder(&self) -> Self::Builder {
@@ -154,10 +146,10 @@ impl DefaultRelationshipPropertyStoreBuilder {
     ) -> Self {
         let key_str = key.into();
         let values = values.into();
-        use crate::types::properties::property::DefaultProperty;
         use crate::types::property_state::PropertyState;
 
-        let prop = DefaultProperty::of(key_str.clone(), PropertyState::Persistent, values);
+        let prop =
+            RelationshipProperty::with_state(key_str.clone(), PropertyState::Persistent, values);
         self.properties.insert(key_str, prop);
         self
     }

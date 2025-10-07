@@ -6,10 +6,5 @@
 pub mod node_projection;
 pub mod relationship_projection;
 
-pub use node_projection::{
-    NodeProjection, NodeProjectionBuilder, NodeProjections, NodeProjectionsBuilder,
-};
-pub use relationship_projection::{
-    RelationshipProjection, RelationshipProjectionBuilder, RelationshipProjections,
-    RelationshipProjectionsBuilder,
-};
+pub use node_projection::*;
+pub use relationship_projection::*;

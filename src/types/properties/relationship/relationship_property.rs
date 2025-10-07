@@ -1,10 +1,10 @@
 use super::relationship_property_values::RelationshipPropertyValues;
-use crate::types::properties::property::DefaultProperty;
+use crate::types::properties::relationship::DefaultRelationshipProperty;
 use crate::types::property_state::PropertyState;
 use std::sync::Arc;
 
-/// Alias for ergonomics: RelationshipProperty is the canonical DefaultProperty instance.
-pub type RelationshipProperty = DefaultProperty;
+/// Alias for ergonomics: RelationshipProperty resolves to the concrete default implementation.
+pub type RelationshipProperty = DefaultRelationshipProperty;
 
 /// Factory helper mirroring Java's RelationshipProperty.of(...)
 pub fn relationship_property_of(
@@ -12,5 +12,5 @@ pub fn relationship_property_of(
     state: PropertyState,
     values: Arc<dyn RelationshipPropertyValues>,
 ) -> RelationshipProperty {
-    DefaultProperty::of(key, state, values)
+    DefaultRelationshipProperty::with_state(key, state, values)
 }

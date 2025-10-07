@@ -54,19 +54,9 @@ impl NodePropertyStore for DefaultNodePropertyStore {
     }
 
     fn get_property_values(&self, property_key: &str) -> Option<&dyn NodePropertyValues> {
-        // Access field directly and rely on trait object coercion
-        // The values are NodePropertyValues stored as PropertyValues
-        self.properties.get(property_key).map(|p| {
-            let trait_obj: &dyn crate::types::properties::property_values::PropertyValues =
-                &*p.values;
-            // SAFETY: By construction, NodeProperty only stores NodePropertyValues
-            unsafe {
-                std::mem::transmute::<
-                    &dyn crate::types::properties::property_values::PropertyValues,
-                    &dyn NodePropertyValues,
-                >(trait_obj)
-            }
-        })
+        self.properties
+            .get(property_key)
+            .map(|property| property.values())
     }
 
     fn to_builder(&self) -> Self::Builder {
@@ -158,9 +148,8 @@ impl DefaultNodePropertyStoreBuilder {
         key: impl Into<String>,
         values: Arc<dyn NodePropertyValues>,
     ) -> Self {
-        use crate::types::properties::property::DefaultProperty;
         let key_str = key.into();
-        let prop = DefaultProperty::of(key_str.clone(), PropertyState::Persistent, values);
+        let prop = NodeProperty::with_state(key_str.clone(), PropertyState::Persistent, values);
         self.properties.insert(key_str, prop);
         self
     }
@@ -171,7 +160,6 @@ mod tests {
     use super::*;
     use crate::types::default_value::DefaultValue;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
-    use crate::types::properties::property::DefaultProperty;
     use crate::types::property_state::PropertyState;
 
     fn sample_prop(key: &str) -> NodeProperty {
@@ -181,7 +169,7 @@ mod tests {
         let values: Arc<dyn NodePropertyValues> =
             Arc::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
         let default_value = DefaultValue::of(values.value_type());
-        DefaultProperty::with_default(
+        NodeProperty::with_default(
             key.to_string(),
             PropertyState::Persistent,
             values,

@@ -32,7 +32,11 @@ impl DefaultFloatArrayGraphPropertyValues {
 }
 
 // Generate PropertyValues trait implementation for arrays
-property_values_impl!(DefaultFloatArrayGraphPropertyValues, FloatArray, graph_array);
+property_values_impl!(
+    DefaultFloatArrayGraphPropertyValues,
+    FloatArray,
+    graph_array
+);
 
 // Manual GraphPropertyValues implementation (iterator-based)
 impl GraphPropertyValues for DefaultFloatArrayGraphPropertyValues {

@@ -1,22 +1,29 @@
-use rust_gds::types::properties::property::DefaultProperty;
-use rust_gds::types::properties::relationship::impls::default_relationship_property_store::DefaultRelationshipPropertyStore;
-use rust_gds::types::properties::relationship::relationship_property_store::{
+use rust_gds::types::properties::relationship::relationship_property_of;
+use rust_gds::types::properties::relationship::RelationshipPropertyValues;
+use rust_gds::types::properties::relationship::{
+    DefaultRelationshipPropertyStore, DefaultRelationshipPropertyValues,
+};
+use rust_gds::types::properties::relationship::{
     RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
-use rust_gds::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use rust_gds::types::properties::relationship::DefaultRelationshipPropertyValues;
 use rust_gds::types::property_state::PropertyState;
 use std::sync::Arc;
 
 fn main() {
     println!("\n=== Relationship Property Store Basics ===\n");
     println!("This example demonstrates the PropertyStore builder pattern.");
-    println!("PropertyStore = HashMap<String, Property<Arc<dyn *PropertyValues>>>.\n");
+    println!(
+        "PropertyStore = HashMap<String, RelationshipProperty (wrapping Arc<dyn RelationshipPropertyValues>)>.\n"
+    );
     println!("Key operations:");
-    println!("  1. Property::of(key, state, values) constructs a Property wrapper");
+    println!(
+        "  1. relationship_property_of(key, state, values) constructs the RelationshipProperty wrapper"
+    );
     println!("  2. builder().put(key, property).build() creates an immutable store");
     println!("  3. store.to_builder() clones the store for modification (copy-on-write)\n");
-    println!("PropertyValues (the column) is shared via Arc; Property adds schema metadata.\n");
+    println!(
+        "RelationshipProperty bundles the shared column with schema metadata, including state and default value.\n"
+    );
 
     let weight_values: Arc<dyn RelationshipPropertyValues> = Arc::new(
         DefaultRelationshipPropertyValues::new(vec![1.2, 0.8, 1.5], 0.0, 3),
@@ -25,19 +32,13 @@ fn main() {
         DefaultRelationshipPropertyValues::new(vec![100.0, 80.0, 120.0], 0.0, 3),
     );
 
-    // Create properties using DefaultProperty::of
-    // Note: We need to upcast to Arc<dyn PropertyValues>
-    let weight_property = DefaultProperty::of(
-        "weight",
-        PropertyState::Persistent,
-        weight_values.clone()
-            as Arc<dyn rust_gds::types::properties::property_values::PropertyValues>,
-    );
-    let capacity_property = DefaultProperty::of(
+    // Relationship stores expect a RelationshipProperty, which wraps values with schema metadata
+    let weight_property =
+        relationship_property_of("weight", PropertyState::Persistent, weight_values.clone());
+    let capacity_property = relationship_property_of(
         "capacity",
         PropertyState::Persistent,
-        capacity_values.clone()
-            as Arc<dyn rust_gds::types::properties::property_values::PropertyValues>,
+        capacity_values.clone(),
     );
 
     let store = DefaultRelationshipPropertyStore::builder()
@@ -57,11 +58,7 @@ fn main() {
         println!("Property `{}`", key);
         println!("  key from property: {}", property.key());
 
-        // Cast to domain-specific type to access relationship methods
-        use rust_gds::types::properties::property::Property;
-        let values_arc = property.values();
-        let rel_values: Arc<dyn RelationshipPropertyValues> =
-            unsafe { std::mem::transmute(values_arc) };
+        let rel_values = property.values();
 
         println!("  default value: {}", rel_values.default_value());
 

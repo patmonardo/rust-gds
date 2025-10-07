@@ -429,7 +429,7 @@ impl GraphStore for DefaultGraphStore {
             .relationship_property_stores
             .values()
             .find_map(|store| store.get(property_key))
-            .map(|property| property.values.value_type())
+            .map(|property| property.property_schema().value_type())
         {
             return Ok(value_type);
         }
@@ -451,17 +451,7 @@ impl GraphStore for DefaultGraphStore {
         self.relationship_property_stores
             .get(relationship_type)
             .and_then(|store| store.get(property_key))
-            .map(|property| {
-                // Cast Arc<dyn PropertyValues> to Arc<dyn RelationshipPropertyValues>
-                // SAFETY: By construction, RelationshipProperty only stores RelationshipPropertyValues
-                let arc_copy = Arc::clone(&property.values);
-                unsafe {
-                    std::mem::transmute::<
-                        Arc<dyn crate::types::properties::property_values::PropertyValues>,
-                        Arc<dyn RelationshipPropertyValues>,
-                    >(arc_copy)
-                }
-            })
+            .map(|property| property.values_arc())
             .ok_or_else(|| GraphStoreError::PropertyNotFound(property_key.to_string()))
     }
 
@@ -472,8 +462,11 @@ impl GraphStore for DefaultGraphStore {
         property_values: Arc<dyn RelationshipPropertyValues>,
     ) -> GraphStoreResult<()> {
         let key = property_key.into();
-        let property =
-            RelationshipProperty::of(key.clone(), PropertyState::Persistent, property_values);
+        let property = RelationshipProperty::with_state(
+            key.clone(),
+            PropertyState::Persistent,
+            property_values,
+        );
 
         let store = self
             .relationship_property_stores

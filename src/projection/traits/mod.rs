@@ -6,9 +6,6 @@ pub mod element_projection;
 /// graph elements (nodes and relationships) with property mappings.
 pub mod property_mapping;
 
-pub use abstract_projections::{AbstractProjections, Projections, ProjectionsBuilder};
-pub use element_projection::{
-    ElementProjection, InlineProperties, InlinePropertiesBuilder, PropertyMappings,
-    PropertyMappingsBuilder,
-};
-pub use property_mapping::{Aggregation, PropertyMapping, PropertyMappingBuilder};
+pub use abstract_projections::*;
+pub use element_projection::*;
+pub use property_mapping::*;
