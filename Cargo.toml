@@ -25,6 +25,7 @@ polars = { version = "0.32", features = [
 memmap2 = "0.5"
 arrow2 = "0.15"
 rand = { version = "0.8", features = ["std", "std_rng"] }
+num_cpus = "1.16"
 
 [build-dependencies]
 napi-build = "2"
@@ -36,3 +37,6 @@ core = ["cursor"]
 arrow = []
 io = []
 pipeline = []
+# Config system optional features
+serde = []        # Enables config serialization (serde already in deps)
+config-files = [] # Future: YAML/JSON file loading

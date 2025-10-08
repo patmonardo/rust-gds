@@ -1,7 +1,5 @@
 use crate::property_values_impl;
-use crate::types::properties::graph::{
-    DoubleGraphPropertyValues, GraphPropertyValues,
-};
+use crate::types::properties::graph::{DoubleGraphPropertyValues, GraphPropertyValues};
 use crate::types::properties::PropertyValues;
 use crate::types::ValueType;
 use std::any::Any;

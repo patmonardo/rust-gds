@@ -1,9 +1,5 @@
-use crate::types::properties::node::{
-    DoubleNodePropertyValues, NodePropertyValues,
-};
-use crate::types::properties::{
-    PropertyValues, PropertyValuesError, PropertyValuesResult,
-};
+use crate::types::properties::node::{DoubleNodePropertyValues, NodePropertyValues};
+use crate::types::properties::{PropertyValues, PropertyValuesError, PropertyValuesResult};
 use crate::types::ValueType;
 use crate::{node_double_property_values_impl, property_values_impl};
 

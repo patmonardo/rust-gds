@@ -1,51 +1,8 @@
+use super::Aggregation;
 use crate::types::DefaultValue;
 use crate::types::PropertyState;
 use crate::types::ValueType;
 use serde::{Deserialize, Serialize};
-
-/// Aggregation strategy for relationship properties.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Aggregation {
-    None,
-    Min,
-    Max,
-    Sum,
-    Count,
-    Single,
-    Default,
-}
-
-impl Aggregation {
-    /// Resolves DEFAULT aggregation to a concrete aggregation strategy.
-    pub fn resolve(agg: Aggregation) -> Aggregation {
-        match agg {
-            Aggregation::Default => Aggregation::None,
-            other => other,
-        }
-    }
-
-    pub fn equals(a: Aggregation, b: Aggregation) -> bool {
-        a == b
-    }
-
-    pub fn hash_code(agg: Aggregation) -> i32 {
-        agg as i32
-    }
-}
-
-impl std::fmt::Display for Aggregation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Aggregation::None => write!(f, "NONE"),
-            Aggregation::Min => write!(f, "MIN"),
-            Aggregation::Max => write!(f, "MAX"),
-            Aggregation::Sum => write!(f, "SUM"),
-            Aggregation::Count => write!(f, "COUNT"),
-            Aggregation::Single => write!(f, "SINGLE"),
-            Aggregation::Default => write!(f, "DEFAULT"),
-        }
-    }
-}
 
 /// Trait for property schemas (node or relationship properties).
 pub trait PropertySchemaTrait: Send + Sync {
