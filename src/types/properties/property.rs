@@ -1,8 +1,8 @@
 use super::property_values::PropertyValues;
-use crate::types::default_value::DefaultValue;
-use crate::types::property_state::PropertyState;
 use crate::types::schema::PropertySchema;
-use crate::types::value_type::ValueType;
+use crate::types::DefaultValue;
+use crate::types::PropertyState;
+use crate::types::ValueType;
 use std::sync::Arc;
 
 /// Canonical trait representing a property (no "Trait" suffix).

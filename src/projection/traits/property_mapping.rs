@@ -1,4 +1,4 @@
-use crate::types::default_value::DefaultValue;
+use crate::types::DefaultValue;
 use std::fmt;
 
 /// Aggregation strategy for relationship properties.

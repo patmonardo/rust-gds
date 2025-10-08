@@ -6,7 +6,7 @@
 //! - Duplicate key detection
 //! - Fluent builder API for construction
 
-use crate::projection::traits::{Aggregation, PropertyMapping};
+use crate::projection::{Aggregation, PropertyMapping};
 use std::collections::HashSet;
 
 /// A collection of property mappings for configuring property filtering and aggregation.

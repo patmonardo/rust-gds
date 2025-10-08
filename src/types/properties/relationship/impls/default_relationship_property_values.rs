@@ -1,9 +1,7 @@
 use crate::property_values_impl;
-use crate::types::properties::property_values::{
-    PropertyValues, PropertyValuesError, PropertyValuesResult,
-};
-use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use crate::types::value_type::ValueType;
+use crate::types::properties::relationship::RelationshipPropertyValues;
+use crate::types::properties::{PropertyValues, PropertyValuesError, PropertyValuesResult};
+use crate::types::ValueType;
 
 /// Default implementation for relationship property values storing `f64`
 /// entries with an optional default value.

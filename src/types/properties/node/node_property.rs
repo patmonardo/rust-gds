@@ -1,6 +1,6 @@
 use super::node_property_values::NodePropertyValues;
-use crate::types::properties::node::impls::DefaultNodeProperty;
-use crate::types::property_state::PropertyState;
+use crate::types::properties::node::DefaultNodeProperty;
+use crate::types::PropertyState;
 use std::sync::Arc;
 
 /// Alias for ergonomics: NodeProperty resolves to the concrete default implementation.
@@ -13,5 +13,5 @@ pub fn node_property_of(
     values: Arc<dyn NodePropertyValues>,
 ) -> NodeProperty {
     // DefaultValue and PropertySchema creation is handled inside DefaultNodeProperty::with_state
-    DefaultNodeProperty::with_state(key, origin, values)
+    NodeProperty::with_state(key, origin, values)
 }

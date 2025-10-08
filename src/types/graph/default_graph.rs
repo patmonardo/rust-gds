@@ -13,7 +13,7 @@ use crate::types::properties::relationship::{
     PropertyValue, RelationshipCursor, RelationshipCursorBox, RelationshipIterator,
     RelationshipPredicate, RelationshipStream,
 };
-use crate::types::schema::{GraphSchema, NodeLabel, RelationshipType as SchemaRelationshipType};
+use crate::types::schema::{GraphSchema, NodeLabel};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -430,9 +430,9 @@ impl Graph for DefaultGraph {
         let filtered_schema = if relationship_types.is_empty() {
             Arc::clone(&self.schema)
         } else {
-            let schema_types: HashSet<SchemaRelationshipType> = relationship_types
+            let schema_types: HashSet<RelationshipType> = relationship_types
                 .iter()
-                .map(|rel_type| SchemaRelationshipType::new(rel_type.name()))
+                .map(|rel_type| RelationshipType::of(rel_type.name()))
                 .collect();
             Arc::new(self.schema.filter_relationship_types(&schema_types))
         };

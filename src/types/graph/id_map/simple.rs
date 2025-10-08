@@ -239,7 +239,7 @@ mod tests {
     #[test]
     fn labels() {
         let mut map = SimpleIdMap::from_original_ids([1, 2]);
-        let label = NodeLabel::new("Person");
+        let label = NodeLabel::of("Person");
         map.add_node_label(label.clone());
         map.add_node_id_to_label(0, label.clone());
         assert!(map.has_label(0, &label));

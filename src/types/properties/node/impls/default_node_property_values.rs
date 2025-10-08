@@ -1,11 +1,9 @@
-use crate::types::properties::node::node_property_values::{
+use crate::types::properties::node::{
     DoubleArrayNodePropertyValues, DoubleNodePropertyValues, FloatArrayNodePropertyValues,
     LongArrayNodePropertyValues, LongNodePropertyValues, NodePropertyValues,
 };
-use crate::types::properties::property_values::{
-    PropertyValues, PropertyValuesError, PropertyValuesResult,
-};
-use crate::types::value_type::ValueType;
+use crate::types::properties::{PropertyValues, PropertyValuesError, PropertyValuesResult};
+use crate::types::ValueType;
 use crate::{
     node_double_array_property_values_impl, node_double_property_values_impl,
     node_float_array_property_values_impl, node_long_array_property_values_impl,
@@ -148,7 +146,7 @@ impl LongArrayNodePropertyValues for DefaultLongArrayNodePropertyValues {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::value_type::ValueType;
+    use crate::types::ValueType;
 
     #[test]
     fn test_long_node_property_values() {

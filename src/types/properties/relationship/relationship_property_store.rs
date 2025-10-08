@@ -1,6 +1,6 @@
 // filepath: /home/pat/VSCode/rust-gds/src/types/properties/relationship/relationship_property_store.rs
 use super::relationship_property_values::RelationshipPropertyValues;
-use crate::types::properties::property_store::PropertyStore;
+use crate::types::properties::PropertyStore;
 use std::collections::HashMap;
 
 /// Trait-first contract for relationship property stores.

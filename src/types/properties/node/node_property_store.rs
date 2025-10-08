@@ -1,5 +1,5 @@
 use super::node_property_values::NodePropertyValues;
-use crate::types::properties::property_store::PropertyStore;
+use crate::types::properties::PropertyStore;
 use std::collections::HashMap;
 
 /// Trait describing a store of node properties (traits-first pattern).

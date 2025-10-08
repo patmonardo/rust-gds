@@ -1,5 +1,5 @@
 use crate::types::graph::id_map::MappedNodeId;
-use crate::types::properties::relationship::traits::{
+use crate::types::properties::relationship::{
     ModifiableRelationshipCursor, PropertyValue, RelationshipCursor,
 };
 

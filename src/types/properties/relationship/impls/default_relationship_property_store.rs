@@ -1,9 +1,9 @@
-use crate::types::properties::property_store::PropertyStore;
 use crate::types::properties::relationship::relationship_property::RelationshipProperty;
 use crate::types::properties::relationship::{
     relationship_property_store::{RelationshipPropertyStore, RelationshipPropertyStoreBuilder},
     relationship_property_values::RelationshipPropertyValues,
 };
+use crate::types::properties::PropertyStore;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -146,7 +146,7 @@ impl DefaultRelationshipPropertyStoreBuilder {
     ) -> Self {
         let key_str = key.into();
         let values = values.into();
-        use crate::types::property_state::PropertyState;
+        use crate::types::PropertyState;
 
         let prop =
             RelationshipProperty::with_state(key_str.clone(), PropertyState::Persistent, values);

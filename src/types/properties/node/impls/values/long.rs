@@ -1,10 +1,10 @@
-use crate::types::properties::node::node_property_values::{
+use crate::types::properties::node::{
     LongNodePropertyValues, NodePropertyValues,
 };
-use crate::types::properties::property_values::{
+use crate::types::properties::{
     PropertyValues, PropertyValuesError, PropertyValuesResult,
 };
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 use crate::{node_long_property_values_impl, property_values_impl};
 
 /// Default implementation for long node property values.
@@ -39,8 +39,8 @@ impl LongNodePropertyValues for DefaultLongNodePropertyValues {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::properties::property_values::PropertyValues;
-    use crate::types::value_type::ValueType;
+    use crate::types::properties::PropertyValues;
+    use crate::types::ValueType;
 
     #[test]
     fn test_long_node_property_values() {

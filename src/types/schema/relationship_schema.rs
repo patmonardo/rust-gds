@@ -2,7 +2,7 @@ use crate::types::schema::{
     Direction, PropertySchemaTrait, RelationshipPropertySchema, RelationshipType, SchemaError,
     SchemaResult,
 };
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
@@ -53,7 +53,7 @@ impl RelationshipSchemaEntry {
 
     /// Creates a union of this entry with another entry.
     pub fn union(&self, other: &RelationshipSchemaEntry) -> SchemaResult<RelationshipSchemaEntry> {
-        if !self.identifier.equals(&other.identifier) {
+        if self.identifier != other.identifier {
             return Err(SchemaError::IdentifierMismatch {
                 left: self.identifier.name().to_string(),
                 right: other.identifier.name().to_string(),
@@ -145,7 +145,7 @@ impl MutableRelationshipSchemaEntry {
         &self,
         other: &RelationshipSchemaEntry,
     ) -> SchemaResult<MutableRelationshipSchemaEntry> {
-        if !self.identifier.equals(&other.identifier) {
+        if self.identifier != other.identifier {
             return Err(SchemaError::IdentifierMismatch {
                 left: self.identifier.name().to_string(),
                 right: other.identifier.name().to_string(),
@@ -412,7 +412,7 @@ mod tests {
 
     #[test]
     fn test_relationship_schema_entry() {
-        let rel_type = RelationshipType::new("KNOWS");
+        let rel_type = RelationshipType::of("KNOWS");
         let mut entry = MutableRelationshipSchemaEntry::new(rel_type.clone(), Direction::Directed);
 
         entry.add_property("since", ValueType::Long);
@@ -425,7 +425,7 @@ mod tests {
 
     #[test]
     fn test_relationship_schema_union() {
-        let rel_type = RelationshipType::new("KNOWS");
+        let rel_type = RelationshipType::of("KNOWS");
 
         let mut schema1 = MutableRelationshipSchema::new();
         schema1.add_property(
@@ -451,7 +451,7 @@ mod tests {
 
     #[test]
     fn test_relationship_schema_direction_conflict() {
-        let rel_type = RelationshipType::new("KNOWS");
+        let rel_type = RelationshipType::of("KNOWS");
 
         let mut schema1 = MutableRelationshipSchema::new();
         schema1.add_relationship_type(rel_type.clone(), Direction::Directed);
@@ -470,8 +470,8 @@ mod tests {
     #[test]
     fn test_is_undirected() {
         let mut schema = MutableRelationshipSchema::new();
-        schema.add_relationship_type(RelationshipType::new("R1"), Direction::Undirected);
-        schema.add_relationship_type(RelationshipType::new("R2"), Direction::Undirected);
+        schema.add_relationship_type(RelationshipType::of("R1"), Direction::Undirected);
+        schema.add_relationship_type(RelationshipType::of("R2"), Direction::Undirected);
 
         let built = schema.build();
         assert!(built.is_undirected());

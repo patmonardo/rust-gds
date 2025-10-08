@@ -10,10 +10,7 @@ use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use rust_gds::types::properties::node::DefaultLongNodePropertyValues;
 use rust_gds::types::properties::relationship::PropertyValue;
 use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
-use rust_gds::types::schema::{
-    Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
-    RelationshipType as SchemaRelationshipType,
-};
+use rust_gds::types::schema::{Direction, MutableGraphSchema};
 use rust_gds::types::value_type::ValueType;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
@@ -56,23 +53,18 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     let person = NodeLabel::of("Person");
     let movie = NodeLabel::of("Movie");
     let acted_in = RelationshipType::of("ACTED_IN");
-    let person_schema = SchemaNodeLabel::new("Person");
-    let movie_schema = SchemaNodeLabel::new("Movie");
-    let acted_in_schema = SchemaRelationshipType::new("ACTED_IN");
 
     let mut schema_builder = MutableGraphSchema::empty();
     schema_builder.node_schema_mut().add_property(
-        person_schema.clone(),
+        person.clone(),
         "experience_years",
         ValueType::Long,
     );
-    schema_builder.node_schema_mut().add_property(
-        movie_schema.clone(),
-        "release_year",
-        ValueType::Long,
-    );
+    schema_builder
+        .node_schema_mut()
+        .add_property(movie.clone(), "release_year", ValueType::Long);
     schema_builder.relationship_schema_mut().add_property(
-        acted_in_schema.clone(),
+        acted_in.clone(),
         Direction::Directed,
         "role_count",
         ValueType::Long,
@@ -83,12 +75,12 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     println!("  IdMap translates original node IDs (e.g., from Neo4j) to compact 0..N range.");
     println!("  This enables efficient columnar storage and array-based topology.");
     let mut id_map = SimpleIdMap::from_original_ids([0, 1, 2, 3]);
-    id_map.add_node_label(person_schema.clone());
-    id_map.add_node_label(movie_schema.clone());
-    id_map.add_node_id_to_label(0, person_schema.clone());
-    id_map.add_node_id_to_label(1, person_schema.clone());
-    id_map.add_node_id_to_label(2, movie_schema.clone());
-    id_map.add_node_id_to_label(3, movie_schema.clone());
+    id_map.add_node_label(person.clone());
+    id_map.add_node_label(movie.clone());
+    id_map.add_node_id_to_label(0, person.clone());
+    id_map.add_node_id_to_label(1, person.clone());
+    id_map.add_node_id_to_label(2, movie.clone());
+    id_map.add_node_id_to_label(3, movie.clone());
 
     println!("\nStep 4: Relationship topology (adjacency lists)");
     println!("  RelationshipTopology stores the graph structure as adjacency lists.");

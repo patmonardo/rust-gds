@@ -1,3 +1,4 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -11,6 +12,27 @@ use std::sync::{Arc, RwLock};
 #[derive(Clone)]
 pub struct RelationshipType {
     name: Arc<String>,
+}
+
+// Custom Serialize - just write the string
+impl Serialize for RelationshipType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.name.as_str().serialize(serializer)
+    }
+}
+
+// Custom Deserialize - read string and re-intern
+impl<'de> Deserialize<'de> for RelationshipType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let name = String::deserialize(deserializer)?;
+        Ok(RelationshipType::of(name))
+    }
 }
 
 impl RelationshipType {
@@ -86,7 +108,7 @@ impl RelationshipType {
 
     /// Returns the name of this relationship type.
     pub fn name(&self) -> &str {
-        &self.name
+        self.name.as_str()
     }
 
     /// Returns whether this is the ALL_RELATIONSHIPS type.
@@ -199,5 +221,16 @@ mod tests {
         let rel_type = RelationshipType::of("KNOWS");
         let all = rel_type.project_all();
         assert!(all.is_all_relationships());
+    }
+
+    #[test]
+    fn test_serde_roundtrip() {
+        let rel_type = RelationshipType::of("KNOWS");
+        let json = serde_json::to_string(&rel_type).unwrap();
+        let deserialized: RelationshipType = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(rel_type, deserialized);
+        // After deserialization, should be re-interned
+        assert!(Arc::ptr_eq(&rel_type.name, &deserialized.name));
     }
 }

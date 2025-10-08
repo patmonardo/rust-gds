@@ -1,6 +1,6 @@
 use super::graph_property_values::GraphPropertyValues;
-use crate::types::properties::graph::impls::DefaultGraphProperty;
-use crate::types::property_state::PropertyState;
+use crate::types::properties::graph::DefaultGraphProperty;
+use crate::types::PropertyState;
 use std::sync::Arc;
 
 /// Alias for ergonomics: GraphProperty resolves to the concrete default implementation.
@@ -12,5 +12,5 @@ pub fn graph_property_of(
     state: PropertyState,
     values: Arc<dyn GraphPropertyValues>,
 ) -> GraphProperty {
-    DefaultGraphProperty::with_state(key, state, values)
+    GraphProperty::with_state(key, state, values)
 }

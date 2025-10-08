@@ -1,10 +1,8 @@
-use crate::types::properties::node::node_property::NodeProperty;
-use crate::types::properties::node::node_property_store::{
-    NodePropertyStore, NodePropertyStoreBuilder,
-};
-use crate::types::properties::node::node_property_values::NodePropertyValues;
-use crate::types::properties::property_store::PropertyStore;
-use crate::types::property_state::PropertyState;
+use crate::types::properties::node::NodeProperty;
+use crate::types::properties::node::NodePropertyValues;
+use crate::types::properties::node::{NodePropertyStore, NodePropertyStoreBuilder};
+use crate::types::properties::PropertyStore;
+use crate::types::PropertyState;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -158,12 +156,12 @@ impl DefaultNodePropertyStoreBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::default_value::DefaultValue;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
-    use crate::types::property_state::PropertyState;
+    use crate::types::DefaultValue;
+    use crate::types::PropertyState;
 
     fn sample_prop(key: &str) -> NodeProperty {
-        use crate::types::properties::property_values::PropertyValues;
+        use crate::types::properties::PropertyValues;
         use std::sync::Arc;
 
         let values: Arc<dyn NodePropertyValues> =

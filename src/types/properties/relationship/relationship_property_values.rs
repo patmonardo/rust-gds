@@ -1,5 +1,5 @@
-use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
-use crate::types::value_type::ValueType;
+use crate::types::properties::{PropertyValues, PropertyValuesResult};
+use crate::types::ValueType;
 
 /// Represents properties of relationships in a graph.
 /// Provides access to relationship property values and metadata.

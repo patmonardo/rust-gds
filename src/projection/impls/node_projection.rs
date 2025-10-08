@@ -1,10 +1,10 @@
-use crate::projection::traits::{ElementProjection, PropertyMappings};
 /// Node projection implementation.
 ///
 /// Defines how nodes are projected into the graph, including which
 /// properties to load and how to configure them.
 use crate::projection::NodeLabel;
 use crate::projection::PROJECT_ALL;
+use crate::projection::{ElementProjection, PropertyMappings};
 use std::collections::HashMap;
 use std::sync::Arc;
 

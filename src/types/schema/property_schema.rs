@@ -1,6 +1,6 @@
-use crate::types::default_value::DefaultValue;
-use crate::types::property_state::PropertyState;
-use crate::types::value_type::ValueType;
+use crate::types::DefaultValue;
+use crate::types::PropertyState;
+use crate::types::ValueType;
 use serde::{Deserialize, Serialize};
 
 /// Aggregation strategy for relationship properties.

@@ -19,10 +19,7 @@ use rust_gds::types::properties::node::{
     DefaultLongNodePropertyValues, NodePropertyContainer, NodePropertyValues,
 };
 use rust_gds::types::properties::relationship::PropertyValue;
-use rust_gds::types::schema::{
-    Direction, MutableGraphSchema, NodeLabel as SchemaNodeLabel,
-    RelationshipType as SchemaRelationshipType,
-};
+use rust_gds::types::schema::{Direction, MutableGraphSchema};
 use rust_gds::types::value_type::ValueType;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
@@ -63,23 +60,17 @@ fn build_property_showcase() -> GraphStoreResult<DefaultGraphStore> {
     let company = NodeLabel::of("Company");
     let works_at = RelationshipType::of("WORKS_AT");
 
-    let person_schema = SchemaNodeLabel::new("Person");
-    let company_schema = SchemaNodeLabel::new("Company");
-    let works_at_schema = SchemaRelationshipType::new("WORKS_AT");
-
     let mut schema_builder = MutableGraphSchema::empty();
     schema_builder.node_schema_mut().add_property(
-        person_schema.clone(),
+        person.clone(),
         "experience_years",
         ValueType::Long,
     );
-    schema_builder.node_schema_mut().add_property(
-        company_schema.clone(),
-        "headcount",
-        ValueType::Long,
-    );
+    schema_builder
+        .node_schema_mut()
+        .add_property(company.clone(), "headcount", ValueType::Long);
     schema_builder.relationship_schema_mut().add_property(
-        works_at_schema,
+        works_at.clone(),
         Direction::Directed,
         "tenure_months",
         ValueType::Long,
@@ -87,12 +78,12 @@ fn build_property_showcase() -> GraphStoreResult<DefaultGraphStore> {
     let schema = schema_builder.build();
 
     let mut id_map = SimpleIdMap::from_original_ids([100, 101, 200, 201]);
-    id_map.add_node_label(person_schema.clone());
-    id_map.add_node_label(company_schema.clone());
-    id_map.add_node_id_to_label(0, person_schema.clone());
-    id_map.add_node_id_to_label(1, person_schema);
-    id_map.add_node_id_to_label(2, company_schema.clone());
-    id_map.add_node_id_to_label(3, company_schema);
+    id_map.add_node_label(person.clone());
+    id_map.add_node_label(company.clone());
+    id_map.add_node_id_to_label(0, person.clone());
+    id_map.add_node_id_to_label(1, person.clone());
+    id_map.add_node_id_to_label(2, company.clone());
+    id_map.add_node_id_to_label(3, company.clone());
 
     let outgoing = vec![vec![2], vec![3], vec![], vec![]];
     let topology = RelationshipTopology::new(outgoing, None);

@@ -4,9 +4,9 @@ use super::{Capabilities, DatabaseInfo, DeletionResult};
 use crate::projection::{NodeLabel, RelationshipType};
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::node::NodePropertyValues;
-use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
+use crate::types::properties::relationship::RelationshipPropertyValues;
 use crate::types::schema::GraphSchema;
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 use std::collections::HashSet;
 use std::sync::Arc;
 

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::fmt;
 
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 
 /// Small set of fallback constants mirroring the TS implementation.
 pub const INTEGER_DEFAULT_FALLBACK: i32 = -2_147_483_648;

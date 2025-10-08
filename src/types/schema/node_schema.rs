@@ -1,5 +1,5 @@
 use crate::types::schema::{NodeLabel, PropertySchema, SchemaError, SchemaResult};
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
@@ -35,7 +35,7 @@ impl NodeSchemaEntry {
 
     /// Creates a union of this entry with another entry.
     pub fn union(&self, other: &NodeSchemaEntry) -> SchemaResult<NodeSchemaEntry> {
-        if !self.identifier.equals(&other.identifier) {
+        if self.identifier != other.identifier {
             return Err(SchemaError::IdentifierMismatch {
                 left: self.identifier.name().to_string(),
                 right: other.identifier.name().to_string(),
@@ -106,7 +106,7 @@ impl MutableNodeSchemaEntry {
 
     /// Creates a union with another entry.
     pub fn union(&self, other: &NodeSchemaEntry) -> SchemaResult<MutableNodeSchemaEntry> {
-        if !self.identifier.equals(&other.identifier) {
+        if self.identifier != other.identifier {
             return Err(SchemaError::IdentifierMismatch {
                 left: self.identifier.name().to_string(),
                 right: other.identifier.name().to_string(),
@@ -345,7 +345,7 @@ mod tests {
 
     #[test]
     fn test_node_schema_entry() {
-        let label = NodeLabel::new("Person");
+        let label = NodeLabel::of("Person");
         let mut entry = MutableNodeSchemaEntry::new(label.clone());
 
         entry.add_property("name", ValueType::String);
@@ -358,7 +358,7 @@ mod tests {
 
     #[test]
     fn test_node_schema_union() {
-        let label = NodeLabel::new("Person");
+        let label = NodeLabel::of("Person");
 
         let mut schema1 = MutableNodeSchema::new();
         schema1.add_property(label.clone(), "name", ValueType::String);
@@ -376,7 +376,7 @@ mod tests {
 
     #[test]
     fn test_node_schema_union_conflict() {
-        let label = NodeLabel::new("Person");
+        let label = NodeLabel::of("Person");
 
         let mut schema1 = MutableNodeSchema::new();
         schema1.add_property(label.clone(), "prop", ValueType::String);
@@ -395,16 +395,16 @@ mod tests {
     #[test]
     fn test_filter() {
         let mut schema = MutableNodeSchema::new();
-        schema.add_label(NodeLabel::new("Person"));
-        schema.add_label(NodeLabel::new("Company"));
+        schema.add_label(NodeLabel::of("Person"));
+        schema.add_label(NodeLabel::of("Company"));
 
         let mut keep = HashSet::new();
-        keep.insert(NodeLabel::new("Person"));
+        keep.insert(NodeLabel::of("Person"));
 
         let filtered = schema.filter(&keep);
         assert_eq!(filtered.available_labels().len(), 1);
         assert!(filtered
             .available_labels()
-            .contains(&NodeLabel::new("Person")));
+            .contains(&NodeLabel::of("Person")));
     }
 }

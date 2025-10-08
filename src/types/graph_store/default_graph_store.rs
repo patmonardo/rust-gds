@@ -7,24 +7,20 @@ use crate::types::graph::{
     id_map::{IdMap, SimpleIdMap},
     DefaultGraph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
 };
-use crate::types::properties::graph::graph_property_values::GraphPropertyValues;
-use crate::types::value_type::ValueType;
+use crate::types::properties::graph::GraphPropertyValues;
+use crate::types::ValueType;
 
-// FIXED: use explicit module path for node property values (re-exports removed)
-use crate::types::properties::node::node_property_values::NodePropertyValues;
+use crate::types::properties::node::NodePropertyValues;
 
-// FIXED: expand relationship module imports explicitly (no broad pub use now)
-use crate::types::properties::relationship::impls::default_relationship_property_store::DefaultRelationshipPropertyStore;
+use crate::types::properties::relationship::default_relationship_property_store::DefaultRelationshipPropertyStore;
 use crate::types::properties::relationship::relationship_property::RelationshipProperty;
-use crate::types::properties::relationship::relationship_property_store::{
+use crate::types::properties::relationship::RelationshipPropertyValues;
+use crate::types::properties::relationship::{
     RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
-use crate::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
 
-use crate::types::property_state::PropertyState;
-use crate::types::schema::{
-    Direction, GraphSchema, NodeLabel as SchemaNodeLabel, PropertySchemaTrait,
-};
+use crate::types::schema::{Direction, GraphSchema, PropertySchemaTrait};
+use crate::types::PropertyState;
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -124,12 +120,16 @@ impl DefaultGraphStore {
         self.modification_time = Utc::now();
     }
 
-    fn schema_labels(&self) -> HashSet<SchemaNodeLabel> {
-        self.id_map.available_node_labels()
+    fn schema_labels(&self) -> HashSet<NodeLabel> {
+        self.id_map
+            .available_node_labels()
+            .into_iter()
+            .map(|label| NodeLabel::of(label.name()))
+            .collect()
     }
 
-    fn to_schema_label(label: &NodeLabel) -> SchemaNodeLabel {
-        SchemaNodeLabel::new(label.name())
+    fn to_schema_label(label: &NodeLabel) -> NodeLabel {
+        NodeLabel::of(label.name())
     }
 
     fn label_key(label: &NodeLabel) -> String {
@@ -261,9 +261,6 @@ impl GraphStore for DefaultGraphStore {
 
     fn node_labels(&self) -> HashSet<NodeLabel> {
         self.schema_labels()
-            .into_iter()
-            .map(|label| NodeLabel::of(label.name()))
-            .collect()
     }
 
     fn has_node_label(&self, label: &NodeLabel) -> bool {
@@ -425,15 +422,14 @@ impl GraphStore for DefaultGraphStore {
     }
 
     fn relationship_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType> {
-        if let Some(value_type) = self
-            .relationship_property_stores
-            .values()
-            .find_map(|store| store.get(property_key))
-            .map(|property| property.property_schema().value_type())
-        {
-            return Ok(value_type);
+        // First check the actual property stores
+        for store in self.relationship_property_stores.values() {
+            if let Some(property) = store.get(property_key) {
+                return Ok(property.property_schema().value_type());
+            }
         }
 
+        // Fall back to schema if property not found in stores
         for entry in self.schema.relationship_schema().entries() {
             if let Some(property_schema) = entry.properties().get(property_key) {
                 return Ok(property_schema.value_type());

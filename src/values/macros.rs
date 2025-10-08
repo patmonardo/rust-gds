@@ -40,8 +40,8 @@ macro_rules! gds_value_array_direct {
         }
 
         impl $crate::values::traits::GdsValue for $name {
-            fn value_type(&self) -> $crate::types::value_type::ValueType {
-                $crate::types::value_type::ValueType::$value_type
+            fn value_type(&self) -> $crate::types::ValueType {
+                $crate::types::ValueType::$value_type
             }
             fn as_object(&self) -> serde_json::Value {
                 serde_json::Value::from(self.$array_method())
@@ -96,8 +96,8 @@ macro_rules! gds_value_array_convert {
         }
 
         impl $crate::values::traits::GdsValue for $name {
-            fn value_type(&self) -> $crate::types::value_type::ValueType {
-                $crate::types::value_type::ValueType::$value_type
+            fn value_type(&self) -> $crate::types::ValueType {
+                $crate::types::ValueType::$value_type
             }
             fn as_object(&self) -> serde_json::Value {
                 serde_json::Value::from(self.$array_method())
@@ -130,8 +130,8 @@ macro_rules! gds_value_scalar {
         }
 
         impl $crate::values::traits::GdsValue for $name {
-            fn value_type(&self) -> $crate::types::value_type::ValueType {
-                $crate::types::value_type::ValueType::$value_type
+            fn value_type(&self) -> $crate::types::ValueType {
+                $crate::types::ValueType::$value_type
             }
             fn as_object(&self) -> serde_json::Value {
                 serde_json::Value::from(self.0)

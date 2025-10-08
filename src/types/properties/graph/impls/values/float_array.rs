@@ -1,9 +1,7 @@
 use crate::property_values_impl;
-use crate::types::properties::graph::graph_property_values::{
-    FloatArrayGraphPropertyValues, GraphPropertyValues,
-};
-use crate::types::properties::property_values::PropertyValues;
-use crate::types::value_type::ValueType;
+use crate::types::properties::graph::{FloatArrayGraphPropertyValues, GraphPropertyValues};
+use crate::types::properties::PropertyValues;
+use crate::types::ValueType;
 use std::any::Any;
 
 /// Default implementation for float array graph property values.

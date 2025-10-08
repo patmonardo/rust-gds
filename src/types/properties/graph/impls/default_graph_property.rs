@@ -1,9 +1,9 @@
-use crate::types::default_value::DefaultValue;
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::Property;
 use crate::types::properties::PropertyValues;
-use crate::types::property_state::PropertyState;
 use crate::types::schema::PropertySchema;
+use crate::types::DefaultValue;
+use crate::types::PropertyState;
 use std::sync::Arc;
 
 /// Concrete graph property implementation that mirrors the structure of the
@@ -91,7 +91,7 @@ impl Property for DefaultGraphProperty {
 mod tests {
     use super::*;
     use crate::types::properties::graph::DefaultLongGraphPropertyValues;
-    use crate::types::properties::property_values::PropertyValues;
+    use crate::types::properties::PropertyValues;
 
     #[test]
     fn default_graph_property_creation() {

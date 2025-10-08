@@ -1,5 +1,5 @@
 use super::graph_property_values::GraphPropertyValues;
-use crate::types::properties::property_store::PropertyStore;
+use crate::types::properties::PropertyStore;
 use std::collections::HashMap;
 
 /// Abstraction describing the behaviour expected from any graph property store.

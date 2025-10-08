@@ -4,7 +4,6 @@
 // It mirrors the TypeScript GDS schema API structure with Rust idioms.
 
 pub mod direction;
-pub mod element_identifier;
 pub mod graph_schema;
 pub mod node_schema;
 pub mod property_schema;
@@ -12,11 +11,12 @@ pub mod relationship_schema;
 
 pub use crate::types::ValueType;
 pub use direction::*;
-pub use element_identifier::*;
 pub use graph_schema::*;
 pub use node_schema::*;
 pub use property_schema::*;
 pub use relationship_schema::*;
+
+pub use crate::projection::{NodeLabel, RelationshipType};
 
 /// Error type for schema operations
 #[derive(Debug, Clone, thiserror::Error)]

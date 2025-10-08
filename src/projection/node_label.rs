@@ -1,3 +1,4 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -11,6 +12,27 @@ use std::sync::{Arc, RwLock};
 #[derive(Clone)]
 pub struct NodeLabel {
     name: Arc<String>,
+}
+
+// Custom Serialize - just write the string
+impl Serialize for NodeLabel {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.name.as_str().serialize(serializer)
+    }
+}
+
+// Custom Deserialize - read string and re-intern
+impl<'de> Deserialize<'de> for NodeLabel {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let name = String::deserialize(deserializer)?;
+        Ok(NodeLabel::of(name))
+    }
 }
 
 impl NodeLabel {
@@ -86,7 +108,7 @@ impl NodeLabel {
 
     /// Returns the name of this label.
     pub fn name(&self) -> &str {
-        &self.name
+        self.name.as_str()
     }
 
     /// Returns whether this is the ALL_NODES label.
@@ -192,5 +214,16 @@ mod tests {
         assert!(label1 < label2);
         assert!(label2 < label3);
         assert!(label1 < label3);
+    }
+
+    #[test]
+    fn test_serde_roundtrip() {
+        let label = NodeLabel::of("Person");
+        let json = serde_json::to_string(&label).unwrap();
+        let deserialized: NodeLabel = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(label, deserialized);
+        // After deserialization, should be re-interned
+        assert!(Arc::ptr_eq(&label.name, &deserialized.name));
     }
 }

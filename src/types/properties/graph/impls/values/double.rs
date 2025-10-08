@@ -1,9 +1,9 @@
 use crate::property_values_impl;
-use crate::types::properties::graph::graph_property_values::{
+use crate::types::properties::graph::{
     DoubleGraphPropertyValues, GraphPropertyValues,
 };
-use crate::types::properties::property_values::PropertyValues;
-use crate::types::value_type::ValueType;
+use crate::types::properties::PropertyValues;
+use crate::types::ValueType;
 use std::any::Any;
 
 /// Default implementation for double graph property values.

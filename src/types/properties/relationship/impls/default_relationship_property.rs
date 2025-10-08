@@ -1,9 +1,9 @@
-use crate::types::default_value::DefaultValue;
 use crate::types::properties::relationship::RelationshipPropertyValues;
 use crate::types::properties::Property;
 use crate::types::properties::PropertyValues;
-use crate::types::property_state::PropertyState;
 use crate::types::schema::PropertySchema;
+use crate::types::DefaultValue;
+use crate::types::PropertyState;
 use std::sync::Arc;
 
 /// Concrete relationship property implementation that mirrors the structure of
@@ -93,9 +93,9 @@ impl Property for DefaultRelationshipProperty {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::properties::property_values::PropertyValues;
     use crate::types::properties::relationship::impls::values::DefaultRelationshipPropertyValues;
-    use crate::types::value_type::ValueType;
+    use crate::types::properties::PropertyValues;
+    use crate::types::ValueType;
 
     #[test]
     fn default_relationship_property_creation() {

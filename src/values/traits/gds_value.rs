@@ -1,4 +1,4 @@
-use crate::types::value_type::ValueType;
+use crate::types::ValueType;
 use once_cell::sync::Lazy;
 use serde_json::Value as JsonValue;
 use std::collections::hash_map::DefaultHasher;

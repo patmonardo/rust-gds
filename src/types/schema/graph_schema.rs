@@ -323,7 +323,7 @@ fn relationship_properties_to_map(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::value_type::ValueType;
+    use crate::types::ValueType;
 
     #[test]
     fn test_empty_graph_schema() {
@@ -338,15 +338,15 @@ mod tests {
         let mut schema1 = MutableGraphSchema::empty();
         schema1
             .node_schema_mut()
-            .add_property(NodeLabel::new("Person"), "name", ValueType::String);
+            .add_property(NodeLabel::of("Person"), "name", ValueType::String);
 
         let mut schema2 = MutableGraphSchema::empty();
         schema2
             .node_schema_mut()
-            .add_property(NodeLabel::new("Person"), "age", ValueType::Long);
+            .add_property(NodeLabel::of("Person"), "age", ValueType::Long);
 
         let union = schema1.union(&schema2.build()).unwrap();
-        let person_entry = union.node_schema().get(&NodeLabel::new("Person")).unwrap();
+        let person_entry = union.node_schema().get(&NodeLabel::of("Person")).unwrap();
 
         assert_eq!(person_entry.properties().len(), 2);
     }
@@ -354,13 +354,11 @@ mod tests {
     #[test]
     fn test_filter_node_labels() {
         let mut schema = MutableGraphSchema::empty();
-        schema.node_schema_mut().add_label(NodeLabel::new("Person"));
-        schema
-            .node_schema_mut()
-            .add_label(NodeLabel::new("Company"));
+        schema.node_schema_mut().add_label(NodeLabel::of("Person"));
+        schema.node_schema_mut().add_label(NodeLabel::of("Company"));
 
         let mut keep = HashSet::new();
-        keep.insert(NodeLabel::new("Person"));
+        keep.insert(NodeLabel::of("Person"));
 
         let filtered = schema.filter_node_labels(&keep);
         assert_eq!(filtered.node_schema().available_labels().len(), 1);
@@ -379,7 +377,7 @@ mod tests {
         let mut schema = MutableGraphSchema::empty();
         schema
             .node_schema_mut()
-            .add_property(NodeLabel::new("Person"), "name", ValueType::String);
+            .add_property(NodeLabel::of("Person"), "name", ValueType::String);
 
         let built = schema.build();
         let map = built.to_map();

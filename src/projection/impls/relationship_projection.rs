@@ -1,5 +1,5 @@
-use crate::projection::traits::element_projection::PROJECT_ALL;
-use crate::projection::traits::{Aggregation, ElementProjection, PropertyMappings};
+use crate::projection::element_projection::PROJECT_ALL;
+use crate::projection::{Aggregation, ElementProjection, PropertyMappings};
 /// Relationship projection implementation.
 ///
 /// Defines how relationships are projected into the graph, including

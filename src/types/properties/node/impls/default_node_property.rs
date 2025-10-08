@@ -89,7 +89,7 @@ impl Property for DefaultNodeProperty {
 mod tests {
     use super::*;
     use crate::types::properties::node::DefaultLongNodePropertyValues;
-    use crate::types::properties::property_values::PropertyValues;
+    use crate::types::properties::PropertyValues;
 
     #[test]
     fn default_node_property_creation() {

@@ -237,20 +237,19 @@ fn build_multi_label_graph() -> DefaultGraphStore {
 
     // 5 nodes: 0,1=Person; 2=Company; 3=Company; 4=City
     let mut id_map = SimpleIdMap::from_original_ids([100, 101, 200, 201, 300]);
-    use rust_gds::types::schema::NodeLabel as SchemaNodeLabel;
-    let person_schema = SchemaNodeLabel::new("Person");
-    let company_schema = SchemaNodeLabel::new("Company");
-    let city_schema = SchemaNodeLabel::new("City");
+    let person = NodeLabel::of("Person");
+    let company = NodeLabel::of("Company");
+    let city = NodeLabel::of("City");
 
-    id_map.add_node_label(person_schema.clone());
-    id_map.add_node_label(company_schema.clone());
-    id_map.add_node_label(city_schema.clone());
+    id_map.add_node_label(person.clone());
+    id_map.add_node_label(company.clone());
+    id_map.add_node_label(city.clone());
 
-    id_map.add_node_id_to_label(0, person_schema.clone());
-    id_map.add_node_id_to_label(1, person_schema);
-    id_map.add_node_id_to_label(2, company_schema.clone());
-    id_map.add_node_id_to_label(3, company_schema);
-    id_map.add_node_id_to_label(4, city_schema);
+    id_map.add_node_id_to_label(0, person.clone());
+    id_map.add_node_id_to_label(1, person);
+    id_map.add_node_id_to_label(2, company.clone());
+    id_map.add_node_id_to_label(3, company);
+    id_map.add_node_id_to_label(4, city);
 
     // Relationships: 0->2 (WORKS_AT), 1->3 (WORKS_AT), 0->1 (KNOWS)
     let works_at_topology =
