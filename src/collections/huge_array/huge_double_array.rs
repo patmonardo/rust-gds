@@ -3,6 +3,7 @@
 //! Floating-point optimized variant for storing double-precision values efficiently
 //! while supporting massive datasets that exceed standard array limitations.
 
+use crate::collections::cursor::{HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor};
 use crate::collections::PageUtil;
 
 /// Maximum size for single-page arrays
@@ -19,6 +20,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 /// - **Dense storage**: Every position consumes memory (use sparse variants for sparse data)
 /// - **Zero default**: Unset values return `0.0`
 /// - **IEEE 754**: Full double-precision floating-point support
+/// - **Cursor support**: Efficient zero-copy iteration over pages
 ///
 /// # Examples
 ///
@@ -30,6 +32,27 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 /// scores.fill(1.0 / 1_000_000.0);
 /// scores.set(0, 0.5);
 /// assert_eq!(scores.get(0), 0.5);
+/// ```
+///
+/// # Cursor-Based Iteration
+///
+/// ```
+/// use rust_gds::collections::huge_array::HugeDoubleArray;
+/// use rust_gds::collections::cursor::{HugeCursor, init_cursor};
+///
+/// let mut array = HugeDoubleArray::new(10000);
+/// array.set_all(|i| i as f64 * 0.5);
+///
+/// let mut cursor = array.new_cursor();
+/// init_cursor(&array, &mut cursor);
+///
+/// let mut sum = 0.0;
+/// while cursor.next() {
+///     let page = cursor.array().unwrap();
+///     for i in cursor.offset()..cursor.limit() {
+///         sum += page[i];
+///     }
+/// }
 /// ```
 pub enum HugeDoubleArray {
     /// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
@@ -238,6 +261,86 @@ impl<'a> Iterator for HugeDoubleArrayIter<'a> {
             Some(value)
         } else {
             None
+        }
+    }
+}
+
+// Cursor support for HugeDoubleArray
+impl<'a> HugeCursorSupport<'a> for HugeDoubleArray {
+    type Cursor = HugeDoubleArrayCursor<'a>;
+
+    fn size(&self) -> usize {
+        HugeDoubleArray::size(self)
+    }
+
+    fn new_cursor(&'a self) -> Self::Cursor {
+        match self {
+            HugeDoubleArray::Single(arr) => {
+                HugeDoubleArrayCursor::Single(SinglePageCursor::new(&arr.data))
+            }
+            HugeDoubleArray::Paged(arr) => {
+                let capacity = arr.size;
+                HugeDoubleArrayCursor::Paged(PagedCursor::new(&arr.pages, capacity))
+            }
+        }
+    }
+}
+
+/// Cursor implementation for HugeDoubleArray
+pub enum HugeDoubleArrayCursor<'a> {
+    Single(SinglePageCursor<'a, f64>),
+    Paged(PagedCursor<'a, f64>),
+}
+
+impl<'a> HugeCursor<'a> for HugeDoubleArrayCursor<'a> {
+    type Array = [f64];
+
+    fn next(&mut self) -> bool {
+        match self {
+            Self::Single(cursor) => cursor.next(),
+            Self::Paged(cursor) => cursor.next(),
+        }
+    }
+
+    fn base(&self) -> usize {
+        match self {
+            Self::Single(cursor) => cursor.base(),
+            Self::Paged(cursor) => cursor.base(),
+        }
+    }
+
+    fn array(&self) -> Option<&'a Self::Array> {
+        match self {
+            Self::Single(cursor) => cursor.array(),
+            Self::Paged(cursor) => cursor.array(),
+        }
+    }
+
+    fn offset(&self) -> usize {
+        match self {
+            Self::Single(cursor) => cursor.offset(),
+            Self::Paged(cursor) => cursor.offset(),
+        }
+    }
+
+    fn limit(&self) -> usize {
+        match self {
+            Self::Single(cursor) => cursor.limit(),
+            Self::Paged(cursor) => cursor.limit(),
+        }
+    }
+
+    fn set_range(&mut self, from: usize, to: usize) {
+        match self {
+            Self::Single(cursor) => cursor.set_range(from, to),
+            Self::Paged(cursor) => cursor.set_range(from, to),
+        }
+    }
+
+    fn reset(&mut self) {
+        match self {
+            Self::Single(cursor) => cursor.reset(),
+            Self::Paged(cursor) => cursor.reset(),
         }
     }
 }
@@ -475,5 +578,89 @@ mod tests {
         assert_eq!(array.get(0), 100.5);
         assert_eq!(array.get(MAX_ARRAY_LENGTH), 200.5);
         assert_eq!(array.get(size - 1), 300.5);
+    }
+
+    // Cursor tests
+
+    #[test]
+    fn test_cursor_basic_iteration() {
+        use crate::collections::cursor::init_cursor;
+
+        let mut array = HugeDoubleArray::new(100);
+        array.set_all(|i| i as f64);
+
+        let mut cursor = array.new_cursor();
+        init_cursor(&array, &mut cursor);
+
+        let mut sum = 0.0;
+        while cursor.next() {
+            let page = cursor.array().unwrap();
+            for i in cursor.offset()..cursor.limit() {
+                sum += page[i];
+            }
+        }
+
+        assert_eq!(sum, 4950.0); // Sum of 0..99
+    }
+
+    #[test]
+    fn test_cursor_range_iteration() {
+        use crate::collections::cursor::init_cursor_range;
+
+        let mut array = HugeDoubleArray::new(100);
+        array.set_all(|i| i as f64);
+
+        let mut cursor = array.new_cursor();
+        init_cursor_range(&array, &mut cursor, 10, 20);
+
+        let mut sum = 0.0;
+        let mut count = 0;
+        while cursor.next() {
+            let page = cursor.array().unwrap();
+            for i in cursor.offset()..cursor.limit() {
+                sum += page[i];
+                count += 1;
+            }
+        }
+
+        assert_eq!(count, 10); // Elements 10-19
+        assert_eq!(sum, 145.0); // Sum of 10..19
+    }
+
+    #[test]
+    fn test_cursor_empty_range() {
+        use crate::collections::cursor::init_cursor_range;
+
+        let array = HugeDoubleArray::new(100);
+        let mut cursor = array.new_cursor();
+        init_cursor_range(&array, &mut cursor, 50, 50);
+
+        assert!(!cursor.next()); // Empty range
+    }
+
+    #[test]
+    fn test_cursor_reset() {
+        use crate::collections::cursor::init_cursor;
+
+        let mut array = HugeDoubleArray::new(10);
+        array.set_all(|i| i as f64);
+
+        let mut cursor = array.new_cursor();
+        init_cursor(&array, &mut cursor);
+
+        // First iteration
+        assert!(cursor.next());
+
+        // Reset and iterate again
+        cursor.reset();
+        let mut sum = 0.0;
+        while cursor.next() {
+            let page = cursor.array().unwrap();
+            for i in cursor.offset()..cursor.limit() {
+                sum += page[i];
+            }
+        }
+
+        assert_eq!(sum, 45.0); // Sum of 0..9
     }
 }
