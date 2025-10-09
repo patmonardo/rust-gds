@@ -46,11 +46,15 @@
 
 // Core traits and configuration
 mod computation;
+mod compute_step;
+mod computer;
 mod config;
 pub mod context;
+mod executor;
 mod messages;
 mod messengers;
 mod node_value;
+mod partition;
 mod queues;
 mod reducers;
 mod result;
@@ -58,11 +62,14 @@ mod schema;
 
 // Re-exports
 pub use computation::{BasePregelComputation, PregelComputation};
+pub use compute_step::{ComputeFn, ComputeStep, InitFn};
+pub use computer::{ForkJoinComputer, PregelComputer, PregelComputerBuilder};
 pub use config::{Partitioning, PregelConfig};
 pub use context::{
     BidirectionalNodeCentricContext, ComputeContext, InitContext, MasterComputeContext,
     NodeCentricContext, PregelContext,
 };
+pub use executor::{Pregel, PregelBuilder};
 pub use messages::{
     empty_messages, EmptyMessageIterator, EmptyMessages, MessageIterator, MessageReducer, Messages,
     Messenger,
@@ -72,6 +79,7 @@ pub use messengers::{
     SyncQueueMessageIterator, SyncQueueMessenger,
 };
 pub use node_value::NodeValue;
+pub use partition::Partition;
 pub use queues::{AsyncDoubleQueues, AsyncQueueIterator, SyncDoubleQueues, SyncQueueIterator};
 pub use reducers::{CountReducer, MaxReducer, MinReducer, Reducer, SumReducer};
 pub use result::PregelResult;

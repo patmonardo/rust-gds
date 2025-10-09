@@ -111,9 +111,10 @@ impl MessageReducer<f64> for CountReducer {
 ///
 /// Used for parsing reducer specifications from strings and for
 /// type-safe reducer selection.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Reducer {
     /// Sum all messages
+    #[default]
     Sum,
     /// Take minimum message value
     Min,
@@ -204,12 +205,6 @@ impl Reducer {
 impl fmt::Display for Reducer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_string_repr())
-    }
-}
-
-impl Default for Reducer {
-    fn default() -> Self {
-        Reducer::Sum
     }
 }
 

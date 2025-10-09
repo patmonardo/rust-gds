@@ -126,7 +126,7 @@ impl<I: MessageIterator> Iterator for Messages<I> {
 /// 3. `message_iterator()` - Get an iterator for message delivery
 /// 4. `init_message_iterator()` - Initialize iterator for a specific node
 /// 5. `release()` - Clean up resources after computation
-pub trait Messenger<ITERATOR: MessageIterator> {
+pub trait Messenger<ITERATOR: MessageIterator>: Send + Sync {
     /// Initialize the messenger for a new iteration/superstep.
     ///
     /// This is called at the start of each superstep to prepare message buffers
@@ -176,7 +176,7 @@ pub trait Messenger<ITERATOR: MessageIterator> {
     ///
     /// - `Some(sender_id)` if sender tracking is enabled
     /// - `None` if sender tracking is disabled or not available
-    fn sender(&self, node_id: u64) -> Option<u64> {
+    fn sender(&self, _node_id: u64) -> Option<u64> {
         None
     }
 

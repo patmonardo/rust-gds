@@ -3,7 +3,7 @@
 //! Provides the foundation for InitContext and ComputeContext with common
 //! node-centric operations like setting node values, accessing neighbors, etc.
 
-use crate::pregel::{NodeValue, PregelConfig};
+use crate::pregel::PregelConfig;
 
 /// Base context class providing node-centric access to the graph.
 ///
@@ -35,11 +35,23 @@ pub struct NodeCentricContext<C: PregelConfig> {
 }
 
 impl<C: PregelConfig> NodeCentricContext<C> {
-    /// Create a new node-centric context (stub).
+    /// Create a new node-centric context.
     ///
     /// # TODO
     ///
-    /// Add actual parameters: graph, config, node_value, progress_tracker
+    /// Add actual parameters: graph, node_value, progress_tracker when wiring
+    pub fn new(_config: C) -> Self {
+        Self {
+            node_id: 0,
+            config: std::marker::PhantomData,
+        }
+    }
+
+    /// Create a stub context (for backward compatibility during migration).
+    ///
+    /// # Deprecated
+    ///
+    /// Use `new(config)` instead.
     pub fn stub() -> Self {
         Self {
             node_id: 0,

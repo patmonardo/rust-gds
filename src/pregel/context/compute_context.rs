@@ -40,22 +40,44 @@ use crate::pregel::PregelConfig;
 /// - Degree and neighbor access
 /// - Aggregator access
 pub struct ComputeContext<C: PregelConfig> {
-    config: std::marker::PhantomData<C>,
+    base: super::NodeCentricContext<C>,
+    iteration: usize,
 }
 
 impl<C: PregelConfig> ComputeContext<C> {
+    /// Create a new compute context.
+    ///
+    /// # Arguments
+    ///
+    /// * `config` - The Pregel configuration
+    /// * `iteration` - The current iteration/superstep number (0-indexed)
+    pub fn new(config: C, iteration: usize) -> Self {
+        Self {
+            base: super::NodeCentricContext::new(config),
+            iteration,
+        }
+    }
+
+    /// Set the node ID for this context.
+    ///
+    /// Delegates to the base NodeCentricContext.
+    pub fn set_node_id(&mut self, node_id: u64) {
+        self.base.set_node_id(node_id);
+    }
+
+    /// Get the node ID currently being processed.
+    pub fn node_id(&self) -> u64 {
+        self.base.node_id()
+    }
+
     /// Get the current superstep number (0-indexed).
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return actual superstep from framework
     pub fn superstep(&self) -> usize {
-        0
+        self.iteration
     }
 
     /// Returns true if this is the initial superstep (superstep 0).
     pub fn is_initial_superstep(&self) -> bool {
-        self.superstep() == 0
+        self.iteration == 0
     }
 
     /// Get the total number of nodes in the graph.

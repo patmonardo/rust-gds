@@ -25,10 +25,29 @@ use crate::pregel::PregelConfig;
 /// - Configuration access
 /// - Node degree information
 pub struct InitContext<C: PregelConfig> {
-    config: std::marker::PhantomData<C>,
+    base: super::NodeCentricContext<C>,
 }
 
 impl<C: PregelConfig> InitContext<C> {
+    /// Create a new initialization context.
+    pub fn new(config: C) -> Self {
+        Self {
+            base: super::NodeCentricContext::new(config),
+        }
+    }
+
+    /// Set the node ID for this context.
+    ///
+    /// Delegates to the base NodeCentricContext.
+    pub fn set_node_id(&mut self, node_id: u64) {
+        self.base.set_node_id(node_id);
+    }
+
+    /// Get the node ID currently being processed.
+    pub fn node_id(&self) -> u64 {
+        self.base.node_id()
+    }
+
     /// Get the total number of nodes in the graph.
     ///
     /// # TODO
@@ -54,5 +73,18 @@ impl<C: PregelConfig> InitContext<C> {
     /// Stub - will read from graph property storage
     pub fn node_property<V>(&self, _key: &str) -> Option<V> {
         None
+    }
+
+    /// Get the configuration.
+    ///
+    /// # TODO
+    ///
+    /// Will return actual config reference when wired
+    pub fn config(&self) -> C
+    where
+        C: Clone,
+    {
+        // Stub - need to store config in base context
+        unimplemented!("Config access not yet wired")
     }
 }

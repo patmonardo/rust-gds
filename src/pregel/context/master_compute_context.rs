@@ -2,7 +2,9 @@
 //!
 //! Provides the master compute API for algorithm-level coordination.
 
-use crate::pregel::PregelConfig;
+use crate::pregel::{NodeValue, PregelConfig, ProgressTracker};
+use crate::types::graph::Graph;
+use std::sync::Arc;
 
 /// Context for the master compute step.
 ///
@@ -28,18 +30,35 @@ use crate::pregel::PregelConfig;
 /// - Aggregator access
 /// - Early termination signaling
 /// - Parallel execution support via executor service
+#[allow(dead_code)] // TODO: Remove once fully implemented
 pub struct MasterComputeContext<C: PregelConfig> {
-    config: std::marker::PhantomData<C>,
+    config: C,
+    graph: Arc<dyn Graph>,
+    iteration: usize,
+    node_values: Arc<NodeValue>,
+    progress_tracker: Arc<ProgressTracker>,
 }
 
 impl<C: PregelConfig> MasterComputeContext<C> {
+    /// Create a new MasterComputeContext.
+    pub fn new(
+        config: C,
+        graph: Arc<dyn Graph>,
+        iteration: usize,
+        node_values: Arc<NodeValue>,
+        progress_tracker: Arc<ProgressTracker>,
+    ) -> Self {
+        Self {
+            config,
+            graph,
+            iteration,
+            node_values,
+            progress_tracker,
+        }
+    }
     /// Get the current superstep number (0-indexed).
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return actual superstep from framework
     pub fn superstep(&self) -> usize {
-        0
+        self.iteration
     }
 
     /// Returns true if this is the initial superstep (superstep 0).
@@ -48,21 +67,18 @@ impl<C: PregelConfig> MasterComputeContext<C> {
     }
 
     /// Get the total number of nodes in the graph.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return actual node count from graph
     pub fn node_count(&self) -> usize {
-        0
+        self.graph.node_count()
     }
 
     /// Get the total number of relationships in the graph.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return actual relationship count from graph
     pub fn relationship_count(&self) -> usize {
-        0
+        self.graph.relationship_count()
+    }
+
+    /// Get the configuration.
+    pub fn config(&self) -> &C {
+        &self.config
     }
 
     /// Access a node's value by ID and schema key.

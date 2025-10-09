@@ -9,6 +9,7 @@ pub mod procedure_constants;
 pub mod string_similarity;
 pub mod username;
 pub mod username_extension;
+pub mod utils;
 
 pub use aggregation::*;
 pub use basic_context::*;
@@ -21,3 +22,4 @@ pub use procedure_constants::*;
 pub use string_similarity::*;
 pub use username::*;
 pub use username_extension::*;
+pub use utils::*;
