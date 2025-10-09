@@ -3,7 +3,6 @@
 /// This trait establishes the contract that all HugeArray variants must implement
 /// to provide cursor-based iteration. It serves as the bridge between array storage
 /// and cursor iteration.
-
 use super::huge_cursor::HugeCursor;
 
 /// Interface for arrays that support cursor-based iteration.
@@ -132,21 +131,14 @@ where
 ///     }
 /// }
 /// ```
-pub fn init_cursor_range<'a, S>(
-    support: &S,
-    cursor: &mut S::Cursor,
-    start: usize,
-    end: usize,
-) where
+pub fn init_cursor_range<'a, S>(support: &S, cursor: &mut S::Cursor, start: usize, end: usize)
+where
     S: HugeCursorSupport<'a>,
 {
     let size = support.size();
 
     if start > size {
-        panic!(
-            "start expected to be in [0 : {}] but got {}",
-            size, start
-        );
+        panic!("start expected to be in [0 : {}] but got {}", size, start);
     }
 
     if end < start || end > size {

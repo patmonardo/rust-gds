@@ -36,7 +36,6 @@
 ///     }
 /// }
 ///
-
 /// Number of elements in a single page
 const PAGE_SIZE: usize = 4096;
 /// Number of bits to shift for page index calculation

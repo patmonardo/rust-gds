@@ -3,7 +3,6 @@
 /// These type aliases define closure signatures for the `for_all()` method
 /// on various sparse list types. They enable type-safe, functional-style
 /// iteration over sparse data structures.
-
 /// Consumer for (index, value) pairs from HugeSparseLongList.
 ///
 /// # Example

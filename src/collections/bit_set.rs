@@ -48,6 +48,10 @@ impl BitSet {
 
     /// Creates a new empty BitSet with default capacity.
     ///
+    /// # Deprecated
+    ///
+    /// Use `BitSet::default()` from the `Default` trait instead.
+    ///
     /// # Examples
     ///
     /// ```
@@ -56,6 +60,8 @@ impl BitSet {
     /// let bitset = BitSet::default();
     /// assert_eq!(bitset.cardinality(), 0);
     /// ```
+    #[deprecated(since = "0.1.0", note = "Use BitSet::default() from Default trait")]
+    #[allow(clippy::should_implement_trait)]
     pub fn default() -> Self {
         Self::new(16)
     }
@@ -276,6 +282,10 @@ impl BitSet {
 
     /// Creates a new BitSet that is a clone of this BitSet.
     ///
+    /// # Deprecated
+    ///
+    /// Use `.clone()` from the `Clone` trait instead (called automatically on the object).
+    ///
     /// # Examples
     ///
     /// ```
@@ -287,6 +297,8 @@ impl BitSet {
     /// let cloned = original.clone();
     /// assert!(cloned.get(42));
     /// ```
+    #[deprecated(since = "0.1.0", note = "Use .clone() from Clone trait")]
+    #[allow(clippy::should_implement_trait)]
     pub fn clone(&self) -> BitSet {
         BitSet {
             bits: self.bits.clone(),
@@ -299,6 +311,21 @@ impl BitSet {
         if word_index >= self.bits.len() {
             let new_capacity = usize::max(self.bits.len() * 2, word_index + 1);
             self.bits.resize(new_capacity, 0);
+        }
+    }
+}
+
+impl Default for BitSet {
+    fn default() -> Self {
+        Self::new(16)
+    }
+}
+
+impl Clone for BitSet {
+    fn clone(&self) -> Self {
+        BitSet {
+            bits: self.bits.clone(),
+            word_count: self.word_count,
         }
     }
 }
