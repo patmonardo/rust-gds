@@ -46,26 +46,6 @@ impl BitSet {
         }
     }
 
-    /// Creates a new empty BitSet with default capacity.
-    ///
-    /// # Deprecated
-    ///
-    /// Use `BitSet::default()` from the `Default` trait instead.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rust_gds::collections::BitSet;
-    ///
-    /// let bitset = BitSet::default();
-    /// assert_eq!(bitset.cardinality(), 0);
-    /// ```
-    #[deprecated(since = "0.1.0", note = "Use BitSet::default() from Default trait")]
-    #[allow(clippy::should_implement_trait)]
-    pub fn default() -> Self {
-        Self::new(16)
-    }
-
     /// Sets the bit at the specified index.
     ///
     /// # Arguments
@@ -278,32 +258,6 @@ impl BitSet {
         }
 
         self
-    }
-
-    /// Creates a new BitSet that is a clone of this BitSet.
-    ///
-    /// # Deprecated
-    ///
-    /// Use `.clone()` from the `Clone` trait instead (called automatically on the object).
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rust_gds::collections::BitSet;
-    ///
-    /// let mut original = BitSet::new(64);
-    /// original.set(42);
-    ///
-    /// let cloned = original.clone();
-    /// assert!(cloned.get(42));
-    /// ```
-    #[deprecated(since = "0.1.0", note = "Use .clone() from Clone trait")]
-    #[allow(clippy::should_implement_trait)]
-    pub fn clone(&self) -> BitSet {
-        BitSet {
-            bits: self.bits.clone(),
-            word_count: self.word_count,
-        }
     }
 
     /// Ensures capacity for the given word index.
