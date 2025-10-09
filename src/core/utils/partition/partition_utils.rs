@@ -462,7 +462,7 @@ mod tests {
     #[test]
     fn test_degree_partition_stream() {
         let degrees = Box::new(ConstantDegree(10));
-        let mut stream = PartitionUtils::degree_partition_stream(1000, 10000, 4, degrees);
+        let stream = PartitionUtils::degree_partition_stream(1000, 10000, 4, degrees);
 
         let partitions: Vec<_> = stream.collect();
         assert!(!partitions.is_empty());

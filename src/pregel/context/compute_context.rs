@@ -3,7 +3,10 @@
 //! Provides the complete API for vertices to interact with the Pregel framework
 //! during the compute phase of each superstep.
 
-use crate::pregel::PregelConfig;
+use crate::pregel::{NodeValue, PregelConfig};
+use crate::types::graph::Graph;
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 /// Context provided to vertices during the compute phase.
 ///
@@ -19,7 +22,6 @@ use crate::pregel::PregelConfig;
 /// Vertices can send messages to:
 /// - All neighbors: `send_to_neighbors(msg)`
 /// - Specific node: `send_to(node_id, msg)`
-/// - Multiple nodes: `send_to_many(&[node_ids], msg)`
 ///
 /// Messages sent in superstep N are delivered in superstep N+1.
 ///
@@ -30,31 +32,50 @@ use crate::pregel::PregelConfig;
 /// - Receiving a message reactivates the vertex
 /// - Computation ends when all vertices halt with no messages in flight
 ///
-/// # TODO
+/// # Translation from Java/TS
 ///
-/// This is a stub interface. Full implementation will include:
-/// - Message sending API
-/// - Node value get/set
-/// - Voting to halt
-/// - Superstep number
-/// - Degree and neighbor access
-/// - Aggregator access
-pub struct ComputeContext<C: PregelConfig> {
+/// Follows Java constructor:
+/// ```java
+/// ComputeContext(Graph graph, CONFIG config, BasePregelComputation computation,
+///                NodeValue nodeValue, Messenger<?> messenger, HugeAtomicBitSet voteBits,
+///                MutableInt iteration, Optional<MutableBoolean> hasSendMessage,
+///                ProgressTracker progressTracker)
+/// ```
+pub struct ComputeContext<C: PregelConfig, I: crate::pregel::MessageIterator> {
     base: super::NodeCentricContext<C>,
     iteration: usize,
+    messenger: Arc<dyn crate::pregel::Messenger<I>>,
+    vote_bits: Arc<crate::collections::HugeAtomicBitSet>,
+    has_sent_message: Arc<std::sync::atomic::AtomicBool>,
 }
 
-impl<C: PregelConfig> ComputeContext<C> {
+impl<C: PregelConfig, I: crate::pregel::MessageIterator> ComputeContext<C, I> {
     /// Create a new compute context.
     ///
     /// # Arguments
     ///
+    /// * `graph` - The graph topology
     /// * `config` - The Pregel configuration
-    /// * `iteration` - The current iteration/superstep number (0-indexed)
-    pub fn new(config: C, iteration: usize) -> Self {
+    /// * `node_value` - The node property storage
+    /// * `iteration` - The current superstep number (0-indexed)
+    /// * `messenger` - Message passing system
+    /// * `vote_bits` - Vote-to-halt tracking
+    /// * `has_sent_message` - Flag for tracking if any message was sent
+    pub fn new(
+        graph: Arc<dyn Graph>,
+        config: C,
+        node_value: Arc<RwLock<NodeValue>>,
+        iteration: usize,
+        messenger: Arc<dyn crate::pregel::Messenger<I>>,
+        vote_bits: Arc<crate::collections::HugeAtomicBitSet>,
+        has_sent_message: Arc<std::sync::atomic::AtomicBool>,
+    ) -> Self {
         Self {
-            base: super::NodeCentricContext::new(config),
+            base: super::NodeCentricContext::new(graph, config, node_value),
             iteration,
+            messenger,
+            vote_bits,
+            has_sent_message,
         }
     }
 
@@ -81,60 +102,106 @@ impl<C: PregelConfig> ComputeContext<C> {
     }
 
     /// Get the total number of nodes in the graph.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return actual node count from graph
-    pub fn node_count(&self) -> usize {
-        0
+    pub fn node_count(&self) -> u64 {
+        self.base.node_count()
     }
 
-    /// Get the current node's value.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will read from node value storage
-    pub fn node_value<V>(&self) -> V
-    where
-        V: Default,
-    {
-        V::default()
+    /// Get the configuration.
+    pub fn config(&self) -> &C {
+        self.base.config()
     }
 
-    /// Set the current node's value.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will write to node value storage
-    pub fn set_node_value<V>(&mut self, _value: V) {
-        // Stub
-    }
-
-    /// Get the out-degree of the current node.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will query graph topology
+    /// Returns the degree (number of relationships) of the currently processed node.
     pub fn degree(&self) -> usize {
+        self.base.degree()
+    }
+
+    /// Read a double node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// double doubleNodeValue(String key)
+    /// ```
+    pub fn double_node_value(&self, _key: &str) -> f64 {
+        // TODO: Wire to node_value.read().double_value(key, node_id)
+        0.0
+    }
+
+    /// Read a long node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// long longNodeValue(String key)
+    /// ```
+    pub fn long_node_value(&self, _key: &str) -> i64 {
+        // TODO: Wire to node_value.read().long_value(key, node_id)
         0
+    }
+
+    /// Set a double node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void setNodeValue(String key, double value)
+    /// ```
+    pub fn set_node_value(&mut self, key: &str, value: f64) {
+        self.base.set_node_value(key, value);
+    }
+
+    /// Set a long node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void setNodeValue(String key, long value)
+    /// ```
+    pub fn set_node_value_long(&mut self, key: &str, value: i64) {
+        self.base.set_node_value_long(key, value);
+    }
+
+    /// Iterate over neighbors of the current node.
+    pub fn for_each_neighbor<F>(&self, consumer: F)
+    where
+        F: FnMut(u64),
+    {
+        self.base.for_each_neighbor(consumer);
     }
 
     /// Send a message to all neighbors of the current node.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will enqueue messages to outgoing message buffer
-    pub fn send_to_neighbors<M>(&mut self, _message: M) {
-        // Stub
+    /// ```java
+    /// void sendToNeighbors(double message)
+    /// ```
+    pub fn send_to_neighbors(&mut self, message: f64) {
+        // Collect neighbors first (we need &mut self for send_to)
+        let mut neighbors = Vec::new();
+        self.base.for_each_neighbor(|neighbor_id| {
+            neighbors.push(neighbor_id);
+        });
+
+        // Now send messages to all neighbors
+        for target in neighbors {
+            self.send_to(target, message);
+        }
     }
 
     /// Send a message to a specific node.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will enqueue message to target node
-    pub fn send_to<M>(&mut self, _target: usize, _message: M) {
-        // Stub
+    /// ```java
+    /// void sendTo(long targetNodeId, double message)
+    /// ```
+    pub fn send_to(&mut self, target: u64, message: f64) {
+        let source = self.base.node_id();
+        self.messenger.send_to(source, target, message);
+        self.has_sent_message
+            .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     /// Vote to halt this node.
@@ -142,10 +209,13 @@ impl<C: PregelConfig> ComputeContext<C> {
     /// The node will not receive further compute() calls unless it receives
     /// a message, which will reactivate it.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will mark node as halted in framework state
+    /// ```java
+    /// void voteToHalt()
+    /// ```
     pub fn vote_to_halt(&mut self) {
-        // Stub
+        let node_id = self.base.node_id();
+        self.vote_bits.set(node_id as usize);
     }
 }

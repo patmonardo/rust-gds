@@ -164,7 +164,7 @@ pub trait PregelComputation {
     /// ```
     fn compute<I: MessageIterator>(
         &mut self,
-        context: &mut ComputeContext<Self::Config>,
+        context: &mut ComputeContext<Self::Config, I>,
         messages: &mut Messages<I>,
     );
 
@@ -370,7 +370,7 @@ mod tests {
 
         fn compute<I: MessageIterator>(
             &mut self,
-            _context: &mut ComputeContext<Self::Config>,
+            _context: &mut ComputeContext<Self::Config, I>,
             _messages: &mut Messages<I>,
         ) {
             self.compute_called = true;

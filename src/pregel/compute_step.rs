@@ -23,7 +23,7 @@ pub type InitFn<C> = Arc<dyn Fn(&mut InitContext<C>) + Send + Sync>;
 /// Function type for computation logic.
 ///
 /// Called for each active node in every superstep.
-pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C>, &mut Messages<I>) + Send + Sync>;
+pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C, I>, &mut Messages<I>) + Send + Sync>;
 
 /// A compute step that processes a batch of nodes in a Pregel computation.
 ///
@@ -65,8 +65,11 @@ pub struct ComputeStep<C: PregelConfig, I: MessageIterator> {
     /// The batch of nodes to process
     node_batch: Partition,
 
-    /// Node value storage
-    node_value: Arc<NodeValue>,
+    /// Node value storage (wrapped in RwLock for contexts to write)
+    node_value: Arc<parking_lot::RwLock<NodeValue>>,
+
+    /// Graph topology (for contexts to query)
+    graph: Arc<dyn crate::types::graph::Graph>,
 
     /// Messenger for sending/receiving messages
     messenger: Arc<dyn Messenger<I>>,
@@ -89,7 +92,7 @@ pub struct ComputeStep<C: PregelConfig, I: MessageIterator> {
     progress_tracker: Arc<ProgressTracker>,
 
     /// Compute context (one per step)
-    compute_context: ComputeContext<C>,
+    compute_context: ComputeContext<C, I>,
 
     /// Configuration (needed to create new contexts for child tasks)
     config: C,
@@ -102,8 +105,10 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
     ///
     /// * `init_fn` - Function to initialize nodes
     /// * `compute_fn` - Function to compute node values
+    /// * `config` - Pregel configuration
+    /// * `graph` - Graph topology
     /// * `node_batch` - Partition of nodes to process
-    /// * `node_value` - Node value storage
+    /// * `node_value` - Node value storage (wrapped in RwLock)
     /// * `messenger` - Message passing system
     /// * `vote_bits` - Vote-to-halt tracking
     /// * `iteration` - Current iteration number
@@ -114,8 +119,9 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
         init_fn: InitFn<C>,
         compute_fn: ComputeFn<C, I>,
         config: C,
+        graph: Arc<dyn crate::types::graph::Graph>,
         node_batch: Partition,
-        node_value: Arc<NodeValue>,
+        node_value: Arc<parking_lot::RwLock<NodeValue>>,
         messenger: Arc<dyn Messenger<I>>,
         vote_bits: Arc<HugeAtomicBitSet>,
         iteration: usize,
@@ -125,13 +131,22 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
     where
         C: Clone,
     {
-        let compute_context = ComputeContext::new(config.clone(), iteration);
+        let compute_context = ComputeContext::new(
+            Arc::clone(&graph),
+            config.clone(),
+            Arc::clone(&node_value),
+            iteration,
+            Arc::clone(&messenger),
+            Arc::clone(&vote_bits),
+            Arc::clone(&has_sent_message),
+        );
 
         Self {
             init_fn,
             compute_fn,
             node_batch,
             node_value,
+            graph,
             messenger,
             vote_bits,
             iteration,
@@ -151,11 +166,6 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
     /// Get the vote bits.
     pub fn vote_bits(&self) -> &HugeAtomicBitSet {
         &self.vote_bits
-    }
-
-    /// Get the node value storage.
-    pub fn node_value(&self) -> &NodeValue {
-        &self.node_value
     }
 
     /// Get the messenger.
@@ -183,13 +193,22 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
                 compute_fn: Arc::clone(&self.compute_fn),
                 node_batch: left_batch,
                 node_value: Arc::clone(&self.node_value),
+                graph: Arc::clone(&self.graph),
                 messenger: Arc::clone(&self.messenger),
                 vote_bits: Arc::clone(&self.vote_bits),
                 iteration: self.iteration,
                 current_node_id: 0,
                 has_sent_message: Arc::clone(&self.has_sent_message),
                 progress_tracker: Arc::clone(&self.progress_tracker),
-                compute_context: ComputeContext::new(self.config.clone(), self.iteration),
+                compute_context: ComputeContext::new(
+                    Arc::clone(&self.graph),
+                    self.config.clone(),
+                    Arc::clone(&self.node_value),
+                    self.iteration,
+                    Arc::clone(&self.messenger),
+                    Arc::clone(&self.vote_bits),
+                    Arc::clone(&self.has_sent_message),
+                ),
                 config: self.config.clone(),
             };
 
@@ -224,7 +243,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
         let left_batch = Partition::new(start_node, pivot);
 
         let right_size = if is_even { pivot } else { pivot - 1 };
-        let right_batch = Partition::new(start_node + pivot as u64, right_size);
+        let right_batch = Partition::new(start_node + pivot, right_size);
 
         (left_batch, right_batch)
     }
@@ -239,10 +258,17 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
     fn compute_batch(&mut self) {
         let is_initial_superstep = self.compute_context.is_initial_superstep();
 
-        self.node_batch.consume(|node_id| {
+        self.node_batch.consume(|node_id_usize| {
+            // Convert usize node_id from Partition to u64 for contexts
+            let node_id = node_id_usize as u64;
+
             // Initialize on first superstep
             if is_initial_superstep {
-                let mut init_ctx = InitContext::new(self.config.clone());
+                let mut init_ctx = InitContext::new(
+                    Arc::clone(&self.graph),
+                    self.config.clone(),
+                    Arc::clone(&self.node_value),
+                );
                 init_ctx.set_node_id(node_id);
                 (self.init_fn)(&mut init_ctx);
             }
@@ -257,9 +283,9 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
             let mut messages = Messages::new(message_iterator);
 
             // Only compute if node has messages or hasn't voted to halt
-            if !messages.is_empty() || !self.vote_bits.get(node_id as usize) {
+            if !messages.is_empty() || !self.vote_bits.get(node_id_usize) {
                 // Clear vote bit - node is active
-                self.vote_bits.clear_bit(node_id as usize);
+                self.vote_bits.clear_bit(node_id_usize);
 
                 // Set up compute context
                 self.compute_context.set_node_id(node_id);

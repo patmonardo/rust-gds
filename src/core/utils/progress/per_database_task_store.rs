@@ -86,6 +86,7 @@ impl PerDatabaseTaskStore {
     }
 
     /// Generate unique key for username + job_id combination.
+    #[allow(dead_code)] // Reserved for future use
     fn generate_key(username: &str, job_id: &JobId) -> String {
         format!("{}:{}", username, job_id.as_string())
     }
@@ -108,7 +109,7 @@ impl TaskStore for PerDatabaseTaskStore {
 
                 // Store in nested map
                 let mut tasks = self.tasks.write().unwrap();
-                let user_tasks = tasks.entry(username).or_insert_with(HashMap::new);
+                let user_tasks = tasks.entry(username).or_default();
                 user_tasks.insert(job_id, user_task.clone());
 
                 user_task

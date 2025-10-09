@@ -68,6 +68,7 @@ where
     node_count: usize,
     batch_size: usize,
     supplier: F,
+    #[allow(dead_code)] // Part of public API, not yet used
     save_results: bool,
     batches: Option<Vec<T>>,
 }
@@ -266,7 +267,7 @@ fn thread_count(batch_size: usize, node_count: usize) -> usize {
     if batch_size == 0 {
         return 0;
     }
-    (node_count + batch_size - 1) / batch_size
+    node_count.div_ceil(batch_size)
 }
 
 #[cfg(test)]

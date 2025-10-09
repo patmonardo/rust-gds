@@ -26,7 +26,7 @@ pub const MAXIMUM_LOG_INTERVAL: u64 = 1 << 13;
 
 thread_local! {
     /// Thread-local call counter for batching.
-    static CALL_COUNTER: std::cell::Cell<u64> = std::cell::Cell::new(0);
+    static CALL_COUNTER: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
 }
 
 /// Progress logger that batches updates for performance in concurrent scenarios.

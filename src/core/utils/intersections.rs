@@ -171,6 +171,7 @@ impl Intersections {
         let mut off2 = 0;
         let mut intersection = 0;
 
+        #[allow(clippy::needless_range_loop)] // Need dual-index access for sorted intersection
         for off1 in 0..targets1.len() {
             if off2 == targets2.len() {
                 return intersection;
@@ -243,6 +244,8 @@ impl Intersections {
         let vectors = vector2.len();
         let mut result = vec![0.0; vectors];
 
+        #[allow(clippy::needless_range_loop)]
+        // Need index to access both vector1 and vector2 arrays
         for i in 0..len {
             let v1 = vector1[i];
             for j in 0..vectors {
@@ -349,7 +352,7 @@ impl Intersections {
             y_length += weight2 * weight2;
         }
 
-        (dot_product / (x_length * y_length).sqrt()) as f32
+        dot_product / (x_length * y_length).sqrt()
     }
 }
 

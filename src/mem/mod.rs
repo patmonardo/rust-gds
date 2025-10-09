@@ -35,6 +35,7 @@ pub mod bit_util;
 pub mod estimate;
 pub mod graph_store_memory_container;
 pub mod huge_arrays;
+pub mod memest;
 pub mod memory_estimation;
 pub mod memory_range;
 pub mod memory_reservation_exception;

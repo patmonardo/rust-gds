@@ -2,7 +2,10 @@
 //!
 //! Provides access to node properties and configuration during the init() phase.
 
-use crate::pregel::PregelConfig;
+use crate::pregel::{NodeValue, PregelConfig};
+use crate::types::graph::Graph;
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 /// Context provided to vertices during the initialization phase.
 ///
@@ -17,22 +20,27 @@ use crate::pregel::PregelConfig;
 /// - Used only during the `PregelComputation::init()` call
 /// - Provides read-only access to input graph properties
 ///
-/// # TODO
+/// # Translation from Java/TS
 ///
-/// This is a stub interface. Full implementation will include:
-/// - Access to node properties from the graph
-/// - Ability to set initial node values
-/// - Configuration access
-/// - Node degree information
+/// Follows Java constructor:
+/// ```java
+/// InitContext(Graph graph, CONFIG config, NodeValue nodeValue, ProgressTracker progressTracker)
+/// ```
 pub struct InitContext<C: PregelConfig> {
     base: super::NodeCentricContext<C>,
 }
 
 impl<C: PregelConfig> InitContext<C> {
     /// Create a new initialization context.
-    pub fn new(config: C) -> Self {
+    ///
+    /// # Arguments
+    ///
+    /// * `graph` - The graph topology
+    /// * `config` - The Pregel configuration
+    /// * `node_value` - The node property storage
+    pub fn new(graph: Arc<dyn Graph>, config: C, node_value: Arc<RwLock<NodeValue>>) -> Self {
         Self {
-            base: super::NodeCentricContext::new(config),
+            base: super::NodeCentricContext::new(graph, config, node_value),
         }
     }
 
@@ -49,42 +57,69 @@ impl<C: PregelConfig> InitContext<C> {
     }
 
     /// Get the total number of nodes in the graph.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return actual node count from graph
-    pub fn node_count(&self) -> usize {
-        0
-    }
-
-    /// Set the initial value for this node.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will write to node value storage
-    pub fn set_node_value<V>(&mut self, _value: V) {
-        // Stub
-    }
-
-    /// Get a node property by name.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will read from graph property storage
-    pub fn node_property<V>(&self, _key: &str) -> Option<V> {
-        None
+    pub fn node_count(&self) -> u64 {
+        self.base.node_count()
     }
 
     /// Get the configuration.
+    pub fn config(&self) -> &C {
+        self.base.config()
+    }
+
+    /// Set a double node value for the given property key.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Will return actual config reference when wired
-    pub fn config(&self) -> C
+    /// ```java
+    /// void setNodeValue(String key, double value)
+    /// ```
+    pub fn set_node_value(&mut self, key: &str, value: f64) {
+        self.base.set_node_value(key, value);
+    }
+
+    /// Set a long node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void setNodeValue(String key, long value)
+    /// ```
+    pub fn set_node_value_long(&mut self, key: &str, value: i64) {
+        self.base.set_node_value_long(key, value);
+    }
+
+    /// Set a long array node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void setNodeValue(String key, long[] value)
+    /// ```
+    pub fn set_node_value_long_array(&mut self, key: &str, value: Vec<i64>) {
+        self.base.set_node_value_long_array(key, value);
+    }
+
+    /// Set a double array node value for the given property key.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void setNodeValue(String key, double[] value)
+    /// ```
+    pub fn set_node_value_double_array(&mut self, key: &str, value: Vec<f64>) {
+        self.base.set_node_value_double_array(key, value);
+    }
+
+    /// Returns the degree (number of relationships) of the currently processed node.
+    pub fn degree(&self) -> usize {
+        self.base.degree()
+    }
+
+    /// Iterate over neighbors of the current node.
+    pub fn for_each_neighbor<F>(&self, consumer: F)
     where
-        C: Clone,
+        F: FnMut(u64),
     {
-        // Stub - need to store config in base context
-        unimplemented!("Config access not yet wired")
+        self.base.for_each_neighbor(consumer);
     }
 }

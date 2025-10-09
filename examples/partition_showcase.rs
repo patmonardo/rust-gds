@@ -23,9 +23,7 @@
 //! - Degree partitioning: Load-balanced by relationships
 //! - Number-aligned partitioning: Memory-efficient boundaries
 
-use rust_gds::core::utils::partition::{
-    DegreeFunction, DegreePartition, Partition, PartitionUtils,
-};
+use rust_gds::core::utils::partition::{DegreeFunction, DegreePartition, PartitionUtils};
 
 /// Example degree function that simulates power-law distribution
 struct PowerLawDegree;

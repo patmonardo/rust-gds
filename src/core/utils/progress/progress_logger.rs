@@ -123,7 +123,7 @@ pub trait ProgressLogger: Send {
     /// - `message`: Optional prefix message (empty string for none)
     fn log_start(&mut self, message: &str) {
         let msg = if message.is_empty() {
-            format!("Start")
+            "Start".to_string()
         } else {
             format!("{}{}{}", message, Self::TASK_SEPARATOR, "Start")
         };
@@ -141,7 +141,7 @@ pub trait ProgressLogger: Send {
     /// - `message`: Optional prefix message (empty string for none)
     fn log_finish(&mut self, message: &str) {
         let msg = if message.is_empty() {
-            format!("Finished")
+            "Finished".to_string()
         } else {
             format!("{}{}{}", message, Self::TASK_SEPARATOR, "Finished")
         };
@@ -159,7 +159,7 @@ pub trait ProgressLogger: Send {
     /// - `message`: Optional prefix message (empty string for none)
     fn log_finish_with_failure(&mut self, message: &str) {
         let msg = if message.is_empty() {
-            format!("Failed")
+            "Failed".to_string()
         } else {
             format!("{}{}{}", message, Self::TASK_SEPARATOR, "Failed")
         };

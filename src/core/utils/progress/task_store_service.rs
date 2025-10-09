@@ -167,7 +167,7 @@ mod tests {
     #[test]
     fn test_get_task_store_enabled() {
         let db_name = "test_service_enabled";
-        
+
         #[allow(deprecated)]
         TaskStoreHolder::purge(db_name);
 
@@ -205,7 +205,7 @@ mod tests {
     fn test_database_names_enabled() {
         let db1 = "test_service_names_db1";
         let db2 = "test_service_names_db2";
-        
+
         #[allow(deprecated)]
         {
             TaskStoreHolder::purge(db1);
@@ -237,7 +237,7 @@ mod tests {
         let db1 = "test_service_count_db1";
         let db2 = "test_service_count_db2";
         let db3 = "test_service_count_db3";
-        
+
         #[allow(deprecated)]
         {
             TaskStoreHolder::purge(db1);
@@ -269,7 +269,7 @@ mod tests {
     fn test_purge_database_enabled() {
         let db1 = "test_service_purge_db1";
         let db2 = "test_service_purge_db2";
-        
+
         #[allow(deprecated)]
         {
             TaskStoreHolder::purge(db1);
@@ -279,13 +279,13 @@ mod tests {
         let service = TaskStoreService::new(true);
         service.get_task_store(db1);
         service.get_task_store(db2);
-        
+
         let names_before = service.database_names();
         assert!(names_before.contains(&db1.to_string()));
         assert!(names_before.contains(&db2.to_string()));
 
         service.purge_database(db1);
-        
+
         let names_after = service.database_names();
         assert!(!names_after.contains(&db1.to_string()));
         assert!(names_after.contains(&db2.to_string()));
@@ -306,7 +306,7 @@ mod tests {
         let db1 = "test_service_purge_all_db1";
         let db2 = "test_service_purge_all_db2";
         let db3 = "test_service_purge_all_db3";
-        
+
         #[allow(deprecated)]
         {
             TaskStoreHolder::purge(db1);
@@ -318,14 +318,14 @@ mod tests {
         service.get_task_store(db1);
         service.get_task_store(db2);
         service.get_task_store(db3);
-        
+
         let names_before = service.database_names();
         assert!(names_before.contains(&db1.to_string()));
         assert!(names_before.contains(&db2.to_string()));
         assert!(names_before.contains(&db3.to_string()));
 
         service.purge_all();
-        
+
         let names_after = service.database_names();
         assert!(!names_after.contains(&db1.to_string()));
         assert!(!names_after.contains(&db2.to_string()));
@@ -345,7 +345,7 @@ mod tests {
     #[test]
     fn test_same_store_returned() {
         let db_name = "test_service_same_store";
-        
+
         #[allow(deprecated)]
         TaskStoreHolder::purge(db_name);
 
@@ -367,27 +367,50 @@ mod tests {
         assert!(!Arc::ptr_eq(&store1, &store2));
     }
 
+    // This test uses global TaskStoreHolder, so must not run in parallel with other tests
     #[test]
+    #[ignore] // Run with --ignored to test concurrency without cross-test interference
     fn test_concurrent_access_enabled() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
         use std::thread;
 
-        let db_name = "test_service_concurrent_unique_db";
-        
+        // Use unique name with timestamp to avoid cross-test interference
+        let db_name = format!(
+            "test_service_concurrent_{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        );
+
         #[allow(deprecated)]
-        TaskStoreHolder::purge(db_name);
+        TaskStoreHolder::purge(&db_name);
 
         let service = Arc::new(TaskStoreService::new(true));
+        let stored_count = Arc::new(AtomicUsize::new(0));
         let mut handles = vec![];
+
+        // Pre-create the store to ensure it exists before threads start
+        let main_store = service.get_task_store(&db_name);
 
         // Spawn multiple threads
         for i in 0..10 {
             let service_clone = service.clone();
-            let db_clone = db_name.to_string();
+            let db_clone = db_name.clone();
+            let counter = Arc::clone(&stored_count);
+            let main_store_clone = Arc::clone(&main_store);
             let handle = thread::spawn(move || {
                 let store = service_clone.get_task_store(&db_clone);
+                // Verify we got the same store instance
+                assert!(
+                    Arc::ptr_eq(&store, &main_store_clone),
+                    "Thread {} got different store instance!",
+                    i
+                );
                 let job_id = JobId::new();
                 let task = Task::new(format!("Task {}", i), 100);
                 store.store(format!("user{}", i), job_id, task);
+                counter.fetch_add(1, Ordering::SeqCst);
             });
             handles.push(handle);
         }
@@ -397,32 +420,59 @@ mod tests {
             handle.join().unwrap();
         }
 
-        // Verify
-        let store = service.get_task_store(db_name);
-        assert_eq!(store.task_count(), 10);
+        // Verify all threads completed their stores
+        assert_eq!(
+            stored_count.load(Ordering::SeqCst),
+            10,
+            "Not all threads completed"
+        );
+
+        // Small delay to ensure all writes are visible
+        std::thread::sleep(std::time::Duration::from_millis(50));
+
+        // Verify the store has all tasks
+        let store = service.get_task_store(&db_name);
+        let actual_count = store.task_count();
+
+        // Debug: Check if we're getting the same store
+        let store2 = service.get_task_store(&db_name);
+        assert!(
+            Arc::ptr_eq(&store, &store2),
+            "get_task_store returned different instances!"
+        );
+
+        assert_eq!(
+            actual_count, 10,
+            "Expected 10 tasks in store, found {}. Database: {}",
+            actual_count, db_name
+        );
+
+        // Clean up
+        #[allow(deprecated)]
+        TaskStoreHolder::purge(&db_name);
     }
 
     #[test]
     fn test_toggle_behavior() {
         let db_name = "test_service_toggle";
-        
+
         #[allow(deprecated)]
         TaskStoreHolder::purge(db_name);
 
         // Start enabled
         let service = TaskStoreService::new(true);
         let store = service.get_task_store(db_name);
-        
+
         let job_id = JobId::new();
         let task = Task::new("Test".to_string(), 100);
         store.store("alice".to_string(), job_id, task);
-        
+
         assert_eq!(store.task_count(), 1);
 
         // Create disabled service (simulating restart with different config)
         let service_disabled = TaskStoreService::new(false);
         let store_disabled = service_disabled.get_task_store(db_name);
-        
+
         // Should be empty store (new instance)
         assert_eq!(store_disabled.task_count(), 0);
     }

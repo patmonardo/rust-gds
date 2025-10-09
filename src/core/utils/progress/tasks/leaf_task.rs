@@ -1,4 +1,6 @@
-use super::{Progress, Task, TaskVisitor, UNKNOWN_VOLUME};
+#[cfg(test)]
+use super::UNKNOWN_VOLUME;
+use super::{Progress, Task, TaskVisitor};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 

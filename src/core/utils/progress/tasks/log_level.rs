@@ -22,8 +22,10 @@ use std::fmt;
 
 /// Log level for progress tracking messages.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Default)]
 pub enum LogLevel {
     Debug = 1,
+    #[default]
     Info = 2,
     Warning = 3,
 }
@@ -40,11 +42,6 @@ impl LogLevel {
     }
 }
 
-impl Default for LogLevel {
-    fn default() -> Self {
-        LogLevel::Info
-    }
-}
 
 impl fmt::Display for LogLevel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

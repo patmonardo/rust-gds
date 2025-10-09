@@ -131,7 +131,12 @@ pub trait Messenger<ITERATOR: MessageIterator>: Send + Sync {
     ///
     /// This is called at the start of each superstep to prepare message buffers
     /// and swap message queues (current iteration reads from previous iteration's messages).
-    fn init_iteration(&mut self, iteration: usize);
+    ///
+    /// # Interior Mutability
+    ///
+    /// Takes `&self` to allow usage through `Arc`. Implementations must use interior
+    /// mutability (e.g., `RwLock`, `Mutex`, `RefCell`) for queue management.
+    fn init_iteration(&self, iteration: usize);
 
     /// Send a message from a source node to a target node.
     ///
@@ -142,7 +147,12 @@ pub trait Messenger<ITERATOR: MessageIterator>: Send + Sync {
     /// - `source_node_id`: The ID of the node sending the message
     /// - `target_node_id`: The ID of the node receiving the message
     /// - `message`: The message value to send (f64)
-    fn send_to(&mut self, source_node_id: u64, target_node_id: u64, message: f64);
+    ///
+    /// # Interior Mutability
+    ///
+    /// Takes `&self` to allow usage through `Arc`. Implementations must use interior
+    /// mutability (e.g., `RwLock`, `Mutex`, `RefCell`) for queue mutations.
+    fn send_to(&self, source_node_id: u64, target_node_id: u64, message: f64);
 
     /// Get a message iterator for reuse.
     ///
@@ -183,7 +193,12 @@ pub trait Messenger<ITERATOR: MessageIterator>: Send + Sync {
     /// Release resources used by this messenger.
     ///
     /// Called after the Pregel computation completes to free memory.
-    fn release(&mut self);
+    ///
+    /// # Interior Mutability
+    ///
+    /// Takes `&self` to allow usage through `Arc`. Implementations must use interior
+    /// mutability if cleanup requires mutation.
+    fn release(&self);
 }
 
 /// Message reducer for combining multiple messages to the same target.

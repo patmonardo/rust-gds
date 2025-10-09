@@ -35,7 +35,7 @@ pub struct MasterComputeContext<C: PregelConfig> {
     config: C,
     graph: Arc<dyn Graph>,
     iteration: usize,
-    node_values: Arc<NodeValue>,
+    node_values: Arc<parking_lot::RwLock<NodeValue>>,
     progress_tracker: Arc<ProgressTracker>,
 }
 
@@ -45,7 +45,7 @@ impl<C: PregelConfig> MasterComputeContext<C> {
         config: C,
         graph: Arc<dyn Graph>,
         iteration: usize,
-        node_values: Arc<NodeValue>,
+        node_values: Arc<parking_lot::RwLock<NodeValue>>,
         progress_tracker: Arc<ProgressTracker>,
     ) -> Self {
         Self {

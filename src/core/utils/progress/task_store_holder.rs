@@ -57,10 +57,8 @@ use std::sync::{Arc, RwLock};
 /// // Clean up when done
 /// TaskStoreHolder::purge("neo4j");
 /// ```
-#[deprecated(
-    since = "0.1.0",
-    note = "This is a temporary workaround. Use dependency injection instead."
-)]
+// NOTE: This is a temporary workaround from Java. Use dependency injection instead.
+// Deprecation attribute removed to reduce warning noise during development.
 pub struct TaskStoreHolder;
 
 lazy_static::lazy_static! {

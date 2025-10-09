@@ -1,5 +1,7 @@
 use std::sync::Arc;
-use super::{Task, Progress, TaskVisitor, UNKNOWN_VOLUME};
+use super::{Task, Progress, TaskVisitor};
+#[cfg(test)]
+use super::UNKNOWN_VOLUME;
 
 /// Execution modes for iterative tasks.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,6 +75,7 @@ impl IterativeTask {
     }
 
     /// Get next subtask after validation.
+    #[allow(dead_code)] // Reserved for iteration control
     fn next_subtask_after_validation(&self) -> Option<Arc<Task>> {
         // First check if there's a pending subtask
         if let Some(next) = self.base.next_subtask() {
@@ -148,6 +151,7 @@ impl IterativeTask {
 
     /// Add a new iteration (internal, modifies base task's subtasks).
     /// Note: This is a simplified version since Rust doesn't allow easy mutation of Arc<Task>.
+    #[allow(dead_code)] // Reserved for dynamic iteration addition
     fn add_iteration_internal(&self) {
         // In the Java version, this modifies the subtasks list.
         // In Rust, we would need to use interior mutability (Mutex) on the subtasks.

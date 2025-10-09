@@ -54,21 +54,20 @@ mod executor;
 mod messages;
 mod messengers;
 mod node_value;
-mod partition;
 mod queues;
 mod reducers;
 mod result;
 mod schema;
 
-// Re-exports
+// Re-exports from core (Partition now lives in core/utils)
+pub use crate::core::utils::partition::Partition;
+
+// Re-exports from this module
 pub use computation::{BasePregelComputation, PregelComputation};
 pub use compute_step::{ComputeFn, ComputeStep, InitFn};
 pub use computer::{ForkJoinComputer, PregelComputer, PregelComputerBuilder};
 pub use config::{Partitioning, PregelConfig};
-pub use context::{
-    BidirectionalNodeCentricContext, ComputeContext, InitContext, MasterComputeContext,
-    NodeCentricContext, PregelContext,
-};
+pub use context::{ComputeContext, InitContext, MasterComputeContext, NodeCentricContext};
 pub use executor::{Pregel, PregelBuilder};
 pub use messages::{
     empty_messages, EmptyMessageIterator, EmptyMessages, MessageIterator, MessageReducer, Messages,
@@ -79,7 +78,6 @@ pub use messengers::{
     SyncQueueMessageIterator, SyncQueueMessenger,
 };
 pub use node_value::NodeValue;
-pub use partition::Partition;
 pub use queues::{AsyncDoubleQueues, AsyncQueueIterator, SyncDoubleQueues, SyncQueueIterator};
 pub use reducers::{CountReducer, MaxReducer, MinReducer, Reducer, SumReducer};
 pub use result::PregelResult;

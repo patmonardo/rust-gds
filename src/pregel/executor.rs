@@ -49,7 +49,7 @@ pub struct Pregel<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> {
     graph: Arc<dyn Graph>,
 
     /// Node property values (results)
-    node_values: Arc<NodeValue>,
+    node_values: Arc<parking_lot::RwLock<NodeValue>>,
 
     /// Message passing system (held for lifecycle management)
     #[allow(dead_code)]
@@ -91,11 +91,11 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
         progress_tracker: Arc<ProgressTracker>,
     ) -> Self {
         // Create node value storage based on schema
-        let node_values = Arc::new(NodeValue::of(
+        let node_values = Arc::new(parking_lot::RwLock::new(NodeValue::of(
             &schema,
             graph.node_count() as u64,
             config.concurrency(),
-        ));
+        )));
 
         // Create vote bits for convergence tracking
         let vote_bits = Arc::new(HugeAtomicBitSet::new(graph.node_count()));
@@ -178,9 +178,10 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
         // Release resources
         self.computer.release();
 
-        // Return results (NodeValue already in Arc, just extract or clone)
-        let node_values =
-            Arc::try_unwrap(self.node_values).unwrap_or_else(|_arc| NodeValue::stub()); // Fallback if still shared
+        // Return results - unwrap Arc<RwLock<NodeValue>> to get NodeValue
+        let node_values = Arc::try_unwrap(self.node_values)
+            .map(|lock| lock.into_inner())
+            .unwrap_or_else(|_arc| NodeValue::stub()); // Fallback if still shared
 
         PregelResult::new(node_values, iteration, did_converge)
     }

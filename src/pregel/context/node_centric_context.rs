@@ -3,7 +3,10 @@
 //! Provides the foundation for InitContext and ComputeContext with common
 //! node-centric operations like setting node values, accessing neighbors, etc.
 
-use crate::pregel::PregelConfig;
+use crate::pregel::{NodeValue, PregelConfig};
+use crate::types::graph::Graph;
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 /// Base context class providing node-centric access to the graph.
 ///
@@ -17,45 +20,42 @@ use crate::pregel::PregelConfig;
 /// - **Graph Queries**: Degree, neighbors, node existence checks
 /// - **ID Translation**: Convert between internal and original node IDs
 ///
-/// # TODO
+/// # Translation from Java/TS
 ///
-/// This is a foundational stub. Full implementation will include:
-/// - Graph reference for topology access
-/// - NodeValue reference for property storage
-/// - Neighbor iteration (forEachNeighbor)
-/// - Degree queries (degree, incomingDegree for bidirectional)
-/// - ID translation (toOriginalId, toInternalId)
+/// Follows Java `NodeCentricContext` constructor:
+/// ```java
+/// NodeCentricContext(Graph graph, CONFIG config, NodeValue nodeValue, ProgressTracker progressTracker)
+/// ```
+///
+/// Rust ownership model: contexts borrow Graph and NodeValue to allow concurrent access.
 pub struct NodeCentricContext<C: PregelConfig> {
     node_id: u64,
-    config: std::marker::PhantomData<C>,
-    // TODO: Add fields when implementing
-    // graph: &'a Graph,
-    // node_value: &'a mut NodeValue,
-    // progress_tracker: &'a ProgressTracker,
+    config: C,
+    graph: Arc<dyn Graph>,
+    node_value: Arc<RwLock<NodeValue>>,
 }
 
 impl<C: PregelConfig> NodeCentricContext<C> {
     /// Create a new node-centric context.
     ///
-    /// # TODO
+    /// # Arguments
     ///
-    /// Add actual parameters: graph, node_value, progress_tracker when wiring
-    pub fn new(_config: C) -> Self {
+    /// * `graph` - The graph topology to query
+    /// * `config` - The Pregel configuration
+    /// * `node_value` - The node property storage (wrapped in RwLock for interior mutability)
+    ///
+    /// # Translation from Java
+    ///
+    /// Maps directly to Java constructor:
+    /// ```java
+    /// NodeCentricContext(Graph graph, CONFIG config, NodeValue nodeValue, ProgressTracker progressTracker)
+    /// ```
+    pub fn new(graph: Arc<dyn Graph>, config: C, node_value: Arc<RwLock<NodeValue>>) -> Self {
         Self {
             node_id: 0,
-            config: std::marker::PhantomData,
-        }
-    }
-
-    /// Create a stub context (for backward compatibility during migration).
-    ///
-    /// # Deprecated
-    ///
-    /// Use `new(config)` instead.
-    pub fn stub() -> Self {
-        Self {
-            node_id: 0,
-            config: std::marker::PhantomData,
+            config,
+            graph,
+            node_value,
         }
     }
 
@@ -63,32 +63,69 @@ impl<C: PregelConfig> NodeCentricContext<C> {
     ///
     /// Called by the framework before each init() or compute() invocation
     /// to indicate which node is being processed.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void setNodeId(long nodeId)
+    /// ```
     pub fn set_node_id(&mut self, node_id: u64) {
         self.node_id = node_id;
     }
 
     /// Get the node ID currently being processed.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// long nodeId()
+    /// ```
     pub fn node_id(&self) -> u64 {
         self.node_id
     }
 
-    /// Get the number of nodes in the graph.
+    /// Get the configuration.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will return graph.node_count()
-    pub fn node_count(&self) -> u64 {
-        0
+    /// ```java
+    /// CONFIG config()
+    /// ```
+    pub fn config(&self) -> &C {
+        &self.config
     }
 
-    /// Check if a node exists in the graph.
+    /// Check if the graph is a multi-graph (allows multiple edges between nodes).
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will check against graph node count
-    pub fn node_exists(&self, node_id: u64) -> bool {
-        let _ = node_id;
-        false
+    /// ```java
+    /// boolean isMultiGraph()
+    /// ```
+    pub fn is_multi_graph(&self) -> bool {
+        self.graph.is_multi_graph()
+    }
+
+    /// Get the number of nodes in the graph.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// long nodeCount()
+    /// ```
+    pub fn node_count(&self) -> u64 {
+        self.graph.node_count() as u64
+    }
+
+    /// Get the number of relationships in the graph.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// long relationshipCount()
+    /// ```
+    pub fn relationship_count(&self) -> u64 {
+        self.graph.relationship_count() as u64
     }
 
     /// Set a double node value for the given property key.
@@ -98,160 +135,139 @@ impl<C: PregelConfig> NodeCentricContext<C> {
     /// - `key`: The property key from the PregelSchema
     /// - `value`: The double value to set
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will write to node_value.set(key, self.node_id, value)
-    pub fn set_node_value(&mut self, _key: &str, _value: f64) {
-        // Stub
+    /// ```java
+    /// void setNodeValue(String key, double value)
+    /// ```
+    pub fn set_node_value(&mut self, key: &str, value: f64) {
+        self.node_value
+            .write()
+            .set(key, self.node_id as usize, value);
     }
 
     /// Set a long node value for the given property key.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will write to node_value.set_long(key, self.node_id, value)
-    pub fn set_node_value_long(&mut self, _key: &str, _value: i64) {
-        // Stub
+    /// ```java
+    /// void setNodeValue(String key, long value)
+    /// ```
+    pub fn set_node_value_long(&mut self, key: &str, value: i64) {
+        self.node_value
+            .write()
+            .set_long(key, self.node_id as usize, value);
     }
 
     /// Set a long array node value for the given property key.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will write to node_value.set_long_array(key, self.node_id, value)
-    pub fn set_node_value_long_array(&mut self, _key: &str, _value: Vec<i64>) {
-        // Stub
+    /// ```java
+    /// void setNodeValue(String key, long[] value)
+    /// ```
+    pub fn set_node_value_long_array(&mut self, key: &str, value: Vec<i64>) {
+        self.node_value
+            .write()
+            .set_long_array(key, self.node_id as usize, value);
     }
 
     /// Set a double array node value for the given property key.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will write to node_value.set_double_array(key, self.node_id, value)
-    pub fn set_node_value_double_array(&mut self, _key: &str, _value: Vec<f64>) {
-        // Stub
+    /// ```java
+    /// void setNodeValue(String key, double[] value)
+    /// ```
+    pub fn set_node_value_double_array(&mut self, key: &str, value: Vec<f64>) {
+        self.node_value
+            .write()
+            .set_double_array(key, self.node_id as usize, value);
     }
 
-    /// Get the degree (number of outgoing relationships) of the current node.
+    /// Returns the degree (number of relationships) of the currently processed node.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will return graph.degree(self.node_id)
+    /// ```java
+    /// int degree()
+    /// ```
     pub fn degree(&self) -> usize {
-        0
+        self.graph.degree(self.node_id)
     }
 
-    /// Convert internal node ID to original graph node ID.
+    /// Returns the corresponding node id in the original graph for the current node id.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will call graph.to_original_node_id()
-    pub fn to_original_id(&self, internal_node_id: u64) -> u64 {
-        internal_node_id
+    /// ```java
+    /// long toOriginalId()
+    /// ```
+    pub fn to_original_id(&self) -> i64 {
+        self.graph
+            .to_original_node_id(self.node_id)
+            .expect("node should exist in graph")
     }
 
-    /// Convert original graph node ID to internal node ID.
+    /// Returns the corresponding node id in the original graph for the given internal node id.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will call graph.to_internal_node_id()
-    pub fn to_internal_id(&self, original_node_id: u64) -> u64 {
-        original_node_id
+    /// ```java
+    /// long toOriginalId(long internalNodeId)
+    /// ```
+    pub fn to_original_id_of(&self, internal_node_id: u64) -> i64 {
+        self.graph
+            .to_original_node_id(internal_node_id)
+            .expect("node should exist in graph")
     }
 
-    /// Iterate over neighbors of the current node.
+    /// Returns the corresponding node id in the internal graph for the given original node id.
     ///
-    /// # TODO
+    /// # Java equivalent
     ///
-    /// Stub - will call graph.for_each_neighbor(self.node_id, consumer)
-    pub fn for_each_neighbor<F>(&self, _consumer: F)
+    /// ```java
+    /// long toInternalId(long originalNodeId)
+    /// ```
+    pub fn to_internal_id(&self, original_node_id: i64) -> u64 {
+        self.graph
+            .to_mapped_node_id(original_node_id)
+            .expect("node should exist in graph")
+    }
+
+    /// Calls the consumer for each neighbor of the currently processed node.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void forEachNeighbor(LongConsumer targetConsumer)
+    /// ```
+    pub fn for_each_neighbor<F>(&self, mut consumer: F)
     where
         F: FnMut(u64),
     {
-        // Stub
-    }
-
-    /// Iterate over distinct neighbors (each neighbor only once).
-    ///
-    /// # TODO
-    ///
-    /// Stub - will use a bitset to track visited neighbors
-    pub fn for_each_distinct_neighbor<F>(&self, _consumer: F)
-    where
-        F: FnMut(u64),
-    {
-        // Stub
-    }
-}
-
-/// Trait for bidirectional context operations.
-///
-/// Provides access to incoming edges in addition to outgoing edges.
-/// This is only available when using `BidirectionalPregelComputation`.
-pub trait BidirectionalNodeCentricContext {
-    /// Get the incoming degree (number of incoming relationships) of the current node.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will return graph.incoming_degree(node_id)
-    fn incoming_degree(&self) -> usize {
-        0
-    }
-
-    /// Iterate over incoming neighbors of the current node.
-    ///
-    /// # TODO
-    ///
-    /// Stub - will call graph.for_each_incoming_neighbor(node_id, consumer)
-    fn for_each_incoming_neighbor<F>(&self, _consumer: F)
-    where
-        F: FnMut(u64),
-    {
-        // Stub
-    }
-
-    /// Iterate over distinct incoming neighbors (each neighbor only once).
-    ///
-    /// # TODO
-    ///
-    /// Stub - will use a bitset to track visited neighbors
-    fn for_each_distinct_incoming_neighbor<F>(&self, _consumer: F)
-    where
-        F: FnMut(u64),
-    {
-        // Stub
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    struct TestConfig;
-    impl PregelConfig for TestConfig {
-        fn max_iterations(&self) -> usize {
-            10
+        let stream = self.graph.stream_relationships(self.node_id, 0.0);
+        for cursor in stream {
+            consumer(cursor.target_id());
         }
     }
 
-    #[test]
-    fn test_node_centric_context_creation() {
-        let ctx: NodeCentricContext<TestConfig> = NodeCentricContext::stub();
-        assert_eq!(ctx.node_id(), 0);
-    }
-
-    #[test]
-    fn test_set_node_id() {
-        let mut ctx: NodeCentricContext<TestConfig> = NodeCentricContext::stub();
-        ctx.set_node_id(42);
-        assert_eq!(ctx.node_id(), 42);
-    }
-
-    #[test]
-    fn test_id_translation() {
-        let ctx: NodeCentricContext<TestConfig> = NodeCentricContext::stub();
-        // Stub returns same ID
-        assert_eq!(ctx.to_original_id(123), 123);
-        assert_eq!(ctx.to_internal_id(456), 456);
+    /// Calls the consumer for each neighbor of the given node.
+    ///
+    /// # Java equivalent
+    ///
+    /// ```java
+    /// void forEachNeighbor(long nodeId, LongConsumer targetConsumer)
+    /// ```
+    pub fn for_each_neighbor_of<F>(&self, node_id: u64, mut consumer: F)
+    where
+        F: FnMut(u64),
+    {
+        let stream = self.graph.stream_relationships(node_id, 0.0);
+        for cursor in stream {
+            consumer(cursor.target_id());
+        }
     }
 }
+
+// Tests will be added in integration tests once context wiring is complete

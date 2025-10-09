@@ -22,5 +22,5 @@ mod pregel_context;
 pub use compute_context::ComputeContext;
 pub use init_context::InitContext;
 pub use master_compute_context::MasterComputeContext;
-pub use node_centric_context::{BidirectionalNodeCentricContext, NodeCentricContext};
+pub use node_centric_context::NodeCentricContext;
 pub use pregel_context::PregelContext;

@@ -73,7 +73,7 @@ pub struct ForkJoinComputer<C: PregelConfig + Clone, I: MessageIterator> {
     config: C,
 
     /// Node property storage
-    node_values: Arc<NodeValue>,
+    node_values: Arc<parking_lot::RwLock<NodeValue>>,
 
     /// Message passing system
     messenger: Arc<dyn Messenger<I>>,
@@ -99,7 +99,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
         init_fn: InitFn<C>,
         compute_fn: ComputeFn<C, I>,
         config: C,
-        node_values: Arc<NodeValue>,
+        node_values: Arc<parking_lot::RwLock<NodeValue>>,
         messenger: Arc<dyn Messenger<I>>,
         vote_bits: Arc<HugeAtomicBitSet>,
         progress_tracker: Arc<ProgressTracker>,
@@ -137,6 +137,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputer<C> for ForkJoin
             Arc::clone(&self.init_fn),
             Arc::clone(&self.compute_fn),
             self.config.clone(),
+            Arc::clone(&self.graph),
             partition,
             Arc::clone(&self.node_values),
             Arc::clone(&self.messenger),
@@ -173,7 +174,7 @@ pub struct PregelComputerBuilder<C: PregelConfig, I: MessageIterator> {
     init_fn: Option<InitFn<C>>,
     compute_fn: Option<ComputeFn<C, I>>,
     config: Option<C>,
-    node_values: Option<Arc<NodeValue>>,
+    node_values: Option<Arc<parking_lot::RwLock<NodeValue>>>,
     messenger: Option<Arc<dyn Messenger<I>>>,
     vote_bits: Option<Arc<HugeAtomicBitSet>>,
     progress_tracker: Option<Arc<ProgressTracker>>,
@@ -219,7 +220,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
     }
 
     /// Set the node values.
-    pub fn node_values(mut self, node_values: Arc<NodeValue>) -> Self {
+    pub fn node_values(mut self, node_values: Arc<parking_lot::RwLock<NodeValue>>) -> Self {
         self.node_values = Some(node_values);
         self
     }

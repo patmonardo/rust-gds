@@ -88,25 +88,25 @@ impl MessageIterator for SyncQueueMessageIterator {
 /// }
 /// ```
 pub struct SyncQueueMessenger {
-    queues: SyncDoubleQueues,
+    queues: parking_lot::RwLock<SyncDoubleQueues>,
 }
 
 impl SyncQueueMessenger {
     /// Create a new synchronous messenger for the given number of nodes.
     pub fn new(node_count: usize) -> Self {
         Self {
-            queues: SyncDoubleQueues::new(node_count),
+            queues: parking_lot::RwLock::new(SyncDoubleQueues::new(node_count)),
         }
     }
 }
 
 impl Messenger<SyncQueueMessageIterator> for SyncQueueMessenger {
-    fn init_iteration(&mut self, _iteration: usize) {
-        self.queues.swap();
+    fn init_iteration(&self, _iteration: usize) {
+        self.queues.write().swap();
     }
 
-    fn send_to(&mut self, _source_node_id: u64, target_node_id: u64, message: f64) {
-        self.queues.push(target_node_id as usize, message);
+    fn send_to(&self, _source_node_id: u64, target_node_id: u64, message: f64) {
+        self.queues.write().push(target_node_id as usize, message);
     }
 
     fn message_iterator(&self) -> SyncQueueMessageIterator {
@@ -123,12 +123,13 @@ impl Messenger<SyncQueueMessageIterator> for SyncQueueMessenger {
             // No messages in the first iteration
             message_iterator.init(&[]);
         } else {
-            let messages = self.queues.messages(node_id as usize);
+            let queues = self.queues.read();
+            let messages = queues.messages(node_id as usize);
             message_iterator.init(messages);
         }
     }
 
-    fn release(&mut self) {
+    fn release(&self) {
         // HugeObjectArray doesn't require explicit release in Rust
         // Memory will be freed when dropped
     }
@@ -210,28 +211,28 @@ impl MessageIterator for AsyncQueueMessageIterator {
 /// }
 /// ```
 pub struct AsyncQueueMessenger {
-    queues: AsyncDoubleQueues,
+    queues: parking_lot::RwLock<AsyncDoubleQueues>,
 }
 
 impl AsyncQueueMessenger {
     /// Create a new asynchronous messenger for the given number of nodes.
     pub fn new(node_count: usize) -> Self {
         Self {
-            queues: AsyncDoubleQueues::new(node_count),
+            queues: parking_lot::RwLock::new(AsyncDoubleQueues::new(node_count)),
         }
     }
 }
 
 impl Messenger<AsyncQueueMessageIterator> for AsyncQueueMessenger {
-    fn init_iteration(&mut self, iteration: usize) {
+    fn init_iteration(&self, iteration: usize) {
         if iteration > 0 {
-            self.queues.compact();
+            self.queues.write().compact();
         }
     }
 
-    fn send_to(&mut self, _source_node_id: u64, target_node_id: u64, message: f64) {
+    fn send_to(&self, _source_node_id: u64, target_node_id: u64, message: f64) {
         assert!(!message.is_nan(), "Cannot send NaN as a message");
-        self.queues.push(target_node_id as usize, message);
+        self.queues.write().push(target_node_id as usize, message);
     }
 
     fn message_iterator(&self) -> AsyncQueueMessageIterator {
@@ -245,11 +246,12 @@ impl Messenger<AsyncQueueMessageIterator> for AsyncQueueMessenger {
         _is_first_iteration: bool,
     ) {
         // In async mode, messages are always available
-        let messages = self.queues.messages(node_id as usize);
+        let queues = self.queues.read();
+        let messages = queues.messages(node_id as usize);
         message_iterator.init(messages);
     }
 
-    fn release(&mut self) {
+    fn release(&self) {
         // Memory will be freed when dropped
     }
 }
@@ -344,12 +346,12 @@ impl MessageIterator for ReducingMessageIterator {
 /// assert_eq!(iter.next(), Some(8.0));
 /// ```
 pub struct ReducingMessenger {
-    send_array: HugeAtomicDoubleArray,
-    receive_array: HugeAtomicDoubleArray,
+    send_array: parking_lot::RwLock<HugeAtomicDoubleArray>,
+    receive_array: parking_lot::RwLock<HugeAtomicDoubleArray>,
     reducer: Box<dyn MessageReducer<f64>>,
     track_sender: bool,
-    send_sender_array: Option<HugeAtomicLongArray>,
-    receive_sender_array: Option<HugeAtomicLongArray>,
+    send_sender_array: Option<parking_lot::RwLock<HugeAtomicLongArray>>,
+    receive_sender_array: Option<parking_lot::RwLock<HugeAtomicLongArray>>,
 }
 
 impl ReducingMessenger {
@@ -382,16 +384,20 @@ impl ReducingMessenger {
 
         let (send_sender_array, receive_sender_array) = if track_sender {
             (
-                Some(HugeAtomicLongArray::new(node_count)),
-                Some(HugeAtomicLongArray::new(node_count)),
+                Some(parking_lot::RwLock::new(HugeAtomicLongArray::new(
+                    node_count,
+                ))),
+                Some(parking_lot::RwLock::new(HugeAtomicLongArray::new(
+                    node_count,
+                ))),
             )
         } else {
             (None, None)
         };
 
         Self {
-            send_array,
-            receive_array,
+            send_array: parking_lot::RwLock::new(send_array),
+            receive_array: parking_lot::RwLock::new(receive_array),
             reducer,
             track_sender,
             send_sender_array,
@@ -401,44 +407,47 @@ impl ReducingMessenger {
 }
 
 impl Messenger<ReducingMessageIterator> for ReducingMessenger {
-    fn init_iteration(&mut self, _iteration: usize) {
-        // Swap the arrays
-        std::mem::swap(&mut self.send_array, &mut self.receive_array);
+    fn init_iteration(&self, _iteration: usize) {
+        // Swap the arrays - need write locks
+        let mut send = self.send_array.write();
+        let mut receive = self.receive_array.write();
+        std::mem::swap(&mut *send, &mut *receive);
 
         // Swap sender arrays if tracking
         if self.track_sender {
-            std::mem::swap(&mut self.send_sender_array, &mut self.receive_sender_array);
+            let mut send_sender = self.send_sender_array.as_ref().unwrap().write();
+            let mut receive_sender = self.receive_sender_array.as_ref().unwrap().write();
+            std::mem::swap(&mut *send_sender, &mut *receive_sender);
         }
 
         // Reset send array to identity values
         let identity = self.reducer.identity();
-        let size = self.send_array.size();
+        let size = send.size();
         for i in 0..size {
-            self.send_array.set(i, identity);
+            send.set(i, identity);
         }
     }
 
-    fn send_to(&mut self, source_node_id: u64, target_node_id: u64, message: f64) {
+    fn send_to(&self, source_node_id: u64, target_node_id: u64, message: f64) {
         let target = target_node_id as usize;
 
         if self.track_sender {
             // Atomic update with sender tracking
             let reducer = &self.reducer;
+            let send_array = self.send_array.read();
             let send_sender_array = self.send_sender_array.as_ref().unwrap();
 
             loop {
-                let current = self.send_array.get(target);
+                let current = send_array.get(target);
                 let reduced = reducer.reduce(current, message);
 
                 // compare_and_exchange returns witness value (equals current if successful)
-                let witness = self
-                    .send_array
-                    .compare_and_exchange(target, current, reduced);
+                let witness = send_array.compare_and_exchange(target, current, reduced);
 
                 if (witness - current).abs() < f64::EPSILON {
                     // Success - update sender if the reduced value changed
                     if (reduced - current).abs() > f64::EPSILON {
-                        send_sender_array.set(target, source_node_id as i64);
+                        send_sender_array.write().set(target, source_node_id as i64);
                     }
                     break;
                 } else {
@@ -449,13 +458,12 @@ impl Messenger<ReducingMessageIterator> for ReducingMessenger {
         } else {
             // Simple atomic update without sender tracking
             let reducer = &self.reducer;
+            let send_array = self.send_array.read();
             loop {
-                let current = self.send_array.get(target);
+                let current = send_array.get(target);
                 let reduced = reducer.reduce(current, message);
 
-                let witness = self
-                    .send_array
-                    .compare_and_exchange(target, current, reduced);
+                let witness = send_array.compare_and_exchange(target, current, reduced);
 
                 if (witness - current).abs() < f64::EPSILON {
                     break;
@@ -480,12 +488,13 @@ impl Messenger<ReducingMessageIterator> for ReducingMessenger {
         let identity = self.reducer.identity();
 
         // Get and replace with identity (consume the message)
-        let message = self.receive_array.get_and_replace(node, identity);
+        let receive_array = self.receive_array.read();
+        let message = receive_array.get_and_replace(node, identity);
         let has_message = (message - identity).abs() > f64::EPSILON;
 
         let sender = if self.track_sender && has_message {
             let sender_array = self.receive_sender_array.as_ref().unwrap();
-            Some(sender_array.get(node) as u64)
+            Some(sender_array.read().get(node) as u64)
         } else {
             None
         };
@@ -496,13 +505,13 @@ impl Messenger<ReducingMessageIterator> for ReducingMessenger {
     fn sender(&self, node_id: u64) -> Option<u64> {
         if self.track_sender {
             let sender_array = self.receive_sender_array.as_ref().unwrap();
-            Some(sender_array.get(node_id as usize) as u64)
+            Some(sender_array.read().get(node_id as usize) as u64)
         } else {
             None
         }
     }
 
-    fn release(&mut self) {
+    fn release(&self) {
         // Memory will be freed when dropped
     }
 }
@@ -514,7 +523,7 @@ mod tests {
 
     #[test]
     fn test_sync_queue_messenger_basic() {
-        let mut messenger = SyncQueueMessenger::new(3);
+        let messenger = SyncQueueMessenger::new(3);
 
         // Send messages in iteration 0
         messenger.send_to(0, 1, 1.0);
@@ -549,7 +558,7 @@ mod tests {
 
     #[test]
     fn test_async_queue_messenger_basic() {
-        let mut messenger = AsyncQueueMessenger::new(3);
+        let messenger = AsyncQueueMessenger::new(3);
 
         // Send messages
         messenger.send_to(0, 1, 1.0);
@@ -565,7 +574,7 @@ mod tests {
 
     #[test]
     fn test_async_queue_messenger_compact() {
-        let mut messenger = AsyncQueueMessenger::new(3);
+        let messenger = AsyncQueueMessenger::new(3);
 
         messenger.send_to(0, 1, 1.0);
         messenger.init_iteration(0); // Should not compact on first iteration
@@ -577,14 +586,14 @@ mod tests {
     #[test]
     #[should_panic(expected = "Cannot send NaN as a message")]
     fn test_async_queue_messenger_rejects_nan() {
-        let mut messenger = AsyncQueueMessenger::new(3);
+        let messenger = AsyncQueueMessenger::new(3);
         messenger.send_to(0, 1, f64::NAN);
     }
 
     #[test]
     fn test_reducing_messenger_sum() {
         let reducer = Box::new(SumReducer);
-        let mut messenger = ReducingMessenger::new(3, reducer, false);
+        let messenger = ReducingMessenger::new(3, reducer, false);
 
         // Send multiple messages to same node
         messenger.send_to(0, 1, 5.0);
@@ -605,7 +614,7 @@ mod tests {
     #[test]
     fn test_reducing_messenger_min() {
         let reducer = Box::new(MinReducer);
-        let mut messenger = ReducingMessenger::new(3, reducer, false);
+        let messenger = ReducingMessenger::new(3, reducer, false);
 
         messenger.send_to(0, 1, 5.0);
         messenger.send_to(2, 1, 3.0);
@@ -622,7 +631,7 @@ mod tests {
     #[test]
     fn test_reducing_messenger_max() {
         let reducer = Box::new(MaxReducer);
-        let mut messenger = ReducingMessenger::new(3, reducer, false);
+        let messenger = ReducingMessenger::new(3, reducer, false);
 
         messenger.send_to(0, 1, 5.0);
         messenger.send_to(2, 1, 3.0);
@@ -639,7 +648,7 @@ mod tests {
     #[test]
     fn test_reducing_messenger_no_messages() {
         let reducer = Box::new(SumReducer);
-        let mut messenger = ReducingMessenger::new(3, reducer, false);
+        let messenger = ReducingMessenger::new(3, reducer, false);
 
         messenger.init_iteration(1);
 
@@ -653,7 +662,7 @@ mod tests {
     #[test]
     fn test_reducing_messenger_iterator_reset() {
         let reducer = Box::new(SumReducer);
-        let mut messenger = ReducingMessenger::new(3, reducer, false);
+        let messenger = ReducingMessenger::new(3, reducer, false);
 
         messenger.send_to(0, 1, 5.0);
         messenger.init_iteration(1);
@@ -671,7 +680,7 @@ mod tests {
     #[test]
     fn test_reducing_messenger_with_sender_tracking() {
         let reducer = Box::new(MaxReducer);
-        let mut messenger = ReducingMessenger::new(3, reducer, true);
+        let messenger = ReducingMessenger::new(3, reducer, true);
 
         messenger.send_to(10, 1, 5.0);
         messenger.send_to(20, 1, 8.0); // This should be tracked as sender
