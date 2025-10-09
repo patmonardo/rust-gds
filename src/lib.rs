@@ -2,6 +2,7 @@
 //!
 //! A modular graph data structure and algorithms library.
 
+pub mod collections;
 pub mod config;
 pub mod core;
 pub mod mem;

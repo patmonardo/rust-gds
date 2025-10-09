@@ -375,22 +375,12 @@ impl GraphStoreComputeConfigBuilder {
 }
 
 /// Complete GraphStore configuration combining all subsystems
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct GraphStoreConfig {
     pub memory: GraphStoreMemoryConfig,
     pub cache: GraphStoreCacheConfig,
     pub compute: GraphStoreComputeConfig,
-}
-
-impl Default for GraphStoreConfig {
-    fn default() -> Self {
-        Self {
-            memory: GraphStoreMemoryConfig::default(),
-            cache: GraphStoreCacheConfig::default(),
-            compute: GraphStoreComputeConfig::default(),
-        }
-    }
 }
 
 impl Config for GraphStoreConfig {}

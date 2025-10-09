@@ -1,0 +1,580 @@
+//! HugeLongArray - i64 array supporting billions of elements
+//!
+//! Core numeric array implementation for graph data science, designed to handle
+//! massive datasets that exceed standard array limitations.
+
+use crate::collections::{ArrayUtil, PageUtil};
+use crate::collections::cursor::{HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor};
+
+/// Maximum size for single-page arrays (from PageUtil)
+const MAX_ARRAY_LENGTH: usize = 1 << 28; // ~268 million eleme#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::collections::cursor::{init_cursor, init_cursor_range};
+
+    // Basic array tests
+
+    #[test]
+    fn test_new() {/ A long-indexable i64 array that can contain more than 2 billion elements.
+///
+/// Implemented by paging smaller arrays to support approximately 32,000 billion elements.
+/// For arrays small enough, uses optimized single-page implementation for maximum performance.
+///
+/// # Characteristics
+///
+/// - **Fixed size**: Cannot grow or shrink after creation
+/// - **Dense storage**: Every position consumes memory (use sparse variants for sparse data)
+/// - **Zero default**: Unset values return `0`
+/// - **Thread safety**: Reads are safe, writes are not (external synchronization needed)
+///
+/// # Examples
+///
+/// ```
+/// use rust_gds::collections::huge_array::HugeLongArray;
+///
+/// // Create array for 1 million node IDs
+/// let mut node_ids = HugeLongArray::new(1_000_000);
+/// node_ids.set(0, 42);
+/// assert_eq!(node_ids.get(0), 42);
+/// assert_eq!(node_ids.get(1), 0); // Default value
+///
+/// // Fill with values
+/// node_ids.fill(100);
+/// assert_eq!(node_ids.get(999_999), 100);
+/// ```
+pub enum HugeLongArray {
+    /// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
+    Single(SingleHugeLongArray),
+    /// Multi-page implementation for arrays > MAX_ARRAY_LENGTH
+    Paged(PagedHugeLongArray),
+}
+
+impl HugeLongArray {
+    /// Creates a new array of the given size.
+    ///
+    /// Automatically chooses optimal implementation based on size.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    ///
+    /// let small = HugeLongArray::new(1000);  // Uses single page
+    /// let huge = HugeLongArray::new(1_000_000_000); // Uses multiple pages
+    /// ```
+    pub fn new(size: usize) -> Self {
+        if size <= MAX_ARRAY_LENGTH {
+            Self::Single(SingleHugeLongArray::new(size))
+        } else {
+            Self::Paged(PagedHugeLongArray::new(size))
+        }
+    }
+
+    /// Creates a new array from the provided values.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    ///
+    /// let array = HugeLongArray::from_vec(vec![1, 2, 3, 4, 5]);
+    /// assert_eq!(array.get(2), 3);
+    /// ```
+    pub fn from_vec(values: Vec<i64>) -> Self {
+        let size = values.len();
+        let mut array = Self::new(size);
+        for (i, &value) in values.iter().enumerate() {
+            array.set(i, value);
+        }
+        array
+    }
+
+    /// Returns the value at the given index.
+    ///
+    /// # Panics
+    ///
+    /// Panics if index >= size
+    pub fn get(&self, index: usize) -> i64 {
+        match self {
+            Self::Single(arr) => arr.get(index),
+            Self::Paged(arr) => arr.get(index),
+        }
+    }
+
+    /// Sets the value at the given index.
+    ///
+    /// # Panics
+    ///
+    /// Panics if index >= size
+    pub fn set(&mut self, index: usize, value: i64) {
+        match self {
+            Self::Single(arr) => arr.set(index, value),
+            Self::Paged(arr) => arr.set(index, value),
+        }
+    }
+
+    /// Adds delta to the value at the given index.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    ///
+    /// let mut array = HugeLongArray::new(10);
+    /// array.set(0, 10);
+    /// array.add_to(0, 5);
+    /// assert_eq!(array.get(0), 15);
+    /// ```
+    pub fn add_to(&mut self, index: usize, delta: i64) {
+        match self {
+            Self::Single(arr) => arr.add_to(index, delta),
+            Self::Paged(arr) => arr.add_to(index, delta),
+        }
+    }
+
+    /// Sets all elements using the provided generator function.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    ///
+    /// let mut array = HugeLongArray::new(5);
+    /// array.set_all(|i| (i * 2) as i64);
+    /// assert_eq!(array.get(0), 0);
+    /// assert_eq!(array.get(1), 2);
+    /// assert_eq!(array.get(2), 4);
+    /// ```
+    pub fn set_all<F>(&mut self, gen: F)
+    where
+        F: Fn(usize) -> i64,
+    {
+        match self {
+            Self::Single(arr) => arr.set_all(gen),
+            Self::Paged(arr) => arr.set_all(gen),
+        }
+    }
+
+    /// Fills all elements with the specified value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    ///
+    /// let mut array = HugeLongArray::new(100);
+    /// array.fill(42);
+    /// assert_eq!(array.get(50), 42);
+    /// ```
+    pub fn fill(&mut self, value: i64) {
+        match self {
+            Self::Single(arr) => arr.fill(value),
+            Self::Paged(arr) => arr.fill(value),
+        }
+    }
+
+    /// Returns the number of elements in the array.
+    pub fn size(&self) -> usize {
+        match self {
+            Self::Single(arr) => arr.size(),
+            Self::Paged(arr) => arr.size(),
+        }
+    }
+
+    /// Returns the memory used by this array in bytes.
+    pub fn size_of(&self) -> usize {
+        match self {
+            Self::Single(arr) => arr.size_of(),
+            Self::Paged(arr) => arr.size_of(),
+        }
+    }
+
+    /// Copies elements from this array to the destination array.
+    ///
+    /// # Panics
+    ///
+    /// Panics if length exceeds either array's size
+    pub fn copy_to(&self, dest: &mut HugeLongArray, length: usize) {
+        assert!(length <= self.size(), "length exceeds source array size");
+        assert!(length <= dest.size(), "length exceeds dest array size");
+
+        for i in 0..length {
+            dest.set(i, self.get(i));
+        }
+    }
+
+    /// Creates a copy of this array with a new length.
+    ///
+    /// If new length is larger, new elements are initialized to 0.
+    pub fn copy_of(&self, new_length: usize) -> Self {
+        let mut result = Self::new(new_length);
+        let copy_length = usize::min(self.size(), new_length);
+        self.copy_to(&mut result, copy_length);
+        result
+    }
+
+    /// Converts to a standard Vec.
+    ///
+    /// # Panics
+    ///
+    /// Panics if size exceeds usize::MAX
+    pub fn to_vec(&self) -> Vec<i64> {
+        let size = self.size();
+        let mut result = Vec::with_capacity(size);
+        for i in 0..size {
+            result.push(self.get(i));
+        }
+        result
+    }
+
+    /// Performs binary search for the given value (array must be sorted).
+    ///
+    /// Returns the index if found, or -(insertion_point + 1) if not found.
+    pub fn binary_search(&self, search_value: i64) -> isize {
+        match self {
+            Self::Single(arr) => arr.binary_search(search_value),
+            Self::Paged(arr) => arr.binary_search(search_value),
+        }
+    }
+}
+
+/// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
+pub struct SingleHugeLongArray {
+    data: Vec<i64>,
+}
+
+impl SingleHugeLongArray {
+    fn new(size: usize) -> Self {
+        Self {
+            data: vec![0; size],
+        }
+    }
+
+    fn get(&self, index: usize) -> i64 {
+        self.data[index]
+    }
+
+    fn set(&mut self, index: usize, value: i64) {
+        self.data[index] = value;
+    }
+
+    fn add_to(&mut self, index: usize, delta: i64) {
+        self.data[index] += delta;
+    }
+
+    fn set_all<F>(&mut self, gen: F)
+    where
+        F: Fn(usize) -> i64,
+    {
+        for (i, value) in self.data.iter_mut().enumerate() {
+            *value = gen(i);
+        }
+    }
+
+    fn fill(&mut self, value: i64) {
+        self.data.fill(value);
+    }
+
+    fn size(&self) -> usize {
+        self.data.len()
+    }
+
+    fn size_of(&self) -> usize {
+        self.data.len() * std::mem::size_of::<i64>()
+    }
+
+    fn binary_search(&self, search_value: i64) -> isize {
+        ArrayUtil::binary_search_index(&self.data, self.data.len(), search_value)
+    }
+}
+
+/// Multi-page implementation for arrays > MAX_ARRAY_LENGTH
+pub struct PagedHugeLongArray {
+    pages: Vec<Vec<i64>>,
+    size: usize,
+    page_shift: u32,
+    page_mask: usize,
+}
+
+impl PagedHugeLongArray {
+    fn new(size: usize) -> Self {
+        // Calculate page size for i64 elements with 4KB pages
+        let page_size =
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<i64>());
+        let page_shift = page_size.trailing_zeros(); // log2 of page_size
+        let page_mask = page_size - 1;
+        let num_pages = PageUtil::num_pages_for(size, page_size);
+
+        let mut pages = Vec::with_capacity(num_pages);
+        for page_index in 0..num_pages {
+            let page_length = if page_index == num_pages - 1 {
+                PageUtil::exclusive_index_of_page(size, page_mask)
+            } else {
+                page_size
+            };
+            pages.push(vec![0; page_length]);
+        }
+
+        Self {
+            pages,
+            size,
+            page_shift,
+            page_mask,
+        }
+    }
+
+    fn get(&self, index: usize) -> i64 {
+        let page_index = PageUtil::page_index(index, self.page_shift);
+        let index_in_page = PageUtil::index_in_page(index, self.page_mask);
+        self.pages[page_index][index_in_page]
+    }
+
+    fn set(&mut self, index: usize, value: i64) {
+        let page_index = PageUtil::page_index(index, self.page_shift);
+        let index_in_page = PageUtil::index_in_page(index, self.page_mask);
+        self.pages[page_index][index_in_page] = value;
+    }
+
+    fn add_to(&mut self, index: usize, delta: i64) {
+        let page_index = PageUtil::page_index(index, self.page_shift);
+        let index_in_page = PageUtil::index_in_page(index, self.page_mask);
+        self.pages[page_index][index_in_page] += delta;
+    }
+
+    fn set_all<F>(&mut self, gen: F)
+    where
+        F: Fn(usize) -> i64,
+    {
+        let mut global_index = 0;
+        for page in &mut self.pages {
+            for value in page.iter_mut() {
+                if global_index < self.size {
+                    *value = gen(global_index);
+                    global_index += 1;
+                }
+            }
+        }
+    }
+
+    fn fill(&mut self, value: i64) {
+        for page in &mut self.pages {
+            page.fill(value);
+        }
+    }
+
+    fn size(&self) -> usize {
+        self.size
+    }
+
+    fn size_of(&self) -> usize {
+        let mut total = 0;
+        for page in &self.pages {
+            total += page.len() * std::mem::size_of::<i64>();
+        }
+        total
+    }
+
+    fn binary_search(&self, search_value: i64) -> isize {
+        // For paged arrays, we need to search across all pages
+        // This is a simplified implementation - could be optimized
+        let mut low = 0isize;
+        let mut high = (self.size - 1) as isize;
+
+        while low <= high {
+            let mid = low + (high - low) / 2;
+            let mid_val = self.get(mid as usize);
+
+            if mid_val < search_value {
+                low = mid + 1;
+            } else if mid_val > search_value {
+                high = mid - 1;
+            } else {
+                return mid; // Found
+            }
+        }
+
+        -(low + 1) // Not found
+    }
+}
+
+// Cursor support for HugeLongArray
+impl<'a> HugeCursorSupport<'a> for HugeLongArray {
+    type Cursor = HugeLongArrayCursor<'a>;
+
+    fn size(&self) -> usize {
+        HugeLongArray::size(self)
+    }
+
+    fn new_cursor(&'a self) -> Self::Cursor {
+        match self {
+            HugeLongArray::Single(arr) => HugeLongArrayCursor::Single(SinglePageCursor::new(&arr.data)),
+            HugeLongArray::Paged(arr) => {
+                let capacity = arr.size;
+                HugeLongArrayCursor::Paged(PagedCursor::new(&arr.pages, capacity))
+            }
+        }
+    }
+}
+
+/// Cursor implementation for HugeLongArray
+pub enum HugeLongArrayCursor<'a> {
+    Single(SinglePageCursor<'a, i64>),
+    Paged(PagedCursor<'a, i64>),
+}
+
+impl<'a> HugeCursor<'a> for HugeLongArrayCursor<'a> {
+    type Array = [i64];
+
+    fn next(&mut self) -> bool {
+        match self {
+            Self::Single(cursor) => cursor.next(),
+            Self::Paged(cursor) => cursor.next(),
+        }
+    }
+
+    fn base(&self) -> usize {
+        match self {
+            Self::Single(cursor) => cursor.base(),
+            Self::Paged(cursor) => cursor.base(),
+        }
+    }
+
+    fn array(&self) -> Option<&'a Self::Array> {
+        match self {
+            Self::Single(cursor) => cursor.array(),
+            Self::Paged(cursor) => cursor.array(),
+        }
+    }
+
+    fn offset(&self) -> usize {
+        match self {
+            Self::Single(cursor) => cursor.offset(),
+            Self::Paged(cursor) => cursor.offset(),
+        }
+    }
+
+    fn limit(&self) -> usize {
+        match self {
+            Self::Single(cursor) => cursor.limit(),
+            Self::Paged(cursor) => cursor.limit(),
+        }
+    }
+
+    fn set_range(&mut self, from: usize, to: usize) {
+        match self {
+            Self::Single(cursor) => cursor.set_range(from, to),
+            Self::Paged(cursor) => cursor.set_range(from, to),
+        }
+    }
+
+    fn reset(&mut self) {
+        match self {
+            Self::Single(cursor) => cursor.reset(),
+            Self::Paged(cursor) => cursor.reset(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::collections::cursor::{init_cursor, init_cursor_range};
+
+    #[test]
+    fn test_new_small() {
+        let array = HugeLongArray::new(100);
+        assert_eq!(array.size(), 100);
+        assert_eq!(array.get(0), 0);
+    }
+
+    #[test]
+    fn test_get_set() {
+        let mut array = HugeLongArray::new(10);
+        array.set(5, 42);
+        assert_eq!(array.get(5), 42);
+    }
+
+    #[test]
+    fn test_add_to() {
+        let mut array = HugeLongArray::new(10);
+        array.set(0, 10);
+        array.add_to(0, 5);
+        assert_eq!(array.get(0), 15);
+    }
+
+    #[test]
+    fn test_fill() {
+        let mut array = HugeLongArray::new(100);
+        array.fill(99);
+        assert_eq!(array.get(0), 99);
+        assert_eq!(array.get(99), 99);
+    }
+
+    #[test]
+    fn test_set_all() {
+        let mut array = HugeLongArray::new(5);
+        array.set_all(|i| (i * 2) as i64);
+        assert_eq!(array.get(0), 0);
+        assert_eq!(array.get(1), 2);
+        assert_eq!(array.get(4), 8);
+    }
+
+    #[test]
+    fn test_from_vec() {
+        let array = HugeLongArray::from_vec(vec![10, 20, 30]);
+        assert_eq!(array.size(), 3);
+        assert_eq!(array.get(0), 10);
+        assert_eq!(array.get(1), 20);
+        assert_eq!(array.get(2), 30);
+    }
+
+    #[test]
+    fn test_to_vec() {
+        let mut array = HugeLongArray::new(3);
+        array.set(0, 100);
+        array.set(1, 200);
+        array.set(2, 300);
+        let vec = array.to_vec();
+        assert_eq!(vec, vec![100, 200, 300]);
+    }
+
+    #[test]
+    fn test_copy_of() {
+        let mut original = HugeLongArray::new(3);
+        original.set(0, 1);
+        original.set(1, 2);
+        original.set(2, 3);
+
+        let copy = original.copy_of(5);
+        assert_eq!(copy.size(), 5);
+        assert_eq!(copy.get(0), 1);
+        assert_eq!(copy.get(1), 2);
+        assert_eq!(copy.get(2), 3);
+        assert_eq!(copy.get(3), 0);
+        assert_eq!(copy.get(4), 0);
+    }
+
+    #[test]
+    fn test_binary_search() {
+        let array = HugeLongArray::from_vec(vec![1, 3, 5, 7, 9]);
+        assert_eq!(array.binary_search(5), 2);
+        assert_eq!(array.binary_search(1), 0);
+        assert_eq!(array.binary_search(9), 4);
+        assert!(array.binary_search(4) < 0); // Not found
+    }
+
+    #[test]
+    fn test_paged_array() {
+        // Create array large enough to use paging
+        let size = MAX_ARRAY_LENGTH + 1000;
+        let mut array = HugeLongArray::new(size);
+
+        array.set(0, 100);
+        array.set(MAX_ARRAY_LENGTH, 200);
+        array.set(size - 1, 300);
+
+        assert_eq!(array.get(0), 100);
+        assert_eq!(array.get(MAX_ARRAY_LENGTH), 200);
+        assert_eq!(array.get(size - 1), 300);
+    }
+}

@@ -15,17 +15,20 @@ fn main() {
     println!("   Damping factor: {}", pagerank.damping_factor);
     println!("   Concurrency: {}\n", pagerank.base.concurrency);
 
-    // Example 2: Custom PageRank configuration
+    // Example 2: Custom PageRank configuration with specific node labels
     println!("2. Custom PageRank:");
     let custom_pagerank = PageRankConfig::builder()
         .max_iterations(50)
         .damping_factor(0.9)
         .tolerance(0.00001)
         .concurrency(8)
+        .node_labels(vec![NodeLabel::of("Person"), NodeLabel::of("Movie")])
+        .relationship_types(vec![RelationshipType::of("RATED")])
         .build()
         .expect("Valid config");
     println!("   Max iterations: {}", custom_pagerank.max_iterations);
-    println!("   Damping factor: {}\n", custom_pagerank.damping_factor);
+    println!("   Damping factor: {}", custom_pagerank.damping_factor);
+    println!("   Node labels: {:?}\n", custom_pagerank.base.node_labels);
 
     // Example 3: Louvain community detection
     println!("3. Louvain configuration:");

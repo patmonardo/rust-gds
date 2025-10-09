@@ -7,14 +7,8 @@ use crate::projection::{NodeLabel, RelationshipType};
 /// PageRank algorithm configuration
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct/// Betweenness Centrality configuration
-#[derive(Debug, Clone, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct BetweennessCentralityConfig {
+pub struct PageRankConfig {
     pub base: AlgoBaseConfig,
-    pub sampling_size: Option<usize>,
-    pub sampling_seed: Option<u64>,
-}    pub base: AlgoBaseConfig,
     pub max_iterations: usize,
     pub tolerance: f64,
     pub damping_factor: f64,
