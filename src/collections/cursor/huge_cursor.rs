@@ -35,9 +35,7 @@
 ///         println!("Index {}: {}", global_idx, value);
 ///     }
 /// }
-/// ```
-
-use crate::collections::page_util::PageUtil;
+///
 
 /// Number of elements in a single page
 const PAGE_SIZE: usize = 4096;
@@ -443,14 +441,14 @@ mod tests {
 
     #[test]
     fn test_paged_cursor_multiple_pages() {
-        // Create 3 pages of 10 elements each
-        let pages = vec![
-            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            vec![10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-            vec![20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
-        ];
-        let mut cursor = PagedCursor::new(&pages, 30);
-        cursor.set_range(0, 30);
+        // Create 3 pages of 4096 elements each
+        let page1: Vec<i64> = (0..4096).collect();
+        let page2: Vec<i64> = (4096..8192).collect();
+        let page3: Vec<i64> = (8192..12288).collect();
+        let pages = vec![page1, page2, page3];
+
+        let mut cursor = PagedCursor::new(&pages, 12288);
+        cursor.set_range(0, 12288);
 
         let mut page_count = 0;
         while cursor.next() {
@@ -463,28 +461,32 @@ mod tests {
 
     #[test]
     fn test_paged_cursor_range_across_pages() {
-        // Create 3 pages
-        let pages = vec![
-            vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            vec![10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-            vec![20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
-        ];
-        let mut cursor = PagedCursor::new(&pages, 30);
-        cursor.set_range(5, 25); // Middle of first page to middle of last page
+        // Create 3 pages of 4096 elements each
+        let page1: Vec<i64> = (0..4096).collect();
+        let page2: Vec<i64> = (4096..8192).collect();
+        let page3: Vec<i64> = (8192..12288).collect();
+        let pages = vec![page1, page2, page3];
+
+        let mut cursor = PagedCursor::new(&pages, 12288);
+        cursor.set_range(100, 10000); // From first page across to third page
 
         // First page
         assert!(cursor.next());
-        assert_eq!(cursor.offset(), 5);
+        assert_eq!(cursor.base(), 0);
+        assert_eq!(cursor.offset(), 100);
+        assert_eq!(cursor.limit(), 4096);
 
-        // Second page
+        // Second page (full page)
         assert!(cursor.next());
+        assert_eq!(cursor.base(), 4096);
         assert_eq!(cursor.offset(), 0);
-        assert_eq!(cursor.limit(), 10);
+        assert_eq!(cursor.limit(), 4096);
 
-        // Third page
+        // Third page (partial)
         assert!(cursor.next());
+        assert_eq!(cursor.base(), 8192);
         assert_eq!(cursor.offset(), 0);
-        assert_eq!(cursor.limit(), 5); // Stops at index 25
+        assert_eq!(cursor.limit(), 1808); // 10000 - 8192 = 1808
 
         assert!(!cursor.next());
     }
