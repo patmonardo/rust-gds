@@ -4,14 +4,14 @@
 //! for Pregel execution and orchestrates the BSP (Bulk Synchronous Parallel) loop.
 //!
 //! Design Philosophy:
-//! - No complex context management (that's in ComputeStep)
+//! - No complex context management (that's in ForkJoinComputeStep)
 //! - Just container + coordinator
 //! - Abstract interface with concrete ForkJoin implementation
 
 use crate::collections::HugeAtomicBitSet;
 use crate::pregel::{
-    ComputeFn, ComputeStep, InitFn, MessageIterator, Messenger, NodeValue, Partition, PregelConfig,
-    ProgressTracker,
+    ComputeFn, ForkJoinComputeStep, InitFn, MessageIterator, Messenger, NodeValue, Partition,
+    PregelConfig, ProgressTracker,
 };
 use crate::types::graph::Graph;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -28,7 +28,7 @@ use std::sync::Arc;
 /// - Vote bits (convergence tracking)
 /// - Progress tracker
 ///
-/// It orchestrates the BSP loop but delegates actual computation to ComputeStep.
+/// It orchestrates the BSP loop but delegates actual computation to ForkJoinComputeStep.
 pub trait PregelComputer<C: PregelConfig> {
     /// Initialize the computation before any iterations run.
     fn init_computation(&mut self);
@@ -88,7 +88,7 @@ pub struct ForkJoinComputer<C: PregelConfig + Clone, I: MessageIterator> {
     sent_message: Arc<AtomicBool>,
 
     /// Root task for current iteration (set by init_iteration)
-    root_task: Option<ComputeStep<C, I>>,
+    root_task: Option<ForkJoinComputeStep<C, I>>,
 }
 
 impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
@@ -132,8 +132,8 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputer<C> for ForkJoin
         // Create partition covering all nodes
         let partition = Partition::new(0, self.graph.node_count());
 
-        // Create root compute step for this iteration
-        self.root_task = Some(ComputeStep::new(
+        // Create root fork-join compute step for this iteration
+        self.root_task = Some(ForkJoinComputeStep::new(
             Arc::clone(&self.init_fn),
             Arc::clone(&self.compute_fn),
             self.config.clone(),

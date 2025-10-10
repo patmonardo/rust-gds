@@ -5,10 +5,12 @@
 
 use crate::collections::HugeAtomicBitSet;
 use crate::pregel::{
-    ComputeFn, ForkJoinComputer, InitFn, MasterComputeContext, Messenger, NodeValue,
-    PregelComputer, PregelConfig, PregelResult, PregelSchema, ProgressTracker,
+    projection::PropertyProjection, ComputeFn, DefaultValue, ForkJoinComputer, InitFn,
+    MasterComputeContext, Messenger, NodeValue, PregelComputer, PregelConfig, PregelResult,
+    PregelSchema, ProgressTracker,
 };
 use crate::types::graph::Graph;
+use crate::types::properties::node::NodePropertyContainer;
 use std::sync::Arc;
 
 /// Main executor for Pregel computations.
@@ -97,6 +99,9 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
             config.concurrency(),
         )));
 
+        // Initialize node values from PropertyStore (if property_source is set)
+        Self::initialize_from_property_store(&graph, &schema, &node_values);
+
         // Create vote bits for convergence tracking
         let vote_bits = Arc::new(HugeAtomicBitSet::new(graph.node_count()));
 
@@ -119,6 +124,61 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
             messenger,
             computer,
             progress_tracker,
+        }
+    }
+
+    /// Initialize node values from PropertyStore based on schema mappings.
+    ///
+    /// For each property in the schema that has a `property_source` set, this method
+    /// attempts to load values from the PropertyStore and convert them to Pregel's
+    /// DefaultValue format using the PropertyProjection trait.
+    ///
+    /// # Arguments
+    ///
+    /// * `graph` - The graph (must implement NodePropertyContainer)
+    /// * `schema` - The Pregel schema with property_source mappings
+    /// * `node_values` - The NodeValue storage to populate
+    fn initialize_from_property_store(
+        graph: &Arc<dyn Graph>,
+        schema: &PregelSchema,
+        node_values: &Arc<parking_lot::RwLock<NodeValue>>,
+    ) {
+        for element in schema.elements() {
+            // Skip if no property_source is set
+            let Some(source_key) = &element.property_source else {
+                continue;
+            };
+
+            // Try to get property values from PropertyStore
+            let Some(property_values) = graph.node_properties(source_key) else {
+                // Property not found in store - silently continue (will use defaults)
+                continue;
+            };
+
+            // Convert and populate values for all nodes
+            let mut node_values_guard = node_values.write();
+            for node_id in 0..graph.node_count() {
+                // Use PropertyProjection to convert PropertyStore → Pregel DefaultValue
+                if let Some(value) =
+                    DefaultValue::from_property(property_values.as_ref(), node_id as u64)
+                {
+                    // Store the value in NodeValue based on type
+                    match value {
+                        DefaultValue::Long(v) => {
+                            node_values_guard.set_long(&element.property_key, node_id, v);
+                        }
+                        DefaultValue::Double(v) => {
+                            node_values_guard.set(&element.property_key, node_id, v);
+                        }
+                        DefaultValue::LongArray(v) => {
+                            node_values_guard.set_long_array(&element.property_key, node_id, v);
+                        }
+                        DefaultValue::DoubleArray(v) => {
+                            node_values_guard.set_double_array(&element.property_key, node_id, v);
+                        }
+                    }
+                }
+            }
         }
     }
 

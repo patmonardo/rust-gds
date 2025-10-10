@@ -123,9 +123,8 @@ impl<C: PregelConfig, I: crate::pregel::MessageIterator> ComputeContext<C, I> {
     /// ```java
     /// double doubleNodeValue(String key)
     /// ```
-    pub fn double_node_value(&self, _key: &str) -> f64 {
-        // TODO: Wire to node_value.read().double_value(key, node_id)
-        0.0
+    pub fn double_node_value(&self, key: &str) -> f64 {
+        self.base.double_node_value(key)
     }
 
     /// Read a long node value for the given property key.
@@ -135,9 +134,8 @@ impl<C: PregelConfig, I: crate::pregel::MessageIterator> ComputeContext<C, I> {
     /// ```java
     /// long longNodeValue(String key)
     /// ```
-    pub fn long_node_value(&self, _key: &str) -> i64 {
-        // TODO: Wire to node_value.read().long_value(key, node_id)
-        0
+    pub fn long_node_value(&self, key: &str) -> i64 {
+        self.base.long_node_value(key)
     }
 
     /// Set a double node value for the given property key.

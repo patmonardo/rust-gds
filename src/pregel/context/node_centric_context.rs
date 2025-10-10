@@ -185,6 +185,20 @@ impl<C: PregelConfig> NodeCentricContext<C> {
             .set_double_array(key, self.node_id as usize, value);
     }
 
+    /// Read a double node value for the given property key.
+    pub(crate) fn double_node_value(&self, key: &str) -> f64 {
+        self.node_value
+            .read()
+            .double_value(key, self.node_id as usize)
+    }
+
+    /// Read a long node value for the given property key.
+    pub(crate) fn long_node_value(&self, key: &str) -> i64 {
+        self.node_value
+            .read()
+            .long_value(key, self.node_id as usize)
+    }
+
     /// Returns the degree (number of relationships) of the currently processed node.
     ///
     /// # Java equivalent

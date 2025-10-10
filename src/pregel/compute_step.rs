@@ -1,7 +1,10 @@
-//! ComputeStep - Concrete implementation for Pregel batch computation
+//! ForkJoinComputeStep - Fork-join work-stealing task for Pregel computation
 //!
-//! A compute step processes a batch of nodes in a Pregel computation.
-//! This is a concrete struct (not a trait) that can be subdivided for parallel execution.
+//! A compute step processes a batch of nodes in a Pregel computation using
+//! fork-join parallelism (via Rayon). This is a concrete implementation that
+//! subdivides work recursively for parallel execution.
+//!
+//! Corresponds to Java's ForkJoinComputeStep and TypeScript's ForkJoinComputeStep.
 
 use crate::collections::HugeAtomicBitSet;
 use crate::pregel::{
@@ -25,10 +28,14 @@ pub type InitFn<C> = Arc<dyn Fn(&mut InitContext<C>) + Send + Sync>;
 /// Called for each active node in every superstep.
 pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C, I>, &mut Messages<I>) + Send + Sync>;
 
-/// A compute step that processes a batch of nodes in a Pregel computation.
+/// A fork-join compute step that processes a batch of nodes in a Pregel computation.
 ///
-/// This struct encapsulates all the state needed to process a partition of nodes,
-/// and can be subdivided for parallel execution using work-stealing algorithms.
+/// This struct encapsulates all the state needed to process a partition of nodes
+/// using fork-join parallelism. When a batch is larger than the sequential threshold,
+/// it subdivides recursively and uses Rayon for parallel execution.
+///
+/// This corresponds to Java's `ForkJoinComputeStep` which extends `CountedCompleter`.
+/// In Rust, we use Rayon's work-stealing instead of manually implementing the task tree.
 ///
 /// # Type Parameters
 ///
@@ -38,9 +45,9 @@ pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C, I>, &mut Messages<I
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::ComputeStep;
+/// use rust_gds::pregel::ForkJoinComputeStep;
 ///
-/// let step = ComputeStep::new(
+/// let step = ForkJoinComputeStep::new(
 ///     init_fn,
 ///     compute_fn,
 ///     partition,
@@ -55,7 +62,7 @@ pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C, I>, &mut Messages<I
 /// // Process the batch (may subdivide for parallelism)
 /// step.compute();
 /// ```
-pub struct ComputeStep<C: PregelConfig, I: MessageIterator> {
+pub struct ForkJoinComputeStep<C: PregelConfig, I: MessageIterator> {
     /// Initialization function
     init_fn: InitFn<C>,
 
@@ -98,8 +105,8 @@ pub struct ComputeStep<C: PregelConfig, I: MessageIterator> {
     config: C,
 }
 
-impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
-    /// Create a new compute step.
+impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
+    /// Create a new fork-join compute step.
     ///
     /// # Arguments
     ///
@@ -188,7 +195,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
             let (left_batch, right_batch) = self.split_batch();
 
             // Create left subtask
-            let left_step = ComputeStep {
+            let left_step = ForkJoinComputeStep {
                 init_fn: Arc::clone(&self.init_fn),
                 compute_fn: Arc::clone(&self.compute_fn),
                 node_batch: left_batch,
@@ -303,13 +310,13 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ComputeStep<C, I> {
 }
 
 // TODO: Re-enable tests once we have proper mock implementations
-// Tests need to be updated to match new ComputeStep::new() signature
+// Tests need to be updated to match new ForkJoinComputeStep::new() signature
 // that takes config directly instead of supplier functions
 /*
 #[cfg(test)]
 mod tests {
     // Tests temporarily disabled - need to update mocks for:
-    // 1. ComputeStep::new() now takes config: C directly
+    // 1. ForkJoinComputeStep::new() now takes config: C directly
     // 2. MockIterator needs to implement Iterator trait
     // 3. MockMessenger needs full trait implementation
     // 4. NodeValue mock needs proper construction

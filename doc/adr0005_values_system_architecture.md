@@ -5,7 +5,7 @@ Date: 2025-10-10
 
 ## Purpose
 
-Clarify the Values system architecture, record the separation between columnar storage views (PropertyValues) and individual value access (GdsValue / PrimitiveValues), and propose a lightweight "ValueType Macro" orchestration strategy to generate and integrate both macro families consistently.
+Clarify the Values system architecture, record the separation between columnar storage views (PropertyValues) and individual value access (GdsValue / PrimitiveValues), and propose a lightweight "Eval Macro" orchestration strategy to generate and integrate both macro families consistently.
 
 ## Context
 
@@ -30,7 +30,7 @@ We adopt a three-part strategy:
 
 2. Keep `PropertyValues` as the canonical storage/view model. Macro-generated `TypedPropertyValues<B, T>` adapters wrap `ArrayBackend<T>` backends (Huge, Arrow, Mmap, Sparse) and expose a `PropertyValues` trait that uses `u64` ids at its public boundary and returns `Option<Arc<dyn GdsValue>>` for reads.
 
-3. Introduce a small, lightweight "ValueType Macro" orchestrator (a higher-level macro_rules module) whose job is to drive both macro families from a single source of truth (the `ValueType` table). The ValueType Macro will:
+3. Introduce a small, lightweight "Eval Macro" orchestrator (a higher-level macro_rules module) whose job is to drive both macro families from a single source of truth (the `ValueType` table). The Eval Macro will:
    - centrally declare the list of value variants and canonical Rust storage types (i64, f64, i32, f32, String, etc.),
    - generate invocations for `gds_value_impl!` (PrimitiveValues) and `generate_property_values!` (PropertyValues adapters), and
    - emit the `PrimitiveValues::of()` factory arms and `PropertyValues` adapter registrations consistently.
@@ -39,7 +39,7 @@ We adopt a three-part strategy:
 
 - A single source of truth reduces duplication: adding a ValueType variant flows to both runtime and storage code paths.
 - PrimitiveValues macros stay the prioritized family (they produce `GdsValue` drivers that are fundamental to projection and cursor code). PropertyValues adapters are thin wrappers that expose storage via the agreed `PropertyValues` trait.
-- The ValueType Macro is a code-generation convenience: it does not hide complexity but ensures consistent, discoverable, and testable outputs across macro sets.
+- The Eval Macro is a code-generation convenience: it does not hide complexity but ensures consistent, discoverable, and testable outputs across macro sets.
 
 ## Traits and Boundaries
 
@@ -69,9 +69,9 @@ We standardize three trait surfaces (minimal, stable contract):
 
 `NodeValue` remains a compact, Pregel-specific runtime enum optimized for compute and messaging. Pregel reads properties exclusively via `PropertyValues` and converts them via `NodeValue::from_property(&impl PropertyValues, node_id: u64)` using conservative type mapping (no silent coercion; explicit helper casts provided).
 
-## General Macro Orchestration
+## Eval Macro Orchestration
 
-The General Macro (a small macro_rules file) will be authoritative for the ValueType table. Example usage:
+The Eval Macro (a small macro_rules file) will be authoritative for the ValueType table. Note: this is a compile-time code generation macro (not runtime eval). Example usage:
 
 ```
 value_type_table! {
@@ -82,7 +82,7 @@ value_type_table! {
 }
 ```
 
-The General Macro will expand into invocations of `gds_value_impl!` and `generate_property_values!` for each row. This keeps both macro families in sync and makes it easy to add or remove ValueType variants.
+The Eval Macro will expand into invocations of `gds_value_impl!` and `generate_property_values!` for each row. This keeps both macro families in sync and makes it easy to add or remove ValueType variants.
 
 ## Consequences
 
@@ -102,7 +102,7 @@ Risks/Challenges
 
 1. Add `src/collections/array_backend.rs` with `ArrayBackend<T>` and `BackendError`.
 2. Extend `src/values/traits/gds_value.rs` with contiguous/chunk helpers and `is_nullable`.
-3. Implement the General Macro table in `src/values/value_type_table.rs` (macro_rules) and wire it into `src/values/macros.rs`.
+3. Implement the Eval Macro table in `src/values/value_type_table.rs` (macro_rules) and wire it into `src/values/macros.rs`.
 4. Implement `gds_value_impl!` and `gds_value_factory!` (PrimitiveValues) to consume the table.
 5. Implement `generate_property_values!` (PropertyValues adapters) — start with Huge and Arrow backends.
 6. Add `NodeValue::from_property` and remove the remaining `PropertyValue=f64` usage (compat shim allowed briefly).
@@ -111,7 +111,7 @@ Risks/Challenges
 ## Next Steps
 
 - Decide migration policy for existing hand-written implementations (replace in-place vs phased coexistence).
-- Implement the General Macro table and a single prototype variant (Long) to validate the flow.
+- Implement the Eval Macro table and a single prototype variant (Long) to validate the flow.
 - Add ADR note on u64→usize conversion policy (fail explicitly / central helper).
 
 ## References
@@ -124,4 +124,6 @@ Risks/Challenges
 
 ## Key insight
 
-Macro generation is a first-class architectural tool in rust-gds. We keep two focused macro families — PrimitiveValues macros (produce `GdsValue` runtime drivers) and PropertyValues macros (produce storage adapters) — and add a small, authoritative General Macro to drive both from a single ValueType table. This reduces drift, improves discoverability, and makes adding new types/backends low-friction.
+Macro generation is a first-class architectural tool in rust-gds. We keep two focused macro families — PrimitiveValues macros (produce `GdsValue` runtime drivers) and PropertyValues macros (produce storage adapters) — and add a small, authoritative Eval Macro to drive both from a single ValueType table. This reduces drift, improves discoverability, and makes adding new types/backends low-friction.
+
+Terminology note: in our triadic framing we use **Noumenal = Pure Form** for the immutable ValueType table and **Transcendental = Pure Nama** for the Form Processor (the policy/orchestration layer). A geometric "triangle" may be thought of as a Pure Form in this sense: a minimal, immutable schema shape. The Eval Macro lives in the Transcendental (Pure Nama) role — it projects the Noumenal table into the two Phenomenal species (Subtle and Gross) and supplies the hooks the Form Processor needs. In practice, the macro-driven Form Processor may also host the `Eval()` hook used by projection/evaluation code.

@@ -25,6 +25,7 @@ pub enum Visibility {
 /// - Property type (long, double, long[], double[])
 /// - Visibility (public or private)
 /// - Optional default value
+/// - Optional source property (for PropertyStore initialization)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Element {
     /// The name/key of the property
@@ -39,6 +40,22 @@ pub struct Element {
     /// Optional default value for the property
     /// TODO: Replace with GdsValue when available
     pub default_value: Option<DefaultValue>,
+
+    /// Optional source property key from PropertyStore
+    ///
+    /// If set, Pregel will attempt to initialize this property from the
+    /// specified PropertyStore property during initialization.
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// Element {
+    ///     property_key: "rank",
+    ///     property_source: Some("seed_rank"),  // Initialize from PropertyStore
+    ///     // ...
+    /// }
+    /// ```
+    pub property_source: Option<String>,
 }
 
 /// Temporary default value representation until GdsValue is available.
@@ -66,6 +83,7 @@ impl Element {
             property_type,
             visibility,
             default_value: None,
+            property_source: None,
         }
     }
 
@@ -87,6 +105,7 @@ impl Element {
             property_type,
             visibility,
             default_value: Some(default_value),
+            property_source: None,
         }
     }
 }
@@ -216,6 +235,59 @@ impl PregelSchemaBuilder {
         self
     }
 
+    /// Set the PropertyStore source for a property.
+    ///
+    /// Links a Pregel property to a PropertyStore property for automatic initialization.
+    /// When Pregel starts, it will attempt to load initial values from the specified
+    /// PropertyStore property.
+    ///
+    /// # Arguments
+    ///
+    /// * `property_key` - The Pregel property key
+    /// * `source_key` - The PropertyStore property key to read from
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let schema = PregelSchema::builder()
+    ///     .add("rank", ValueType::Double, Visibility::Public)
+    ///     .with_property_source("rank", "seed_rank")  // Initialize from PropertyStore
+    ///     .build();
+    /// ```
+    pub fn with_property_source(
+        mut self,
+        property_key: impl Into<String>,
+        source_key: impl Into<String>,
+    ) -> Self {
+        let key = property_key.into();
+        let source = source_key.into();
+
+        // Find the element and update its property_source
+        // Since HashSet doesn't allow mutation, we need to rebuild
+        let mut found = false;
+        let elements: HashSet<Element> = self
+            .elements
+            .into_iter()
+            .map(|mut element| {
+                if element.property_key == key {
+                    element.property_source = Some(source.clone());
+                    found = true;
+                }
+                element
+            })
+            .collect();
+
+        if !found {
+            panic!(
+                "Property '{}' not found in schema. Add the property before setting its source.",
+                key
+            );
+        }
+
+        self.elements = elements;
+        self
+    }
+
     /// Build the final PregelSchema.
     pub fn build(self) -> PregelSchema {
         PregelSchema {
@@ -266,6 +338,31 @@ mod tests {
 
         assert_eq!(schema.property_type("value"), Some(ValueType::Double));
         assert_eq!(schema.property_type("nonexistent"), None);
+    }
+
+    #[test]
+    fn test_property_source() {
+        let schema = PregelSchema::builder()
+            .add("rank", ValueType::Double, Visibility::Public)
+            .with_property_source("rank", "seed_rank")
+            .build();
+
+        let element = schema
+            .elements()
+            .iter()
+            .find(|e| e.property_key == "rank")
+            .unwrap();
+
+        assert_eq!(element.property_source, Some("seed_rank".to_string()));
+    }
+
+    #[test]
+    #[should_panic(expected = "Property 'nonexistent' not found")]
+    fn test_property_source_not_found() {
+        PregelSchema::builder()
+            .add("rank", ValueType::Double, Visibility::Public)
+            .with_property_source("nonexistent", "seed_rank")
+            .build();
     }
 
     #[test]

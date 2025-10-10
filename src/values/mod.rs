@@ -14,3 +14,6 @@ pub mod primitive_values;
 pub use impls::*;
 pub use primitive_values::*;
 pub use traits::*;
+
+// NOTE: form_processor has moved to src/projection
+// Import it via: use crate::projection::form_processor;

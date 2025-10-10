@@ -54,6 +54,7 @@ mod executor;
 mod messages;
 mod messengers;
 mod node_value;
+pub mod projection; // Optional PropertyStore ↔ Pregel bridges
 mod queues;
 mod reducers;
 mod result;
@@ -64,7 +65,7 @@ pub use crate::core::utils::partition::Partition;
 
 // Re-exports from this module
 pub use computation::{BasePregelComputation, PregelComputation};
-pub use compute_step::{ComputeFn, ComputeStep, InitFn};
+pub use compute_step::{ComputeFn, ForkJoinComputeStep, InitFn};
 pub use computer::{ForkJoinComputer, PregelComputer, PregelComputerBuilder};
 pub use config::{Partitioning, PregelConfig};
 pub use context::{ComputeContext, InitContext, MasterComputeContext, NodeCentricContext};
@@ -78,6 +79,7 @@ pub use messengers::{
     SyncQueueMessageIterator, SyncQueueMessenger,
 };
 pub use node_value::NodeValue;
+pub use projection::{default_value_to_gds, materialize_pregel_values, PropertyProjection};
 pub use queues::{AsyncDoubleQueues, AsyncQueueIterator, SyncDoubleQueues, SyncQueueIterator};
 pub use reducers::{CountReducer, MaxReducer, MinReducer, Reducer, SumReducer};
 pub use result::PregelResult;
