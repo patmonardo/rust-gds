@@ -1,253 +1,127 @@
-# ADR 0005: Values System Architecture and Second Macro System
+# ADR 0005: Values System Architecture and Macro Strategy
 
-**Status**: Draft  
-**Date**: 2025-10-06  
-**Context**: Values system cleanup revealed the architecture for individual value manipulation
+Status: Revised Draft
+Date: 2025-10-10
+
+## Purpose
+
+Clarify the Values system architecture, record the separation between columnar storage views (PropertyValues) and individual value access (GdsValue / PrimitiveValues), and propose a lightweight "ValueType Macro" orchestration strategy to generate and integrate both macro families consistently.
 
 ## Context
 
-During the PropertyValue enum removal (ADR 0003), we discovered an orphaned `src/values/` module that represented early attempts at individual value handling. After integration and cleanup, the architecture of the **Second Macro System** has emerged clearly.
+We evolved from an early mixed implementation where `PropertyValue`-style hacks and ad-hoc Vec-backed code proliferated. Two coherent macro-driven subsystems emerged:
 
-## The Two Macro Systems
+- PropertyValues macros: generate storage-view adapters (columnar, u64-indexed) over backends.
+- PrimitiveValues / GdsValue macros: generate runtime value drivers and factories for individual values and arrays.
 
-### First Macro System: PropertyValues (Columnar)
+Both systems must align on the same `ValueType` canonical enum and interoperable trait surfaces so that Projection/Graph layers and Pregel evaluation can be deterministic, efficient, and maintainable.
 
-**Purpose**: Bulk operations on columns of data at GraphStore/PropertyStore level
+## Problem Statement
 
-**Location**: `src/types/properties/property_values.rs`
+1. The current code has duplicated, hand-written implementations for many primitive/array types. This increases maintenance burden and risk of inconsistent behavior.
+2. The boundary between storage (columnar PropertyValues) and runtime (GdsValue/NodeValue) has been fuzzy; a lingering `PropertyValue = f64` hack demonstrates the drift.
+3. We need a clear, maintainable way to generate: (a) backends and their adapters (PropertyValues) and (b) runtime value drivers and factories (PrimitiveValues/GdsValue), while keeping them consistent and discoverable.
 
-**Macros**:
+## Decision
 
-- `property_values_impl!` (5 variants)
-- `node_*_property_values_impl!` (domain-specific helpers)
+We adopt a three-part strategy:
 
-**Traits**:
+1. Keep `GdsValue` as the canonical runtime semantic model. Macros in the PrimitiveValues family generate concrete `GdsValue` impls (scalars and arrays) and the `PrimitiveValues` factory.
 
-```rust
-PropertyValues {
-    fn value_type(&self) -> ValueType;
-    fn element_count(&self) -> usize;
-}
+2. Keep `PropertyValues` as the canonical storage/view model. Macro-generated `TypedPropertyValues<B, T>` adapters wrap `ArrayBackend<T>` backends (Huge, Arrow, Mmap, Sparse) and expose a `PropertyValues` trait that uses `u64` ids at its public boundary and returns `Option<Arc<dyn GdsValue>>` for reads.
 
-NodePropertyValues: PropertyValues {
-    fn long_values(&self) -> Option<&[i64]>;
-    fn double_values(&self) -> Option<&[f64]>;
-    // ... returns slices/references to columns
+3. Introduce a small, lightweight "ValueType Macro" orchestrator (a higher-level macro_rules module) whose job is to drive both macro families from a single source of truth (the `ValueType` table). The ValueType Macro will:
+   - centrally declare the list of value variants and canonical Rust storage types (i64, f64, i32, f32, String, etc.),
+   - generate invocations for `gds_value_impl!` (PrimitiveValues) and `generate_property_values!` (PropertyValues adapters), and
+   - emit the `PrimitiveValues::of()` factory arms and `PropertyValues` adapter registrations consistently.
+
+## Rationale
+
+- A single source of truth reduces duplication: adding a ValueType variant flows to both runtime and storage code paths.
+- PrimitiveValues macros stay the prioritized family (they produce `GdsValue` drivers that are fundamental to projection and cursor code). PropertyValues adapters are thin wrappers that expose storage via the agreed `PropertyValues` trait.
+- The ValueType Macro is a code-generation convenience: it does not hide complexity but ensures consistent, discoverable, and testable outputs across macro sets.
+
+## Traits and Boundaries
+
+We standardize three trait surfaces (minimal, stable contract):
+
+1. `ArrayBackend<T>` — storage abstraction implemented by Huge/Arrow/Mmap/Sparse backends.
+
+   - `len(&self) -> usize`
+   - `get(&self, idx: usize) -> T` (or typed slice access)
+   - `set(&mut self, idx: usize, value: T) -> Result<(), BackendError>`
+   - `contiguous_slice(&self, offset, len) -> Option<&[T]>`
+   - `chunk_iter()` for page/chunk iteration
+
+2. `PropertyValues` — public storage view (u64 boundary):
+
+   - `value_type(&self) -> ValueType`
+   - `len(&self) -> usize`
+   - `get_u64(&self, id: u64) -> Option<Arc<dyn GdsValue>>`
+   - `set_u64(&mut self, id: u64, value: Arc<dyn GdsValue>) -> Result<(), Error>`
+   - single checked `u64 -> usize` conversion at the boundary; explicit error on overflow
+
+3. `GdsValue` and its `Array` subtraits — runtime/value drivers produced by PrimitiveValues macros. Additional helpers added:
+   - `contiguous_slice` / `chunk_iter` to support zero-copy kernels and paged processing
+   - `is_nullable()` to indicate presence of nulls
+
+## Pregel and NodeValue
+
+`NodeValue` remains a compact, Pregel-specific runtime enum optimized for compute and messaging. Pregel reads properties exclusively via `PropertyValues` and converts them via `NodeValue::from_property(&impl PropertyValues, node_id: u64)` using conservative type mapping (no silent coercion; explicit helper casts provided).
+
+## General Macro Orchestration
+
+The General Macro (a small macro_rules file) will be authoritative for the ValueType table. Example usage:
+
+```
+value_type_table! {
+   Long => { rust: i64, gds_variant: Long, property_macro: generate_long_property_values },
+   Double => { rust: f64, gds_variant: Double, property_macro: generate_double_property_values },
+   String => { rust: String, gds_variant: String, property_macro: generate_string_property_values },
+   // ... other entries ...
 }
 ```
 
-**Storage**: Vec<T> (current PureGraphStore), Arrow2 arrays (future CoreGraphStore)
-
-**Use Case**: Store and retrieve entire property columns efficiently
-
----
-
-### Second Macro System: GdsValue (Individual Values)
-
-**Purpose**: Individual value extraction and manipulation at Projection/Graph level
-
-**Location**: `src/values/`
-
-**Macros**: To be implemented (this ADR)
-
-**Traits**:
-
-```rust
-GdsValue {
-    fn value_type(&self) -> ValueType;
-    fn as_object(&self) -> JsonValue;
-}
-
-// Value Accessors - the bridge to actual data
-IntegralValue: GdsValue {
-    fn long_value(&self) -> i64;  // Extract the value!
-}
-
-FloatingPointValue: GdsValue {
-    fn double_value(&self) -> f64;  // Extract the value!
-}
-
-// Array Accessors
-IntegralArray: Array {
-    fn long_value(&self, idx: usize) -> i64;
-    fn long_array_value(&self) -> Vec<i64>;
-}
-
-FloatingPointArray: Array {
-    fn double_value(&self, idx: usize) -> f64;
-    fn double_array_value(&self) -> Vec<f64>;
-}
-```
-
-**Factory**: `PrimitiveValues::of()` / `create()`
-
-**Implementations**: `Default*` structs (DefaultLongValue, DefaultLongArray, etc.)
-
-**Use Case**: When traversing graphs via cursors/iterators, extract individual property values
-
----
-
-## Architecture Layers
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Algorithm Layer                                         │
-│  (operates on Graph projections)                         │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│  Projection/Graph Layer                                  │
-│  • Cursors, Iterators                                    │
-│  • RelationshipCursor::property() → f64                  │
-│  • Extract individual values via GdsValue                │  ← Second Macro System
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│  GraphStore/PropertyStore Layer                          │
-│  • PropertyValues (columns)                              │  ← First Macro System
-│  • Bulk operations on slices                             │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│  Storage Backend                                         │
-│  • Pure: Vec<T>                                          │
-│  • Core: Arrow2 arrays                                   │
-│  • Warm: mmap'd Arrow2                                   │
-│  • Cold: compressed Arrow2                               │
-└─────────────────────────────────────────────────────────┘
-```
-
-## Current State
-
-### Clean Structure
-
-```
-src/values/
-├── mod.rs                      (module root)
-├── primitive_values.rs         (PrimitiveValues factory - entry point)
-├── traits/
-│   ├── mod.rs
-│   └── gds_value.rs           (trait hierarchy)
-└── impls/
-    ├── mod.rs
-    ├── array_equals.rs        (cross-type equality)
-    └── gds_value_impls.rs     (Default* implementations)
-```
-
-### Trait Hierarchy
-
-```
-GdsValue (core)
-├── Array
-│   ├── IntegralArray
-│   │   └── LongArray (marker)
-│   └── FloatingPointArray
-│       ├── FloatArray (marker)
-│       └── DoubleArray (marker)
-├── IntegralValue (scalar accessor)
-└── FloatingPointValue (scalar accessor)
-```
-
-### Current Implementations (Hand-written)
-
-- `DefaultLongValue` (i64 scalar)
-- `DefaultFloatingPointValue` (f64 scalar)
-- `DefaultLongArray` (Vec<i64>)
-- `DefaultIntLongArray` (Vec<i32> → i64)
-- `DefaultShortLongArray` (Vec<i16> → i64)
-- `DefaultByteLongArray` (Vec<u8> → i64)
-- `DefaultDoubleArray` (Vec<f64>)
-- `DefaultFloatArray` (Vec<f32> → f64)
-- `GdsNoValue` (null singleton)
-
-## Decision: Second Macro System Requirements
-
-### What Needs Generation
-
-**1. Default\* Implementations**
-Current implementations are repetitive boilerplate:
-
-```rust
-pub struct DefaultLongArray {
-    data: Arc<Vec<i64>>,
-}
-impl DefaultLongArray {
-    pub fn new(data: Vec<i64>) -> Self { ... }
-}
-impl IntegralArray for DefaultLongArray { ... }
-impl Array for DefaultLongArray { ... }
-impl GdsValue for DefaultLongArray { ... }
-```
-
-**Pattern**: Same structure for all array types (Long, Double, Float)
-
-**2. PrimitiveValues Factory Enhancement**
-Currently hand-written match arms. Could be generated for all 45 ValueType variants.
-
-**3. Type Conversions**
-
-- Int/Short/Byte → Long conversions
-- Float → Double conversions
-- Handle optional/nullable values
-- Default value integration
-
-### Macro Goals
-
-**`gds_value_impl!` macro** should generate:
-
-1. Struct definition with `Arc<Vec<T>>` backing
-2. `new()` constructor
-3. Trait implementations (GdsValue, Array, Integral/FloatingPointArray)
-4. Type conversions where needed
-
-**`gds_value_factory!` macro** should generate:
-
-1. PrimitiveValues::of() match arms for all types
-2. Smart type inference (int vs float, scalar vs array)
-3. Integration with DefaultValue system
+The General Macro will expand into invocations of `gds_value_impl!` and `generate_property_values!` for each row. This keeps both macro families in sync and makes it easy to add or remove ValueType variants.
 
 ## Consequences
 
-### Positive
+Positive
 
-- **Clean separation**: PropertyValues (columns) vs GdsValue (individual)
-- **Type safety**: ValueType enum drives both systems
-- **Flexibility**: Can add new value types by extending macros
-- **Performance**: Arc<Vec<T>> allows cheap cloning for cursors
-- **Future-proof**: Ready for Arrow2 backing (individual values from IPC)
+- Single authoritative ValueType table reduces drift and duplication.
+- Macro-generated code will be consistent and maintainable; PrimitiveValues macros remain the primary drivers for runtime behavior.
+- Backends can be added without changing projection or pregels — only adapter generation changes.
 
-### Challenges
+Risks/Challenges
 
-- **Macro complexity**: Need careful design to avoid First Macro System mistakes
-- **Type conversions**: Must handle widening (i32→i64, f32→f64) correctly
-- **Null handling**: GdsNoValue integration with nullable types
-- **String types**: Not yet supported (TODO)
-- **Map types**: 45 ValueType variants, only 8 implemented so far
+- Macro complexity increases slightly; we must keep macro expansions readable and well-tested.
+- Debugging macro-generated code requires good naming and test coverage.
+- Migration work: adapt existing hand-written `Default*` implementations to macro outputs and remove `PropertyValue=f64` compatibility hacks.
 
-### Integration Points
+## Implementation Plan (practical)
 
-- **Projection Layer**: DefaultGraph needs GdsValue for property extraction
-- **Cursor System**: RelationshipCursor uses f64, but could use GdsValue
-- **PropertyValues Bridge**: Extract from columns → individual GdsValue instances
-- **DefaultValue**: Schema-level defaults → runtime GdsValue instances
+1. Add `src/collections/array_backend.rs` with `ArrayBackend<T>` and `BackendError`.
+2. Extend `src/values/traits/gds_value.rs` with contiguous/chunk helpers and `is_nullable`.
+3. Implement the General Macro table in `src/values/value_type_table.rs` (macro_rules) and wire it into `src/values/macros.rs`.
+4. Implement `gds_value_impl!` and `gds_value_factory!` (PrimitiveValues) to consume the table.
+5. Implement `generate_property_values!` (PropertyValues adapters) — start with Huge and Arrow backends.
+6. Add `NodeValue::from_property` and remove the remaining `PropertyValue=f64` usage (compat shim allowed briefly).
+7. Add unit tests for each macro-generated artifact, plus a smoke test that ensures a `ValueType` entry produces both a `GdsValue` impl and a `PropertyValues` adapter.
 
 ## Next Steps
 
-1. **Design gds_value_impl! macro** for Default\* struct generation
-2. **Create macro_rules module** at `src/values/macros.rs`
-3. **Generate remaining implementations** (String, Map types)
-4. **Enhance PrimitiveValues factory** with macro-generated match arms
-5. **Review Projection layer** (DefaultGraph) for GdsValue integration
-6. **Write tests** for value extraction and type conversions
+- Decide migration policy for existing hand-written implementations (replace in-place vs phased coexistence).
+- Implement the General Macro table and a single prototype variant (Long) to validate the flow.
+- Add ADR note on u64→usize conversion policy (fail explicitly / central helper).
 
 ## References
 
 - ADR 0001: Property Graph Store Design
 - ADR 0003: Node Property Value Contract (PropertyValue enum removal)
 - ADR 0004: Property Cursors (First Macro System)
-- TS/Java GDS: GdsValue hierarchy
+- ADR 0003 (macro array runtime): macro-based HugeArray runtime ADR
 - Arrow2 documentation: Individual value extraction from IPC
 
----
+## Key insight
 
-**Key Insight**: The Values system is the **Second Macro System** - it provides individual value access for the Projection layer, while the PropertyValues system (First Macro System) provides columnar access for the GraphStore layer. Both systems are driven by the same ValueType enum and will eventually support all 45 variants.
+Macro generation is a first-class architectural tool in rust-gds. We keep two focused macro families — PrimitiveValues macros (produce `GdsValue` runtime drivers) and PropertyValues macros (produce storage adapters) — and add a small, authoritative General Macro to drive both from a single ValueType table. This reduces drift, improves discoverability, and makes adding new types/backends low-friction.
