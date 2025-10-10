@@ -10,7 +10,6 @@ use crate::pregel::{
     PregelSchema, ProgressTracker,
 };
 use crate::types::graph::Graph;
-use crate::types::properties::node::NodePropertyContainer;
 use std::sync::Arc;
 
 /// Main executor for Pregel computations.

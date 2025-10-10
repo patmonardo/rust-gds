@@ -28,6 +28,7 @@
 pub mod degree_partition;
 pub mod iterator_partition;
 pub mod lazy_degree_partition_iterator;
+#[allow(clippy::module_inception)]
 pub mod partition;
 pub mod partition_consumer;
 pub mod partition_utils;

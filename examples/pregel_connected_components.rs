@@ -105,7 +105,7 @@ impl PregelComputation for ConnectedComponents {
             let mut message_count = 0;
 
             // Iterate through messages
-            while let Some(message) = messages.next() {
+            for message in messages.by_ref() {
                 message_count += 1;
                 if message < min_component {
                     min_component = message;

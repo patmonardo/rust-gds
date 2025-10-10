@@ -1,16 +1,45 @@
-//! PregelConfig trait - Configuration for Pregel algorithms
+//! PregelConfig trait - Configuration interface for Pregel algorithms
 //!
-//! Defines the configuration interface that all Pregel algorithms must implement.
+//! **DEPRECATED**: This file maintains the trait-based API for backward compatibility.
+//! New code should use `rust_gds::config::PregelConfig` (struct-based) directly.
+//!
+//! The trait-based approach is being phased out in favor of the unified config system.
 
 use crate::concurrency::Concurrency;
+// Re-export Partitioning from config system (single source of truth)
+pub use crate::config::Partitioning;
 
 /// Configuration trait for Pregel algorithms.
 ///
-/// This trait combines several configuration concerns:
-/// - Iteration limits
-/// - Concurrency settings
-/// - Execution mode (synchronous vs asynchronous)
-/// - Partitioning strategy
+/// **DEPRECATED**: Use `rust_gds::config::PregelConfig` (struct) instead.
+///
+/// This trait is maintained for backward compatibility with existing algorithm implementations.
+/// It will be removed in a future version once all algorithms migrate to the config system.
+///
+/// # Migration Guide
+///
+/// **Old (trait-based)**:
+/// ```ignore
+/// use rust_gds::pregel::PregelConfig;
+///
+/// struct PageRankConfig { /* ... */ }
+/// impl PregelConfig for PageRankConfig {
+///     fn max_iterations(&self) -> usize { 20 }
+///     fn concurrency(&self) -> Concurrency { Concurrency::available_cores() }
+/// }
+/// ```
+///
+/// **New (struct-based)**:
+/// ```ignore
+/// use rust_gds::config::{PregelConfig, Partitioning};
+///
+/// let config = PregelConfig::builder()
+///     .max_iterations(20)
+///     .concurrency(8)
+///     .partitioning(Partitioning::Range)
+///     .build()
+///     .expect("Valid config");
+/// ```
 ///
 /// # Required Configuration
 ///
@@ -24,29 +53,6 @@ use crate::concurrency::Concurrency;
 /// - Asynchronous execution mode
 /// - Graph partitioning strategy
 /// - Message sender tracking
-///
-/// # Example
-///
-/// ```
-/// use rust_gds::pregel::PregelConfig;
-/// use rust_gds::concurrency::Concurrency;
-///
-/// struct PageRankConfig {
-///     max_iterations: usize,
-///     concurrency: Concurrency,
-///     damping_factor: f64,
-/// }
-///
-/// impl PregelConfig for PageRankConfig {
-///     fn max_iterations(&self) -> usize {
-///         self.max_iterations
-///     }
-///     
-///     fn concurrency(&self) -> Concurrency {
-///         self.concurrency
-///     }
-/// }
-/// ```
 pub trait PregelConfig: Send + Sync {
     /// Maximum number of supersteps before forcing termination.
     ///
@@ -121,85 +127,30 @@ pub trait PregelConfig: Send + Sync {
     }
 }
 
-/// Graph partitioning strategies for Pregel computation.
-///
-/// Determines how vertices are distributed across parallel workers.
-///
-/// # Strategies
-///
-/// - **Range**: Vertices divided into contiguous ranges (e.g., [0-999], [1000-1999])
-/// - **Degree**: Vertices grouped by degree to balance computation load
-/// - **Auto**: Framework chooses the best strategy based on graph properties
-///
-/// # Performance Impact
-///
-/// - **Range** is simplest and has lowest overhead
-/// - **Degree** can provide better load balancing for skewed degree distributions
-/// - **Auto** adds analysis overhead but may optimize for specific graph shapes
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Partitioning {
-    /// Divide vertices into contiguous ID ranges.
-    ///
-    /// Simple and efficient. Good for graphs with uniform degree distribution.
-    Range,
-
-    /// Group vertices by degree to balance computation.
-    ///
-    /// Better for power-law graphs where a few vertices have very high degree.
-    Degree,
-
-    /// Let the framework choose the best strategy.
-    ///
-    /// Analyzes graph properties to select optimal partitioning.
-    Auto,
-}
-
-impl Partitioning {
-    /// Parse a partitioning strategy from a string.
-    ///
-    /// # Arguments
-    ///
-    /// * `s` - String representation: "RANGE", "DEGREE", or "AUTO" (case-insensitive)
-    ///
-    /// # Returns
-    ///
-    /// The parsed `Partitioning` value, or `None` if invalid
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use rust_gds::pregel::Partitioning;
-    ///
-    /// assert_eq!(Partitioning::parse("RANGE"), Some(Partitioning::Range));
-    /// assert_eq!(Partitioning::parse("degree"), Some(Partitioning::Degree));
-    /// assert_eq!(Partitioning::parse("invalid"), None);
-    /// ```
-    pub fn parse(s: &str) -> Option<Self> {
-        match s.to_uppercase().as_str() {
-            "RANGE" => Some(Partitioning::Range),
-            "DEGREE" => Some(Partitioning::Degree),
-            "AUTO" => Some(Partitioning::Auto),
-            _ => None,
-        }
+// Implement the trait for the config system struct (bridge old → new)
+impl PregelConfig for crate::config::PregelConfig {
+    fn max_iterations(&self) -> usize {
+        self.max_iterations
     }
 
-    /// Convert partitioning strategy to string representation.
-    ///
-    /// # Returns
-    ///
-    /// Uppercase string: "RANGE", "DEGREE", or "AUTO"
-    pub fn to_string_upper(&self) -> &'static str {
-        match self {
-            Partitioning::Range => "RANGE",
-            Partitioning::Degree => "DEGREE",
-            Partitioning::Auto => "AUTO",
-        }
+    fn concurrency(&self) -> Concurrency {
+        Concurrency::new(self.base.concurrency).unwrap_or_else(|| Concurrency::available_cores())
     }
-}
 
-impl std::fmt::Display for Partitioning {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string_upper())
+    fn is_asynchronous(&self) -> bool {
+        self.is_asynchronous
+    }
+
+    fn partitioning(&self) -> Partitioning {
+        self.partitioning
+    }
+
+    fn use_fork_join(&self) -> bool {
+        crate::config::PregelConfig::use_fork_join(self)
+    }
+
+    fn track_sender(&self) -> bool {
+        self.track_sender
     }
 }
 

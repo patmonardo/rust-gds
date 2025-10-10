@@ -3,9 +3,6 @@
 //! This demonstrates the value_type_table! macro with a few basic types.
 //! Real usage would include all primitive types, arrays, lists, and UDTs.
 
-use crate::projection::property_descriptor::StorageHint;
-use crate::types::ValueType;
-
 // Invoke the master projector macro
 value_type_table! {
     Long {
@@ -38,6 +35,7 @@ value_type_table! {
 mod tests {
     use super::*;
     use crate::projection::form_processor;
+    use crate::types::ValueType;
 
     #[test]
     fn test_all_descriptors() {

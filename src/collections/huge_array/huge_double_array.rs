@@ -492,8 +492,9 @@ mod tests {
     #[test]
     fn test_get_set() {
         let mut array = HugeDoubleArray::new(10);
-        array.set(5, 3.14159);
-        assert_eq!(array.get(5), 3.14159);
+        let test_val = 3.15159; // Not PI, just a test value
+        array.set(5, test_val);
+        assert_eq!(array.get(5), test_val);
     }
 
     #[test]
@@ -507,9 +508,10 @@ mod tests {
     #[test]
     fn test_fill() {
         let mut array = HugeDoubleArray::new(100);
-        array.fill(2.71828);
-        assert_eq!(array.get(0), 2.71828);
-        assert_eq!(array.get(99), 2.71828);
+        let test_val = 2.72828; // Not E, just a test value
+        array.fill(test_val);
+        assert_eq!(array.get(0), test_val);
+        assert_eq!(array.get(99), test_val);
     }
 
     #[test]

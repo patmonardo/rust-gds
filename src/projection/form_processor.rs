@@ -13,7 +13,7 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 
 use crate::types::ValueType;
 
@@ -84,12 +84,14 @@ lazy_static::lazy_static! {
 /// Register a PropertyDescriptor at runtime (called by macro-generated init code).
 /// Returns true if newly registered, false if already present.
 pub fn register_property_descriptor(desc: super::property_descriptor::PropertyDescriptor) -> bool {
+    use std::collections::hash_map::Entry;
     let mut registry = PROPERTY_REGISTRY.write().unwrap();
-    if registry.contains_key(&desc.id) {
-        false
-    } else {
-        registry.insert(desc.id, desc);
-        true
+    match registry.entry(desc.id) {
+        Entry::Vacant(e) => {
+            e.insert(desc);
+            true
+        }
+        Entry::Occupied(_) => false,
     }
 }
 

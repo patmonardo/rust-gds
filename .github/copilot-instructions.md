@@ -103,7 +103,13 @@ Add the following project-wide naming conventions. Keep changes small and verify
   - Algorithms: `PageRankConfig`, `LouvainConfig`, `NodeSimilarityConfig`, `BetweennessCentralityConfig`
   - Graph: `GraphCreateConfig`, `PropertyConfig`, `RandomGraphGeneratorConfig`, `RelationshipsBuilderConfig`
   - I/O: `FileExporterConfig`, `FileImporterConfig`, `DatabaseExporterConfig`, `DatabaseImporterConfig`
-- **See**: `doc/config_system_implementation.md` and `src/config/README.md` for complete documentation.
+  - Backend: `GraphStoreBackendConfig`, `BackendChoice` (HugeArray, Arrow, Sparse selection)
+- **Backend Selection**: Different ML pipelines benefit from different storage backends:
+  - **HugeArray**: Dense data, cursor iteration (PageRank, NodeSimilarity)
+  - **Arrow**: Zero-copy, mmap-friendly, columnar (BFS, export pipelines)
+  - **Sparse**: Sparse data, HashMap-based (Louvain communities, Label Propagation)
+  - **Auto**: Runtime density analysis → backend selection
+- **See**: `doc/config_system_implementation.md`, `doc/PIPELINE_BACKEND_CONFIGURATION_STRATEGY.md`, and `src/config/README.md` for complete documentation.
 
 11. Quick-check list before a PR
 

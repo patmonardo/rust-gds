@@ -8,7 +8,6 @@
 //! specific adapter implementations per ValueType.
 
 use crate::projection::form_processor::FormProcessorError;
-use crate::types::properties::PropertyValues;
 use crate::values::traits::GdsValue;
 use std::sync::Arc;
 
@@ -93,10 +92,10 @@ mod tests {
     fn test_identity_functor() {
         let functor = IdentityFunctor;
         let value = None;
-        
+
         let stored = functor.project_to_storage(value.clone()).unwrap();
         assert!(stored.is_none());
-        
+
         let runtime = functor.project_to_runtime(value).unwrap();
         assert!(runtime.is_none());
     }

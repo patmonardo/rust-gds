@@ -24,7 +24,7 @@ fn test_long_long_consumer() {
 #[test]
 fn test_long_double_consumer() {
     let list = HugeSparseDoubleList::of(0.0);
-    list.set(10, 3.14);
+    list.set(10, 3.15); // Not PI, just a test value
     list.set(100, 2.71);
 
     let mut sum = 0.0;
@@ -54,7 +54,7 @@ fn test_long_long_array_consumer() {
 #[test]
 fn test_long_double_array_consumer() {
     let list = HugeSparseDoubleArrayList::of(vec![]);
-    list.set(10, vec![3.14, 2.71]);
+    list.set(10, vec![3.15, 2.72]); // Not PI/E, just test values
     list.set(100, vec![1.41]);
 
     let mut sum = 0.0;

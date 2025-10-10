@@ -8,7 +8,6 @@
 /// - form_processor: Transcendental policy surface (Pure Nama)
 /// - functors: Gross ↔ Subtle conversion traits
 /// - property_descriptor: Compile-time schema descriptors
-
 // Eval macro must be loaded first (it's a macro_rules! macro)
 #[macro_use]
 pub mod eval_macro;

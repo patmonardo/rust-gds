@@ -25,12 +25,13 @@ mod mega_macro_factory_demo {
 
         // Test 2: Scalar Double Value
         println!("2. Scalar Double Value");
-        let double_val = PrimitiveValues::of(&json!(3.14159)).unwrap();
+        let test_double = 3.15159; // Not PI, just a test value
+        let double_val = PrimitiveValues::of(&json!(test_double)).unwrap();
         if let Some(v) = double_val
             .as_any()
             .downcast_ref::<DefaultFloatingPointValue>()
         {
-            assert!((v.double_value() - 3.14159).abs() < 0.00001);
+            assert!((v.double_value() - test_double).abs() < 0.00001);
             println!("   ✓ DefaultFloatingPointValue: {}", v.double_value());
         }
 
@@ -77,14 +78,15 @@ mod mega_macro_factory_demo {
 
         // Test 7: String parsing (floats)
         println!("7. String Parsing → Double");
-        let parsed_double = PrimitiveValues::of(&json!("2.71828")).unwrap();
+        let test_str_value = 2.72828; // Not E, just a test value
+        let parsed_double = PrimitiveValues::of(&json!("2.72828")).unwrap();
         if let Some(v) = parsed_double
             .as_any()
             .downcast_ref::<DefaultFloatingPointValue>()
         {
-            assert!((v.double_value() - 2.71828).abs() < 0.00001);
+            assert!((v.double_value() - test_str_value).abs() < 0.00001);
             println!(
-                "   ✓ Parsed '2.71828' → DefaultFloatingPointValue: {}",
+                "   ✓ Parsed '2.72828' → DefaultFloatingPointValue: {}",
                 v.double_value()
             );
         }

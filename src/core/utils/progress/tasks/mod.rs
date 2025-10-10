@@ -46,6 +46,7 @@ pub mod status;
 pub mod task;
 pub mod task_traversal;
 pub mod task_visitor;
+#[allow(clippy::module_inception)]
 pub mod tasks;
 
 pub use depth_aware_task_visitor::DepthAwareTaskVisitor;

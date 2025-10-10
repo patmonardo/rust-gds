@@ -19,23 +19,26 @@
 //! 4. Validation at construction time
 //! 5. Zero-cost abstractions
 
-pub mod base_types;
 pub mod algo_config;
+pub mod base_types;
 pub mod graph_config;
 pub mod graphstore_config;
 pub mod io_config;
+pub mod pregel_config;
 pub mod validation;
 
-#[cfg(feature = "config-files")]
-pub mod loader;
+// TODO: Implement config file loader
+// #[cfg(feature = "config-files")]
+// pub mod loader;
 
 // Re-export core types for convenience
-pub use base_types::*;
 pub use algo_config::*;
+pub use base_types::*;
 pub use graph_config::*;
 pub use graphstore_config::*;
 pub use io_config::*;
+pub use pregel_config::*;
 pub use validation::*;
 
-#[cfg(feature = "config-files")]
-pub use loader::*;
+// #[cfg(feature = "config-files")]
+// pub use loader::*;

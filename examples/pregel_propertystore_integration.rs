@@ -11,8 +11,6 @@ use rust_gds::pregel::{
     ComputeFn, InitFn, PregelBuilder, PregelConfig, PregelSchema, ProgressTracker,
     SyncQueueMessageIterator, SyncQueueMessenger, Visibility,
 };
-// Import traits so their methods work on trait objects (Rust quirk!)
-use rust_gds::types::graph::id_map::IdMap;
 use rust_gds::types::graph_store::{DefaultGraphStore, GraphStore};
 use rust_gds::types::random::random_graph::RandomGraphConfig;
 use rust_gds::types::ValueType;
@@ -68,7 +66,7 @@ fn main() {
     if let Some(props) = graph.node_properties("seed_value") {
         println!("\n  Verifying PropertyStore contents:");
         for i in 0..3.min(node_count) {
-            if let Some(val) = props.double_value(i as u64).ok() {
+            if let Ok(val) = props.double_value(i as u64) {
                 println!("    Node {}: {:.1} (from PropertyStore)", i, val);
             }
         }
