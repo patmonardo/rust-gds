@@ -134,7 +134,7 @@ impl PregelConfig for crate::config::PregelConfig {
     }
 
     fn concurrency(&self) -> Concurrency {
-        Concurrency::new(self.base.concurrency).unwrap_or_else(|| Concurrency::available_cores())
+        Concurrency::new(self.base.concurrency).unwrap_or_else(Concurrency::available_cores)
     }
 
     fn is_asynchronous(&self) -> bool {

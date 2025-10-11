@@ -22,10 +22,12 @@ use super::validation::{ConfigError, ConfigValidation};
 /// - **Auto** adds analysis overhead but may optimize for specific graph shapes
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default)]
 pub enum Partitioning {
     /// Divide vertices into contiguous ID ranges.
     ///
     /// Simple and efficient. Good for graphs with uniform degree distribution.
+    #[default]
     Range,
 
     /// Group vertices by degree to balance computation.
@@ -39,11 +41,6 @@ pub enum Partitioning {
     Auto,
 }
 
-impl Default for Partitioning {
-    fn default() -> Self {
-        Partitioning::Range
-    }
-}
 
 impl Partitioning {
     /// Parse a partitioning strategy from a string.

@@ -18,8 +18,24 @@ pub mod form_processor;
 // Functor traits for Gross ↔ Subtle conversions
 pub mod functors;
 
-// Property descriptor types
-pub mod property_descriptor;
+// Pipeline descriptor types (Unity of Five-Fold Brahmachakra)
+pub mod pipeline_descriptor;
+
+// Backwards compatibility
+#[doc(hidden)]
+pub mod program_descriptor {
+    pub use super::pipeline_descriptor::*;
+}
+#[doc(hidden)]
+pub mod property_descriptor {
+    pub use super::pipeline_descriptor::*;
+}
+
+// Five-Fold Brahmachakra components
+pub mod computation_descriptor;
+pub mod computation_runtime;
+pub mod storage_descriptor;
+pub mod storage_runtime;
 
 // Prototype value type table (demonstrates the macro)
 pub mod value_type_table;
@@ -43,4 +59,23 @@ pub use form_processor::{
     checked_u64_to_usize, widen_f32_to_f64, widen_i32_to_i64, FormProcessorError,
 };
 pub use functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};
-pub use property_descriptor::{PropertyDescriptor, PropertyId, StorageHint, StructDescriptor};
+
+// Five-Fold Brahmachakra re-exports
+pub use computation_descriptor::{ComputationDescriptor, ComputationPattern, ComputationSpecies};
+pub use computation_runtime::{
+    instantiate_computer_from_descriptor, register_computer_factory, ComputeContext, ComputeError,
+    ComputeStep, Computer, Messages,
+};
+pub use pipeline_descriptor::{
+    FieldDescriptor, PipelineDescriptor, ProgramDescriptor, PropertyDescriptor, PropertyId,
+    StorageHint, StructDescriptor, StructId,
+};
+pub use storage_descriptor::{
+    AccessPattern, BackendTechnology, Compression, ConcurrencyModel, Density, GrowthPolicy,
+    Locality, MemoryProfile, Mutability, Persistence, PersistenceConfig, PhysicalGeometry,
+    StorageDescriptor, StorageLayout, SyncPolicy,
+};
+pub use storage_runtime::{
+    instantiate_storage_runtime_from_descriptor, register_storage_runtime_factory, AccessMode,
+    StorageAccessor, StorageContext, StorageError, StorageRuntime, StorageValue,
+};
