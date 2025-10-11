@@ -12,7 +12,7 @@ use crate::collections::HugeAtomicBitSet;
 use crate::core::utils::progress::tasks::LeafTask;
 use crate::pregel::{
     ComputeFn, ForkJoinComputeStep, InitFn, MessageIterator, Messenger, NodeValue, Partition,
-    PregelConfig,
+    PregelRuntimeConfig,
 };
 use crate::types::graph::Graph;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -30,7 +30,7 @@ use std::sync::Arc;
 /// - Progress tracker
 ///
 /// It orchestrates the BSP loop but delegates actual computation to ForkJoinComputeStep.
-pub trait PregelComputer<C: PregelConfig> {
+pub trait PregelComputer<C: PregelRuntimeConfig> {
     /// Initialize the computation before any iterations run.
     fn init_computation(&mut self);
 
@@ -60,7 +60,7 @@ pub trait PregelComputer<C: PregelConfig> {
 ///
 /// * `C` - PregelConfig type
 /// * `I` - MessageIterator type
-pub struct ForkJoinComputer<C: PregelConfig + Clone, I: MessageIterator> {
+pub struct ForkJoinComputer<C: PregelRuntimeConfig + Clone, I: MessageIterator> {
     /// Graph topology
     graph: Arc<dyn Graph>,
 
@@ -92,7 +92,7 @@ pub struct ForkJoinComputer<C: PregelConfig + Clone, I: MessageIterator> {
     root_task: Option<ForkJoinComputeStep<C, I>>,
 }
 
-impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
     /// Create a new ForkJoinComputer.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -120,7 +120,9 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
     }
 }
 
-impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputer<C> for ForkJoinComputer<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: MessageIterator> PregelComputer<C>
+    for ForkJoinComputer<C, I>
+{
     fn init_computation(&mut self) {
         // "silence is golden" - Java comment
         // No initialization needed for ForkJoin strategy
@@ -170,7 +172,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputer<C> for ForkJoin
 /// Builder for creating PregelComputer instances.
 ///
 /// Provides a fluent API for constructing computers with all required components.
-pub struct PregelComputerBuilder<C: PregelConfig, I: MessageIterator> {
+pub struct PregelComputerBuilder<C: PregelRuntimeConfig, I: MessageIterator> {
     graph: Option<Arc<dyn Graph>>,
     init_fn: Option<InitFn<C>>,
     compute_fn: Option<ComputeFn<C, I>>,
@@ -181,7 +183,7 @@ pub struct PregelComputerBuilder<C: PregelConfig, I: MessageIterator> {
     progress_task: Option<Arc<LeafTask>>,
 }
 
-impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
     /// Create a new builder.
     pub fn new() -> Self {
         Self {
@@ -263,7 +265,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
     }
 }
 
-impl<C: PregelConfig + Clone, I: MessageIterator> Default for PregelComputerBuilder<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: MessageIterator> Default for PregelComputerBuilder<C, I> {
     fn default() -> Self {
         Self::new()
     }

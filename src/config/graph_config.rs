@@ -1,10 +1,10 @@
 //! Graph construction and manipulation configuration types
 
-use crate::core::Aggregation;
-use crate::projection::{NodeLabel, RelationshipType, Orientation};
-use crate::types::{PropertyState, DefaultValue};
-use super::base_types::{AlgoBaseConfig, BuilderConfig, Config, ConcurrencyConfig};
+use super::base_types::{AlgoBaseConfig, BuilderConfig, ConcurrencyConfig, Config};
 use super::validation::{ConfigError, ConfigValidation};
+use crate::core::Aggregation;
+use crate::projection::{NodeLabel, Orientation, RelationshipType};
+use crate::types::{DefaultValue, PropertyState};
 
 /// Property configuration for graph construction
 #[derive(Debug, Clone)]
@@ -74,7 +74,7 @@ impl PropertyConfigBuilder {
 
     pub fn build(self) -> Result<PropertyConfig, ConfigError> {
         let defaults = PropertyConfig::new(String::new());
-        
+
         let config = PropertyConfig {
             property_key: self.property_key,
             aggregation: self.aggregation.unwrap_or(defaults.aggregation),
@@ -205,18 +205,24 @@ impl GraphCreateConfigBuilder {
 
     pub fn build(self) -> Result<GraphCreateConfig, ConfigError> {
         let defaults = GraphCreateConfig::default();
-        
+
         let config = GraphCreateConfig {
             base: AlgoBaseConfig {
                 concurrency: self.concurrency.unwrap_or(defaults.base.concurrency),
                 node_labels: self.node_labels.unwrap_or(defaults.base.node_labels),
-                relationship_types: self.relationship_types.unwrap_or(defaults.base.relationship_types),
+                relationship_types: self
+                    .relationship_types
+                    .unwrap_or(defaults.base.relationship_types),
             },
             graph_name: self.graph_name,
             node_projection: self.node_projection.unwrap_or(defaults.node_projection),
-            relationship_projection: self.relationship_projection.unwrap_or(defaults.relationship_projection),
+            relationship_projection: self
+                .relationship_projection
+                .unwrap_or(defaults.relationship_projection),
             node_properties: self.node_properties.unwrap_or(defaults.node_properties),
-            relationship_properties: self.relationship_properties.unwrap_or(defaults.relationship_properties),
+            relationship_properties: self
+                .relationship_properties
+                .unwrap_or(defaults.relationship_properties),
             read_concurrency: self.read_concurrency.unwrap_or(defaults.read_concurrency),
         };
 
@@ -316,7 +322,7 @@ impl RandomGraphGeneratorConfigBuilder {
 
     pub fn build(self) -> Result<RandomGraphGeneratorConfig, ConfigError> {
         let defaults = RandomGraphGeneratorConfig::default();
-        
+
         let config = RandomGraphGeneratorConfig {
             node_count: self.node_count.unwrap_or(defaults.node_count),
             average_degree: self.average_degree.unwrap_or(defaults.average_degree),
@@ -461,19 +467,23 @@ impl RelationshipsBuilderConfigBuilder {
 
     pub fn build(self) -> Result<RelationshipsBuilderConfig, ConfigError> {
         let defaults = RelationshipsBuilderConfig::default();
-        
+
         let config = RelationshipsBuilderConfig {
             base: AlgoBaseConfig {
                 concurrency: self.concurrency.unwrap_or(defaults.base.concurrency),
                 node_labels: self.node_labels.unwrap_or(defaults.base.node_labels),
-                relationship_types: self.relationship_types.unwrap_or(defaults.base.relationship_types),
+                relationship_types: self
+                    .relationship_types
+                    .unwrap_or(defaults.base.relationship_types),
             },
             builder: self.builder_config.unwrap_or(defaults.builder),
             relationship_type: self.relationship_type,
             orientation: self.orientation.unwrap_or(defaults.orientation),
             property_configs: self.property_configs.unwrap_or(defaults.property_configs),
             aggregation: self.aggregation.unwrap_or(defaults.aggregation),
-            skip_dangling_relationships: self.skip_dangling_relationships.unwrap_or(defaults.skip_dangling_relationships),
+            skip_dangling_relationships: self
+                .skip_dangling_relationships
+                .unwrap_or(defaults.skip_dangling_relationships),
             index_inverse: self.index_inverse.unwrap_or(defaults.index_inverse),
         };
 

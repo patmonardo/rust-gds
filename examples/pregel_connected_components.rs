@@ -26,30 +26,6 @@ use rust_gds::pregel::{
 // Configuration
 // ================================================================================================
 
-/// Configuration for Connected Components computation.
-#[derive(Debug, Clone)]
-struct ConnectedComponentsConfig {
-    max_iterations: usize,
-}
-
-impl PregelConfig for ConnectedComponentsConfig {
-    fn max_iterations(&self) -> usize {
-        self.max_iterations
-    }
-
-    fn is_asynchronous(&self) -> bool {
-        false // Use synchronous BSP model
-    }
-}
-
-impl Default for ConnectedComponentsConfig {
-    fn default() -> Self {
-        Self {
-            max_iterations: 100,
-        }
-    }
-}
-
 // ================================================================================================
 // Computation
 // ================================================================================================
@@ -64,7 +40,7 @@ impl ConnectedComponents {
 }
 
 impl PregelComputation for ConnectedComponents {
-    type Config = ConnectedComponentsConfig;
+    type Config = PregelConfig;
 
     fn schema(&self, _config: &Self::Config) -> PregelSchema {
         use rust_gds::types::ValueType;
@@ -159,7 +135,11 @@ fn main() {
     println!();
 
     // Create configuration
-    let config = ConnectedComponentsConfig { max_iterations: 10 };
+    let config = PregelConfig {
+        max_iterations: 10,
+        is_asynchronous: false,
+        ..PregelConfig::default()
+    };
 
     // Create computation
     let computation = ConnectedComponents::new();

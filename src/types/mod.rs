@@ -10,14 +10,14 @@ pub mod value_type;
 pub use default_value::*;
 pub use property_state::*;
 pub use value_type::*;
-
-/// Simple concurrency configuration placeholder.
-///
-/// The Java/TypeScript implementation exposes a rich configuration object. For now we
-/// only capture the desired level of parallelism so we can mirror the API surface.
+// Compatibility shim: minimal `concurrency` module so existing code that imports
+// `crate::types::concurrency::Concurrency` continues to compile. This can be
+// removed once callers are migrated to the new concurrency configuration.
+// TODO
 pub mod concurrency {
     use std::fmt;
 
+    /// Minimal compatibility concurrency struct.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct Concurrency {
         pub max_workers: usize,

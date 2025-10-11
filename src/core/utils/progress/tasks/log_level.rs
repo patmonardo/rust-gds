@@ -21,8 +21,7 @@
 use std::fmt;
 
 /// Log level for progress tracking messages.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub enum LogLevel {
     Debug = 1,
     #[default]
@@ -41,7 +40,6 @@ impl LogLevel {
         self.priority() >= threshold.priority()
     }
 }
-
 
 impl fmt::Display for LogLevel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

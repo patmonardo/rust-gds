@@ -48,7 +48,6 @@
 mod computation;
 mod compute_step;
 mod computer;
-mod config;
 pub mod context;
 mod executor;
 mod messages;
@@ -64,10 +63,10 @@ mod schema;
 pub use crate::core::utils::partition::Partition;
 
 // Re-exports from this module
+pub use crate::config::{Partitioning, PregelConfig, PregelRuntimeConfig};
 pub use computation::{BasePregelComputation, PregelComputation};
 pub use compute_step::{ComputeFn, ForkJoinComputeStep, InitFn};
 pub use computer::{ForkJoinComputer, PregelComputer, PregelComputerBuilder};
-pub use config::{Partitioning, PregelConfig};
 pub use context::{ComputeContext, InitContext, MasterComputeContext, NodeCentricContext};
 pub use executor::{Pregel, PregelBuilder};
 pub use messages::{

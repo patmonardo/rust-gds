@@ -32,6 +32,7 @@ pub mod lazy_degree_partition_iterator;
 pub mod partition;
 pub mod partition_consumer;
 pub mod partition_utils;
+pub mod partitioning;
 
 pub use degree_partition::DegreePartition;
 pub use iterator_partition::IteratorPartition;
@@ -39,6 +40,7 @@ pub use lazy_degree_partition_iterator::LazyDegreePartitionIterator;
 pub use partition::Partition;
 pub use partition_consumer::PartitionConsumer;
 pub use partition_utils::{PartitionUtils, DEFAULT_BATCH_SIZE};
+pub use partitioning::Partitioning;
 
 /// Function interface for getting node degrees.
 ///

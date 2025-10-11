@@ -5,7 +5,7 @@
 
 use super::context::{ComputeContext, InitContext, MasterComputeContext};
 use super::messages::{MessageIterator, MessageReducer, Messages};
-use super::{PregelConfig, PregelSchema};
+use super::{PregelRuntimeConfig, PregelSchema};
 
 /// Main trait to express user-defined logic using the Pregel framework.
 ///
@@ -68,7 +68,7 @@ pub trait PregelComputation {
     /// This associated type allows each Pregel algorithm to define its own
     /// configuration parameters (e.g., damping factor for PageRank, tolerance
     /// for convergence, etc.).
-    type Config: PregelConfig;
+    type Config: PregelRuntimeConfig;
 
     /// Returns the schema for this computation (required).
     ///
@@ -217,7 +217,7 @@ pub trait PregelComputation {
 /// - `close()` - Cleanup resources when computation finishes
 pub trait BasePregelComputation {
     /// Configuration type for this computation.
-    type Config: PregelConfig;
+    type Config: PregelRuntimeConfig;
 
     /// Returns the schema for this computation, defining which properties will be stored for each node.
     ///
@@ -339,14 +339,6 @@ impl<T: PregelComputation> BasePregelComputation for T {
 mod tests {
     use super::*;
 
-    // Mock config for testing
-    struct TestConfig;
-    impl PregelConfig for TestConfig {
-        fn max_iterations(&self) -> usize {
-            10
-        }
-    }
-
     // Simple test computation
     struct TestComputation {
         init_called: bool,
@@ -354,7 +346,7 @@ mod tests {
     }
 
     impl PregelComputation for TestComputation {
-        type Config = TestConfig;
+        type Config = crate::config::PregelConfig;
 
         fn schema(&self, _config: &Self::Config) -> PregelSchema {
             use crate::pregel::Visibility;

@@ -86,16 +86,18 @@ fn main() {
     // --- Step 4: Create Simple Pregel Computation ---
     println!("\nStep 4: Running Pregel (values auto-loaded from PropertyStore)...");
 
-    #[derive(Clone)]
-    struct SimpleConfig;
+    let config = PregelConfig {
+        max_iterations: 1,
+        is_asynchronous: false,
+        ..PregelConfig::default()
+    };
 
-    impl PregelConfig for SimpleConfig {
-        fn max_iterations(&self) -> usize {
-            1 // Just one iteration to show loaded values
-        }
-    }
+    println!(
+        "  ✓ Pregel config prepared (max_iterations = {})",
+        config.max_iterations
+    );
 
-    let init_fn: InitFn<SimpleConfig> = Arc::new(|ctx| {
+    let init_fn: InitFn<PregelConfig> = Arc::new(|ctx| {
         // PropertyStore values were ALREADY loaded before this runs!
         // We don't set anything - just print to show they're there
         println!(
@@ -104,7 +106,7 @@ fn main() {
         );
     });
 
-    let compute_fn: ComputeFn<SimpleConfig, SyncQueueMessageIterator> = Arc::new(|ctx, _| {
+    let compute_fn: ComputeFn<PregelConfig, SyncQueueMessageIterator> = Arc::new(|ctx, _| {
         let value = ctx.double_node_value("value");
         println!(
             "  Compute node {}: value = {:.1} ← LOADED FROM PROPERTYSTORE!",
@@ -121,7 +123,7 @@ fn main() {
 
     let pregel = PregelBuilder::new()
         .graph(graph)
-        .config(SimpleConfig)
+        .config(config)
         .schema(schema)
         .init_fn(init_fn)
         .compute_fn(compute_fn)

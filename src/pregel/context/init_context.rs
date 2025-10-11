@@ -2,7 +2,7 @@
 //!
 //! Provides access to node properties and configuration during the init() phase.
 
-use crate::pregel::{NodeValue, PregelConfig};
+use crate::pregel::{NodeValue, PregelRuntimeConfig};
 use crate::types::graph::Graph;
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -26,11 +26,11 @@ use std::sync::Arc;
 /// ```java
 /// InitContext(Graph graph, CONFIG config, NodeValue nodeValue, ProgressTracker progressTracker)
 /// ```
-pub struct InitContext<C: PregelConfig> {
+pub struct InitContext<C: PregelRuntimeConfig> {
     base: super::NodeCentricContext<C>,
 }
 
-impl<C: PregelConfig> InitContext<C> {
+impl<C: PregelRuntimeConfig> InitContext<C> {
     /// Create a new initialization context.
     ///
     /// # Arguments

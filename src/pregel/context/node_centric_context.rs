@@ -3,7 +3,7 @@
 //! Provides the foundation for InitContext and ComputeContext with common
 //! node-centric operations like setting node values, accessing neighbors, etc.
 
-use crate::pregel::{NodeValue, PregelConfig};
+use crate::pregel::{NodeValue, PregelRuntimeConfig};
 use crate::types::graph::Graph;
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -28,14 +28,14 @@ use std::sync::Arc;
 /// ```
 ///
 /// Rust ownership model: contexts borrow Graph and NodeValue to allow concurrent access.
-pub struct NodeCentricContext<C: PregelConfig> {
+pub struct NodeCentricContext<C: PregelRuntimeConfig> {
     node_id: u64,
     config: C,
     graph: Arc<dyn Graph>,
     node_value: Arc<RwLock<NodeValue>>,
 }
 
-impl<C: PregelConfig> NodeCentricContext<C> {
+impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     /// Create a new node-centric context.
     ///
     /// # Arguments

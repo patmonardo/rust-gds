@@ -18,7 +18,7 @@
 
 //! Task hierarchy traversal utilities.
 
-use super::{Task, DepthAwareTaskVisitor};
+use super::{DepthAwareTaskVisitor, Task};
 
 /// Utility for traversing task hierarchies with depth tracking.
 ///
@@ -38,14 +38,14 @@ impl TaskTraversal {
     /// ```
     /// use rust_gds::core::utils::progress::tasks::{Task, DepthAwareTaskVisitor, TaskTraversal};
     /// use std::sync::Arc;
-    /// 
+    ///
     /// struct PrintVisitor;
-    /// 
+    ///
     /// impl DepthAwareTaskVisitor for PrintVisitor {
     ///     fn set_depth(&mut self, _depth: usize) {}
     ///     fn depth(&self) -> usize { 0 }
     /// }
-    /// 
+    ///
     /// let task = Task::new("root".to_string(), vec![]);
     /// let mut visitor = PrintVisitor;
     /// TaskTraversal::visit_pre_order_with_depth(&task, &mut visitor);
@@ -148,10 +148,7 @@ mod tests {
     #[test]
     fn test_deep_hierarchy_traversal() {
         let grandchild = Arc::new(Task::new("grandchild".to_string(), vec![]));
-        let child = Arc::new(Task::new(
-            "child".to_string(),
-            vec![grandchild],
-        ));
+        let child = Arc::new(Task::new("child".to_string(), vec![grandchild]));
         let root = Task::new("root".to_string(), vec![child]);
 
         let mut visitor = DepthTrackingVisitor::new();

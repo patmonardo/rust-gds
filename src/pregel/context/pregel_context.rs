@@ -3,7 +3,7 @@
 //! Provides common functionality shared across all context types:
 //! configuration access, logging, and graph statistics.
 
-use crate::pregel::PregelConfig;
+use crate::pregel::PregelRuntimeConfig;
 
 /// Base context for all Pregel context types.
 ///
@@ -23,7 +23,7 @@ use crate::pregel::PregelConfig;
 /// - Config reference
 /// - ProgressTracker reference for logging
 /// - Graph reference for statistics
-pub struct PregelContext<C: PregelConfig> {
+pub struct PregelContext<C: PregelRuntimeConfig> {
     config: std::marker::PhantomData<C>,
     // TODO: Add fields when implementing
     // config: &'a C,
@@ -31,7 +31,7 @@ pub struct PregelContext<C: PregelConfig> {
     // graph: &'a Graph, (or just store statistics)
 }
 
-impl<C: PregelConfig> PregelContext<C> {
+impl<C: PregelRuntimeConfig> PregelContext<C> {
     /// Create a new Pregel context (stub).
     ///
     /// # TODO
@@ -111,22 +111,15 @@ impl<C: PregelConfig> PregelContext<C> {
 mod tests {
     use super::*;
 
-    struct TestConfig;
-    impl PregelConfig for TestConfig {
-        fn max_iterations(&self) -> usize {
-            10
-        }
-    }
-
     #[test]
     fn test_pregel_context_creation() {
-        let _ctx: PregelContext<TestConfig> = PregelContext::stub();
+        let _ctx: PregelContext<crate::config::PregelConfig> = PregelContext::stub();
         // Just verify it compiles
     }
 
     #[test]
     fn test_graph_statistics() {
-        let ctx: PregelContext<TestConfig> = PregelContext::stub();
+        let ctx: PregelContext<crate::config::PregelConfig> = PregelContext::stub();
         assert!(!ctx.is_multi_graph());
         assert_eq!(ctx.node_count(), 0);
         assert_eq!(ctx.relationship_count(), 0);

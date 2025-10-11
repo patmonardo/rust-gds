@@ -74,7 +74,7 @@ mod tests {
     #[test]
     fn test_new() {
         let err = MemoryReservationExceededException::new(1000, 500, None);
-        
+
         assert_eq!(err.bytes_required(), 1000);
         assert_eq!(err.bytes_available(), 500);
         assert!(err.custom_message().is_none());
@@ -87,7 +87,7 @@ mod tests {
             500,
             Some("Custom error message".to_string()),
         );
-        
+
         assert_eq!(err.custom_message(), Some("Custom error message"));
     }
 
@@ -95,7 +95,7 @@ mod tests {
     fn test_display_default() {
         let err = MemoryReservationExceededException::new(1000, 500, None);
         let display = format!("{}", err);
-        
+
         assert!(display.contains("1000"));
         assert!(display.contains("500"));
         assert!(display.contains("Required"));
@@ -104,13 +104,10 @@ mod tests {
 
     #[test]
     fn test_display_custom() {
-        let err = MemoryReservationExceededException::new(
-            1000,
-            500,
-            Some("Custom message".to_string()),
-        );
+        let err =
+            MemoryReservationExceededException::new(1000, 500, Some("Custom message".to_string()));
         let display = format!("{}", err);
-        
+
         assert_eq!(display, "Custom message");
     }
 }

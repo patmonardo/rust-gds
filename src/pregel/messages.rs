@@ -23,7 +23,7 @@ pub trait MessageIterator: Iterator<Item = f64> {
     ///
     /// # Note
     ///
-    /// Requires `PregelConfig::track_sender()` to return true.
+    /// Requires the config's `track_sender()` to return true.
     fn sender(&self) -> Option<u64> {
         None
     }
@@ -91,7 +91,7 @@ impl<I: MessageIterator> Messages<I> {
     ///
     /// # Note
     ///
-    /// `PregelConfig::track_sender()` must return true to enable sender tracking.
+    /// `track_sender()` must return true to enable sender tracking.
     ///
     /// # Returns
     ///

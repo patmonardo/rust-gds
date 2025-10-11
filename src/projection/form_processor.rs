@@ -81,9 +81,19 @@ lazy_static::lazy_static! {
         RwLock::new(HashMap::new());
 }
 
+// Test-only global lock to serialize registry operations and avoid races
+// when the test harness runs tests in parallel. This is only compiled in
+// test builds and does not affect production code.
+#[cfg(test)]
+lazy_static::lazy_static! {
+    static ref PROPERTY_REGISTRY_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+}
+
 /// Register a PropertyDescriptor at runtime (called by macro-generated init code).
 /// Returns true if newly registered, false if already present.
 pub fn register_property_descriptor(desc: super::property_descriptor::PropertyDescriptor) -> bool {
+    #[cfg(test)]
+    let _guard = PROPERTY_REGISTRY_TEST_LOCK.lock().unwrap();
     use std::collections::hash_map::Entry;
     let mut registry = PROPERTY_REGISTRY.write().unwrap();
     match registry.entry(desc.id) {
@@ -97,6 +107,8 @@ pub fn register_property_descriptor(desc: super::property_descriptor::PropertyDe
 
 /// Lookup a PropertyDescriptor by id.
 pub fn get_property_descriptor(id: u32) -> Option<super::property_descriptor::PropertyDescriptor> {
+    #[cfg(test)]
+    let _guard = PROPERTY_REGISTRY_TEST_LOCK.lock().unwrap();
     let registry = PROPERTY_REGISTRY.read().unwrap();
     registry.get(&id).cloned()
 }
@@ -104,6 +116,8 @@ pub fn get_property_descriptor(id: u32) -> Option<super::property_descriptor::Pr
 /// Clear the registry (useful for tests).
 #[cfg(test)]
 pub fn clear_property_registry() {
+    #[cfg(test)]
+    let _guard = PROPERTY_REGISTRY_TEST_LOCK.lock().unwrap();
     let mut registry = PROPERTY_REGISTRY.write().unwrap();
     registry.clear();
 }

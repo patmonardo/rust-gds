@@ -4,10 +4,11 @@
 //! Bulk Synchronous Parallel (BSP) loop.
 
 use crate::collections::HugeAtomicBitSet;
+use crate::concurrency::Concurrency;
 use crate::core::utils::progress::tasks::LeafTask;
 use crate::pregel::{
     projection::PropertyProjection, ComputeFn, DefaultValue, ForkJoinComputer, InitFn,
-    MasterComputeContext, Messenger, NodeValue, PregelComputer, PregelConfig, PregelResult,
+    MasterComputeContext, Messenger, NodeValue, PregelComputer, PregelResult, PregelRuntimeConfig,
     PregelSchema,
 };
 use crate::types::graph::Graph;
@@ -43,7 +44,7 @@ use std::sync::Arc;
 ///     println!("Converged after {} iterations", result.ran_iterations);
 /// }
 /// ```
-pub struct Pregel<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> {
+pub struct Pregel<C: PregelRuntimeConfig + Clone, I: crate::pregel::MessageIterator> {
     /// Configuration for this computation
     config: C,
 
@@ -64,7 +65,7 @@ pub struct Pregel<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> {
     progress_task: Option<Arc<LeafTask>>,
 }
 
-impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
     /// Create a new Pregel executor.
     ///
     /// This is the main entry point for running Pregel computations.
@@ -96,7 +97,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
         let node_values = Arc::new(parking_lot::RwLock::new(NodeValue::of(
             &schema,
             graph.node_count() as u64,
-            config.concurrency(),
+            Concurrency::from_usize(config.concurrency()),
         )));
 
         // Initialize node values from PropertyStore (if property_source is set)
@@ -273,7 +274,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
 }
 
 /// Builder for creating Pregel instances with a fluent API.
-pub struct PregelBuilder<C: PregelConfig, I: crate::pregel::MessageIterator> {
+pub struct PregelBuilder<C: PregelRuntimeConfig, I: crate::pregel::MessageIterator> {
     graph: Option<Arc<dyn Graph>>,
     config: Option<C>,
     schema: Option<PregelSchema>,
@@ -283,7 +284,7 @@ pub struct PregelBuilder<C: PregelConfig, I: crate::pregel::MessageIterator> {
     progress_task: Option<Arc<LeafTask>>,
 }
 
-impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C, I> {
     /// Create a new builder.
     pub fn new() -> Self {
         Self {
@@ -357,7 +358,9 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C
     }
 }
 
-impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Default for PregelBuilder<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: crate::pregel::MessageIterator> Default
+    for PregelBuilder<C, I>
+{
     fn default() -> Self {
         Self::new()
     }

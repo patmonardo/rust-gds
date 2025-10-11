@@ -10,7 +10,7 @@ use crate::collections::HugeAtomicBitSet;
 use crate::core::utils::progress::tasks::LeafTask;
 use crate::pregel::{
     ComputeContext, InitContext, MessageIterator, Messages, Messenger, NodeValue, Partition,
-    PregelConfig,
+    PregelRuntimeConfig,
 };
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
@@ -63,7 +63,7 @@ pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C, I>, &mut Messages<I
 /// // Process the batch (may subdivide for parallelism)
 /// step.compute();
 /// ```
-pub struct ForkJoinComputeStep<C: PregelConfig, I: MessageIterator> {
+pub struct ForkJoinComputeStep<C: PregelRuntimeConfig, I: MessageIterator> {
     /// Initialization function
     init_fn: InitFn<C>,
 
@@ -106,7 +106,7 @@ pub struct ForkJoinComputeStep<C: PregelConfig, I: MessageIterator> {
     config: C,
 }
 
-impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
+impl<C: PregelRuntimeConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
     /// Create a new fork-join compute step.
     ///
     /// # Arguments

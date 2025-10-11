@@ -4,6 +4,8 @@
 
 pub mod collections;
 pub mod concurrency;
+// Ensure projection (codegen macros) is compiled before config so macro_rules! defs
+// inside projection::codegen are available to config modules that invoke them.
 pub mod config;
 pub mod core;
 pub mod mem;

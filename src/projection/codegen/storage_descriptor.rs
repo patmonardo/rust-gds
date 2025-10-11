@@ -162,7 +162,7 @@ impl PersistenceConfig {
             compression: Compression::None,
         }
     }
-    
+
     pub fn durable() -> Self {
         Self {
             strategy: Persistence::Durable,
@@ -218,7 +218,7 @@ pub struct PhysicalGeometry {
 impl Default for PhysicalGeometry {
     fn default() -> Self {
         Self {
-            alignment: 64, // Cache line
+            alignment: 64,   // Cache line
             page_size: 4096, // Standard page
             initial_pages: 1,
             growth: GrowthPolicy::Exponential(2.0),
@@ -247,31 +247,31 @@ pub enum BackendTechnology {
 pub struct StorageDescriptor {
     /// Unique identifier
     pub id: u32,
-    
+
     /// Human-readable name
     pub name: String,
-    
+
     /// Physical layout strategy
     pub layout: StorageLayout,
-    
+
     /// Memory characteristics
     pub memory_profile: MemoryProfile,
-    
+
     /// Persistence configuration
     pub persistence: PersistenceConfig,
-    
+
     /// Concurrency model
     pub concurrency: ConcurrencyModel,
-    
+
     /// Physical geometry
     pub geometry: PhysicalGeometry,
-    
+
     /// Backend technology
     pub backend: BackendTechnology,
-    
+
     /// Compatible value types
     pub compatible_types: Vec<ValueType>,
-    
+
     /// Custom metadata
     pub metadata: HashMap<String, String>,
 }
@@ -300,37 +300,37 @@ impl StorageDescriptor {
             metadata: HashMap::new(),
         }
     }
-    
+
     /// Builder: Set layout
     pub fn with_layout(mut self, layout: StorageLayout) -> Self {
         self.layout = layout;
         self
     }
-    
+
     /// Builder: Set density
     pub fn with_density(mut self, density: Density) -> Self {
         self.memory_profile.density = density;
         self
     }
-    
+
     /// Builder: Set access pattern
     pub fn with_access_pattern(mut self, pattern: AccessPattern) -> Self {
         self.memory_profile.access_pattern = pattern;
         self
     }
-    
+
     /// Builder: Set concurrency model
     pub fn with_concurrency(mut self, model: ConcurrencyModel) -> Self {
         self.concurrency = model;
         self
     }
-    
+
     /// Builder: Set persistence
     pub fn with_persistence(mut self, config: PersistenceConfig) -> Self {
         self.persistence = config;
         self
     }
-    
+
     /// Builder: Set page size
     pub fn with_page_size(mut self, size: usize) -> Self {
         self.geometry.page_size = size;
@@ -369,7 +369,7 @@ mod tests {
     #[test]
     fn create_and_register_storage_descriptor() {
         clear_storage_registry();
-        
+
         let desc = StorageDescriptor::new(
             1,
             "test_storage",
@@ -378,15 +378,15 @@ mod tests {
         .with_density(Density::Dense)
         .with_access_pattern(AccessPattern::VertexCentric)
         .with_concurrency(ConcurrencyModel::ReadOnly);
-        
+
         assert!(register_storage_descriptor(desc.clone()));
-        
+
         let retrieved = get_storage_descriptor(1).expect("found");
         assert_eq!(retrieved.name, "test_storage");
         assert_eq!(retrieved.layout, StorageLayout::Chunked);
         assert_eq!(retrieved.memory_profile.density, Density::Dense);
     }
-    
+
     #[test]
     fn default_layout_for_backends() {
         assert_eq!(

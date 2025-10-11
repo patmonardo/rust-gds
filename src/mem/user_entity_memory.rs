@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_create_graph() {
         let mem = UserEntityMemory::create_graph("alice", "my-graph", 1024);
-        
+
         assert_eq!(mem.user(), "alice");
         assert_eq!(mem.name(), "my-graph");
         assert_eq!(mem.entity(), "graph");
@@ -110,7 +110,7 @@ mod tests {
     #[test]
     fn test_create_task() {
         let mem = UserEntityMemory::create_task("bob", "pagerank", "job-123", 2048);
-        
+
         assert_eq!(mem.user(), "bob");
         assert_eq!(mem.name(), "pagerank");
         assert_eq!(mem.entity(), "job-123");
@@ -131,7 +131,7 @@ mod tests {
     fn test_display() {
         let mem = UserEntityMemory::create_graph("alice", "my-graph", 1024);
         let display = format!("{}", mem);
-        
+
         assert!(display.contains("alice"));
         assert!(display.contains("my-graph"));
         assert!(display.contains("1024"));

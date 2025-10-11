@@ -12,4 +12,4 @@ pub mod huge_cursor;
 pub mod huge_cursor_support;
 
 pub use huge_cursor::{HugeCursor, PagedCursor, SinglePageCursor};
-pub use huge_cursor_support::{HugeCursorSupport, init_cursor, init_cursor_range};
+pub use huge_cursor_support::{init_cursor, init_cursor_range, HugeCursorSupport};

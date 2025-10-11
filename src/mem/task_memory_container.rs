@@ -2,8 +2,8 @@
 //!
 //! Tracks memory usage per user for running tasks.
 
-use std::collections::HashMap;
 use super::user_entity_memory::UserEntityMemory;
+use std::collections::HashMap;
 
 /// Represents a user task with memory tracking
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -50,13 +50,7 @@ impl TaskMemoryContainer {
     }
 
     /// Reserves memory for a task
-    pub fn reserve(
-        &mut self,
-        username: &str,
-        task_name: &str,
-        job_id: &str,
-        memory_amount: usize,
-    ) {
+    pub fn reserve(&mut self, username: &str, task_name: &str, job_id: &str, memory_amount: usize) {
         self.allocated_memory += memory_amount;
 
         let task_info = TaskInfo {

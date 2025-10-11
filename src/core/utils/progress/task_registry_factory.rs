@@ -122,9 +122,7 @@ impl LocalTaskRegistryFactory {
 impl TaskRegistryFactory for LocalTaskRegistryFactory {
     fn new_instance(&self, job_id: JobId) -> TaskRegistry {
         // Check if there's already a job running with this jobId
-        let existing_task = self
-            .task_store
-            .query(&self.username, &job_id);
+        let existing_task = self.task_store.query(&self.username, &job_id);
 
         if existing_task.is_some() {
             panic!(

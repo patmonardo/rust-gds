@@ -3,7 +3,7 @@
 //! Provides the complete API for vertices to interact with the Pregel framework
 //! during the compute phase of each superstep.
 
-use crate::pregel::{NodeValue, PregelConfig};
+use crate::pregel::{NodeValue, PregelRuntimeConfig};
 use crate::types::graph::Graph;
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -41,7 +41,7 @@ use std::sync::Arc;
 ///                MutableInt iteration, Optional<MutableBoolean> hasSendMessage,
 ///                ProgressTracker progressTracker)
 /// ```
-pub struct ComputeContext<C: PregelConfig, I: crate::pregel::MessageIterator> {
+pub struct ComputeContext<C: PregelRuntimeConfig, I: crate::pregel::MessageIterator> {
     base: super::NodeCentricContext<C>,
     iteration: usize,
     messenger: Arc<dyn crate::pregel::Messenger<I>>,
@@ -49,7 +49,7 @@ pub struct ComputeContext<C: PregelConfig, I: crate::pregel::MessageIterator> {
     has_sent_message: Arc<std::sync::atomic::AtomicBool>,
 }
 
-impl<C: PregelConfig, I: crate::pregel::MessageIterator> ComputeContext<C, I> {
+impl<C: PregelRuntimeConfig, I: crate::pregel::MessageIterator> ComputeContext<C, I> {
     /// Create a new compute context.
     ///
     /// # Arguments

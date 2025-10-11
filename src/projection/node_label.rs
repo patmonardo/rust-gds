@@ -73,14 +73,15 @@ impl NodeLabel {
 
         // Try read lock first for common case
         {
-            let instances = INSTANCES.read().unwrap();
+            // Use unwrap_or_else to recover from a poisoned lock instead of panicking.
+            let instances = INSTANCES.read().unwrap_or_else(|e| e.into_inner());
             if let Some(label) = instances.get(&name_string) {
                 return label.clone();
             }
         }
 
         // Need to create new instance
-        let mut instances = INSTANCES.write().unwrap();
+        let mut instances = INSTANCES.write().unwrap_or_else(|e| e.into_inner());
         // Check again in case another thread created it
         if let Some(label) = instances.get(&name_string) {
             return label.clone();

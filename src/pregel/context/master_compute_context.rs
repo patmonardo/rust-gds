@@ -3,7 +3,7 @@
 //! Provides the master compute API for algorithm-level coordination.
 
 use crate::core::utils::progress::tasks::LeafTask;
-use crate::pregel::{NodeValue, PregelConfig};
+use crate::pregel::{NodeValue, PregelRuntimeConfig};
 use crate::types::graph::Graph;
 use std::sync::Arc;
 
@@ -32,7 +32,7 @@ use std::sync::Arc;
 /// - Early termination signaling
 /// - Parallel execution support via executor service
 #[allow(dead_code)] // TODO: Remove once fully implemented
-pub struct MasterComputeContext<C: PregelConfig> {
+pub struct MasterComputeContext<C: PregelRuntimeConfig> {
     config: C,
     graph: Arc<dyn Graph>,
     iteration: usize,
@@ -40,7 +40,7 @@ pub struct MasterComputeContext<C: PregelConfig> {
     progress_task: Option<Arc<LeafTask>>,
 }
 
-impl<C: PregelConfig> MasterComputeContext<C> {
+impl<C: PregelRuntimeConfig> MasterComputeContext<C> {
     /// Create a new MasterComputeContext.
     pub fn new(
         config: C,

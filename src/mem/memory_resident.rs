@@ -2,8 +2,8 @@
 //!
 //! Provides a calculation interface for objects that have resources residing in memory.
 
-use crate::core::graph_dimensions::GraphDimensions;
 use super::memory_range::MemoryRange;
+use crate::core::graph_dimensions::GraphDimensions;
 
 /// A calculation of an object that has resources residing in memory
 ///
@@ -64,9 +64,8 @@ mod tests {
 
     #[test]
     fn test_function_memory_resident() {
-        let resident = FunctionMemoryResident::new(|dims, _conc| {
-            MemoryRange::of(dims.node_count() * 8)
-        });
+        let resident =
+            FunctionMemoryResident::new(|dims, _conc| MemoryRange::of(dims.node_count() * 8));
 
         let dims = ConcreteGraphDimensions::of(1000, 5000);
         let range = resident.estimate_memory_usage(&dims, 4);

@@ -2,8 +2,8 @@
 //!
 //! Tracks memory usage per user for stored graphs.
 
-use std::collections::HashMap;
 use super::user_entity_memory::UserEntityMemory;
+use std::collections::HashMap;
 
 /// Event representing a graph being added
 pub struct GraphStoreAddedEvent {

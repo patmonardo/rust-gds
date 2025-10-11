@@ -73,14 +73,15 @@ impl RelationshipType {
 
         // Try read lock first for common case
         {
-            let instances = INSTANCES.read().unwrap();
+            // Use unwrap_or_else to recover from a poisoned lock instead of panicking.
+            let instances = INSTANCES.read().unwrap_or_else(|e| e.into_inner());
             if let Some(rel_type) = instances.get(&name_string) {
                 return rel_type.clone();
             }
         }
 
         // Need to create new instance
-        let mut instances = INSTANCES.write().unwrap();
+        let mut instances = INSTANCES.write().unwrap_or_else(|e| e.into_inner());
         // Check again in case another thread created it
         if let Some(rel_type) = instances.get(&name_string) {
             return rel_type.clone();

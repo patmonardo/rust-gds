@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn test_all_descriptors() {
         form_processor::clear_property_registry();
-        
+
         // Register all
         let count = registry::register_all();
         assert_eq!(count, 4);

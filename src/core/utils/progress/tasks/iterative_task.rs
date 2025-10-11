@@ -1,7 +1,7 @@
-use std::sync::Arc;
-use super::{Task, Progress, TaskVisitor};
 #[cfg(test)]
 use super::UNKNOWN_VOLUME;
+use super::{Progress, Task, TaskVisitor};
+use std::sync::Arc;
 
 /// Execution modes for iterative tasks.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -65,7 +65,7 @@ impl IterativeTask {
     /// Get current progress.
     pub fn get_progress(&self) -> Progress {
         let base_progress = self.base.get_progress();
-        
+
         if self.mode == IterativeTaskMode::Open {
             // For open mode, report progress as unknown
             Progress::of(base_progress.progress(), super::UNKNOWN_VOLUME)
@@ -179,24 +179,25 @@ mod tests {
         })
     }
 
-    fn unroll_tasks(supplier: &Arc<dyn Fn() -> Vec<Arc<Task>> + Send + Sync>, iterations: usize) -> Vec<Arc<Task>> {
-        (0..iterations)
-            .flat_map(|_| supplier())
-            .collect()
+    fn unroll_tasks(
+        supplier: &Arc<dyn Fn() -> Vec<Arc<Task>> + Send + Sync>,
+        iterations: usize,
+    ) -> Vec<Arc<Task>> {
+        (0..iterations).flat_map(|_| supplier()).collect()
     }
 
     #[test]
     fn test_iterative_task_fixed_mode() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 3);
-        
+
         let task = IterativeTask::new(
             "Fixed Iteration".to_string(),
             sub_tasks,
             supplier,
             IterativeTaskMode::Fixed,
         );
-        
+
         assert_eq!(task.mode(), IterativeTaskMode::Fixed);
         assert_eq!(task.max_iterations(), 3);
         assert_eq!(task.tasks_per_iteration(), 2);
@@ -207,14 +208,14 @@ mod tests {
     fn test_iterative_task_dynamic_mode() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 5);
-        
+
         let task = IterativeTask::new(
             "Dynamic Iteration".to_string(),
             sub_tasks,
             supplier,
             IterativeTaskMode::Dynamic,
         );
-        
+
         assert_eq!(task.mode(), IterativeTaskMode::Dynamic);
         assert_eq!(task.max_iterations(), 5);
         assert!(task.can_add_more_iterations());
@@ -223,14 +224,14 @@ mod tests {
     #[test]
     fn test_iterative_task_open_mode() {
         let supplier = create_sub_tasks_supplier();
-        
+
         let task = IterativeTask::new(
             "Open Iteration".to_string(),
             vec![],
             supplier,
             IterativeTaskMode::Open,
         );
-        
+
         assert_eq!(task.mode(), IterativeTaskMode::Open);
         assert_eq!(task.max_iterations(), 0);
         assert!(task.can_add_more_iterations());
@@ -240,22 +241,22 @@ mod tests {
     fn test_iterative_task_current_iteration() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 3);
-        
+
         let task = IterativeTask::new(
             "Iteration Count".to_string(),
             sub_tasks,
             supplier,
             IterativeTaskMode::Fixed,
         );
-        
+
         assert_eq!(task.current_iteration(), 0);
-        
+
         // Complete first iteration (2 tasks)
         task.base().sub_tasks()[0].start();
         task.base().sub_tasks()[0].finish();
         task.base().sub_tasks()[1].start();
         task.base().sub_tasks()[1].finish();
-        
+
         assert_eq!(task.current_iteration(), 1);
     }
 
@@ -263,14 +264,14 @@ mod tests {
     fn test_iterative_task_progress_fixed() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 2);
-        
+
         let task = IterativeTask::new(
             "Progress Fixed".to_string(),
             sub_tasks,
             supplier,
             IterativeTaskMode::Fixed,
         );
-        
+
         let progress = task.get_progress();
         // Progress delegates to base task
         assert_eq!(progress.volume(), UNKNOWN_VOLUME);
@@ -279,14 +280,14 @@ mod tests {
     #[test]
     fn test_iterative_task_progress_open() {
         let supplier = create_sub_tasks_supplier();
-        
+
         let task = IterativeTask::new(
             "Progress Open".to_string(),
             vec![],
             supplier,
             IterativeTaskMode::Open,
         );
-        
+
         let progress = task.get_progress();
         // Open mode always reports unknown volume
         assert_eq!(progress.volume(), UNKNOWN_VOLUME);
@@ -297,20 +298,20 @@ mod tests {
     fn test_iterative_task_finish_fixed_incomplete() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 3);
-        
+
         let task = IterativeTask::new(
             "Incomplete Fixed".to_string(),
             sub_tasks,
             supplier,
             IterativeTaskMode::Fixed,
         );
-        
+
         // Finish only 1 iteration out of 3
         task.base().sub_tasks()[0].start();
         task.base().sub_tasks()[0].finish();
         task.base().sub_tasks()[1].start();
         task.base().sub_tasks()[1].finish();
-        
+
         task.finish(); // Should panic
     }
 
@@ -318,20 +319,20 @@ mod tests {
     fn test_iterative_task_finish_fixed_complete() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 2);
-        
+
         let task = IterativeTask::new(
             "Complete Fixed".to_string(),
             sub_tasks,
             supplier,
             IterativeTaskMode::Fixed,
         );
-        
+
         // Complete all iterations
         for sub_task in task.base().sub_tasks() {
             sub_task.start();
             sub_task.finish();
         }
-        
+
         task.finish();
         assert_eq!(task.base().status(), Status::Finished);
     }
@@ -340,22 +341,22 @@ mod tests {
     fn test_iterative_task_can_add_more_dynamic() {
         let supplier = create_sub_tasks_supplier();
         let sub_tasks = unroll_tasks(&supplier, 3);
-        
+
         let task = IterativeTask::new(
             "Add More Dynamic".to_string(),
             sub_tasks,
             supplier.clone(),
             IterativeTaskMode::Dynamic,
         );
-        
+
         assert!(task.can_add_more_iterations());
-        
+
         // Complete all 3 iterations
         for sub_task in task.base().sub_tasks() {
             sub_task.start();
             sub_task.finish();
         }
-        
+
         // Should not be able to add more after reaching max
         assert!(!task.can_add_more_iterations());
     }
@@ -363,14 +364,14 @@ mod tests {
     #[test]
     fn test_iterative_task_can_add_more_open() {
         let supplier = create_sub_tasks_supplier();
-        
+
         let task = IterativeTask::new(
             "Add More Open".to_string(),
             vec![],
             supplier,
             IterativeTaskMode::Open,
         );
-        
+
         // Open mode can always add more
         assert!(task.can_add_more_iterations());
     }

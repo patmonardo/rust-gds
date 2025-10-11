@@ -24,6 +24,7 @@ pub mod base_types;
 pub mod graph_config;
 pub mod graphstore_config;
 pub mod io_config;
+pub mod morph_config;
 pub mod pregel_config;
 pub mod validation;
 
@@ -32,11 +33,13 @@ pub mod validation;
 // pub mod loader;
 
 // Re-export core types for convenience
+pub use crate::core::utils::partition::Partitioning;
 pub use algo_config::*;
 pub use base_types::*;
 pub use graph_config::*;
 pub use graphstore_config::*;
 pub use io_config::*;
+pub use morph_config::*;
 pub use pregel_config::*;
 pub use validation::*;
 
