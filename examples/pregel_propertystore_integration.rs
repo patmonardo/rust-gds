@@ -8,7 +8,7 @@
 //! Run: `cargo run --example pregel_propertystore_integration`
 
 use rust_gds::pregel::{
-    ComputeFn, InitFn, PregelBuilder, PregelConfig, PregelSchema, ProgressTracker,
+    ComputeFn, InitFn, LeafTask, PregelBuilder, PregelConfig, PregelSchema,
     SyncQueueMessageIterator, SyncQueueMessenger, Visibility,
 };
 use rust_gds::types::graph_store::{DefaultGraphStore, GraphStore};
@@ -114,7 +114,10 @@ fn main() {
     });
 
     let messenger = Arc::new(SyncQueueMessenger::new(node_count));
-    let progress_tracker = Arc::new(ProgressTracker::disabled());
+    let progress_task = Arc::new(LeafTask::new(
+        "PropertyStore Integration".to_string(),
+        node_count,
+    ));
 
     let pregel = PregelBuilder::new()
         .graph(graph)
@@ -123,7 +126,7 @@ fn main() {
         .init_fn(init_fn)
         .compute_fn(compute_fn)
         .messenger(messenger)
-        .progress_tracker(progress_tracker)
+        .progress_task(progress_task)
         .build();
 
     let _result = pregel.run();

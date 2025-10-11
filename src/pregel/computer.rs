@@ -9,9 +9,10 @@
 //! - Abstract interface with concrete ForkJoin implementation
 
 use crate::collections::HugeAtomicBitSet;
+use crate::core::utils::progress::tasks::LeafTask;
 use crate::pregel::{
     ComputeFn, ForkJoinComputeStep, InitFn, MessageIterator, Messenger, NodeValue, Partition,
-    PregelConfig, ProgressTracker,
+    PregelConfig,
 };
 use crate::types::graph::Graph;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -81,8 +82,8 @@ pub struct ForkJoinComputer<C: PregelConfig + Clone, I: MessageIterator> {
     /// Vote-to-halt tracking
     vote_bits: Arc<HugeAtomicBitSet>,
 
-    /// Progress tracking
-    progress_tracker: Arc<ProgressTracker>,
+    /// Progress tracking task (optional)
+    progress_task: Option<Arc<LeafTask>>,
 
     /// Flag tracking if any message was sent in current iteration
     sent_message: Arc<AtomicBool>,
@@ -102,7 +103,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
         node_values: Arc<parking_lot::RwLock<NodeValue>>,
         messenger: Arc<dyn Messenger<I>>,
         vote_bits: Arc<HugeAtomicBitSet>,
-        progress_tracker: Arc<ProgressTracker>,
+        progress_task: Option<Arc<LeafTask>>,
     ) -> Self {
         Self {
             graph,
@@ -112,7 +113,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputer<C, I> {
             node_values,
             messenger,
             vote_bits,
-            progress_tracker,
+            progress_task,
             sent_message: Arc::new(AtomicBool::new(false)),
             root_task: None,
         }
@@ -144,7 +145,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputer<C> for ForkJoin
             Arc::clone(&self.vote_bits),
             iteration,
             Arc::clone(&self.sent_message),
-            Arc::clone(&self.progress_tracker),
+            self.progress_task.clone(),
         ));
     }
 
@@ -177,7 +178,7 @@ pub struct PregelComputerBuilder<C: PregelConfig, I: MessageIterator> {
     node_values: Option<Arc<parking_lot::RwLock<NodeValue>>>,
     messenger: Option<Arc<dyn Messenger<I>>>,
     vote_bits: Option<Arc<HugeAtomicBitSet>>,
-    progress_tracker: Option<Arc<ProgressTracker>>,
+    progress_task: Option<Arc<LeafTask>>,
 }
 
 impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
@@ -191,7 +192,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
             node_values: None,
             messenger: None,
             vote_bits: None,
-            progress_tracker: None,
+            progress_task: None,
         }
     }
 
@@ -237,9 +238,9 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
         self
     }
 
-    /// Set the progress tracker.
-    pub fn progress_tracker(mut self, progress_tracker: Arc<ProgressTracker>) -> Self {
-        self.progress_tracker = Some(progress_tracker);
+    /// Set the progress task (optional).
+    pub fn progress_task(mut self, progress_task: Arc<LeafTask>) -> Self {
+        self.progress_task = Some(progress_task);
         self
     }
 
@@ -257,7 +258,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> PregelComputerBuilder<C, I> {
             self.node_values.expect("node_values is required"),
             self.messenger.expect("messenger is required"),
             self.vote_bits.expect("vote_bits is required"),
-            self.progress_tracker.expect("progress_tracker is required"),
+            self.progress_task, // Optional
         )
     }
 }

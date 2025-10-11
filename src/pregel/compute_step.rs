@@ -7,9 +7,10 @@
 //! Corresponds to Java's ForkJoinComputeStep and TypeScript's ForkJoinComputeStep.
 
 use crate::collections::HugeAtomicBitSet;
+use crate::core::utils::progress::tasks::LeafTask;
 use crate::pregel::{
     ComputeContext, InitContext, MessageIterator, Messages, Messenger, NodeValue, Partition,
-    PregelConfig, ProgressTracker,
+    PregelConfig,
 };
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
@@ -95,8 +96,8 @@ pub struct ForkJoinComputeStep<C: PregelConfig, I: MessageIterator> {
     /// Flag indicating if any message has been sent
     has_sent_message: Arc<AtomicBool>,
 
-    /// Progress tracker
-    progress_tracker: Arc<ProgressTracker>,
+    /// Progress task (optional)
+    progress_task: Option<Arc<LeafTask>>,
 
     /// Compute context (one per step)
     compute_context: ComputeContext<C, I>,
@@ -133,7 +134,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
         vote_bits: Arc<HugeAtomicBitSet>,
         iteration: usize,
         has_sent_message: Arc<AtomicBool>,
-        progress_tracker: Arc<ProgressTracker>,
+        progress_task: Option<Arc<LeafTask>>,
     ) -> Self
     where
         C: Clone,
@@ -159,7 +160,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
             iteration,
             current_node_id: 0,
             has_sent_message,
-            progress_tracker,
+            progress_task,
             compute_context,
             config,
         }
@@ -180,9 +181,9 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
         self.messenger.as_ref()
     }
 
-    /// Get the progress tracker.
-    pub fn progress_tracker(&self) -> &ProgressTracker {
-        &self.progress_tracker
+    /// Get the progress task (if present).
+    pub fn progress_task(&self) -> Option<&Arc<LeafTask>> {
+        self.progress_task.as_ref()
     }
 
     /// Compute this batch, potentially subdividing for parallel execution.
@@ -206,7 +207,7 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
                 iteration: self.iteration,
                 current_node_id: 0,
                 has_sent_message: Arc::clone(&self.has_sent_message),
-                progress_tracker: Arc::clone(&self.progress_tracker),
+                progress_task: self.progress_task.clone(),
                 compute_context: ComputeContext::new(
                     Arc::clone(&self.graph),
                     self.config.clone(),
@@ -303,9 +304,10 @@ impl<C: PregelConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, I> {
         });
 
         // Log progress for entire batch
-        let batch_size = self.node_batch.node_count();
-        self.progress_tracker
-            .log_progress(self.iteration, &format!("Processed {} nodes", batch_size));
+        if let Some(task) = &self.progress_task {
+            let batch_size = self.node_batch.node_count();
+            task.log_progress(batch_size);
+        }
     }
 }
 

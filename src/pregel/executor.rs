@@ -4,10 +4,11 @@
 //! Bulk Synchronous Parallel (BSP) loop.
 
 use crate::collections::HugeAtomicBitSet;
+use crate::core::utils::progress::tasks::LeafTask;
 use crate::pregel::{
     projection::PropertyProjection, ComputeFn, DefaultValue, ForkJoinComputer, InitFn,
     MasterComputeContext, Messenger, NodeValue, PregelComputer, PregelConfig, PregelResult,
-    PregelSchema, ProgressTracker,
+    PregelSchema,
 };
 use crate::types::graph::Graph;
 use std::sync::Arc;
@@ -59,8 +60,8 @@ pub struct Pregel<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> {
     /// The computer that executes iterations
     computer: ForkJoinComputer<C, I>,
 
-    /// Progress tracking
-    progress_tracker: Arc<ProgressTracker>,
+    /// Progress tracking task (optional)
+    progress_task: Option<Arc<LeafTask>>,
 }
 
 impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
@@ -89,7 +90,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
         init_fn: InitFn<C>,
         compute_fn: ComputeFn<C, I>,
         messenger: Arc<dyn Messenger<I>>,
-        progress_tracker: Arc<ProgressTracker>,
+        progress_task: Option<Arc<LeafTask>>,
     ) -> Self {
         // Create node value storage based on schema
         let node_values = Arc::new(parking_lot::RwLock::new(NodeValue::of(
@@ -113,7 +114,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
             Arc::clone(&node_values),
             Arc::clone(&messenger),
             Arc::clone(&vote_bits),
-            Arc::clone(&progress_tracker),
+            progress_task.clone(),
         );
 
         Self {
@@ -122,7 +123,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
             node_values,
             messenger,
             computer,
-            progress_tracker,
+            progress_task,
         }
     }
 
@@ -202,16 +203,19 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
         // Initialize computation
         self.computer.init_computation();
 
-        // Track progress
-        self.progress_tracker.begin_task();
+        // Track progress - start task if present
+        if let Some(task) = &self.progress_task {
+            task.base().start();
+        }
 
         let mut iteration = 0;
         for iter in 0..self.config.max_iterations() {
             iteration = iter;
 
             // Log iteration progress
-            self.progress_tracker
-                .log_progress(iteration, &format!("Starting iteration {}", iteration));
+            if let Some(task) = &self.progress_task {
+                task.log_progress(1); // Log one unit of progress per iteration
+            }
 
             // Initialize iteration in computer
             // (Messenger init is handled by computer/compute_step)
@@ -227,12 +231,14 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
             did_converge = master_converged || self.computer.has_converged();
 
             if did_converge {
-                self.progress_tracker.log_progress(iteration, "Converged!");
                 break;
             }
         }
 
-        self.progress_tracker.end_task();
+        // Finish task if present
+        if let Some(task) = &self.progress_task {
+            task.finish();
+        }
 
         // Release resources
         self.computer.release();
@@ -256,7 +262,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> Pregel<C, I> {
             Arc::clone(&self.graph),
             iteration,
             Arc::clone(&self.node_values),
-            Arc::clone(&self.progress_tracker),
+            self.progress_task.clone(),
         );
 
         // For now, always return false (don't terminate early)
@@ -274,7 +280,7 @@ pub struct PregelBuilder<C: PregelConfig, I: crate::pregel::MessageIterator> {
     init_fn: Option<InitFn<C>>,
     compute_fn: Option<ComputeFn<C, I>>,
     messenger: Option<Arc<dyn Messenger<I>>>,
-    progress_tracker: Option<Arc<ProgressTracker>>,
+    progress_task: Option<Arc<LeafTask>>,
 }
 
 impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C, I> {
@@ -287,7 +293,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C
             init_fn: None,
             compute_fn: None,
             messenger: None,
-            progress_tracker: None,
+            progress_task: None,
         }
     }
 
@@ -327,9 +333,9 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C
         self
     }
 
-    /// Set the progress tracker.
-    pub fn progress_tracker(mut self, progress_tracker: Arc<ProgressTracker>) -> Self {
-        self.progress_tracker = Some(progress_tracker);
+    /// Set the progress task (optional).
+    pub fn progress_task(mut self, progress_task: Arc<LeafTask>) -> Self {
+        self.progress_task = Some(progress_task);
         self
     }
 
@@ -346,7 +352,7 @@ impl<C: PregelConfig + Clone, I: crate::pregel::MessageIterator> PregelBuilder<C
             self.init_fn.expect("init_fn is required"),
             self.compute_fn.expect("compute_fn is required"),
             self.messenger.expect("messenger is required"),
-            self.progress_tracker.expect("progress_tracker is required"),
+            self.progress_task, // Optional
         )
     }
 }

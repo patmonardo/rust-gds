@@ -2,7 +2,8 @@
 //!
 //! Provides the master compute API for algorithm-level coordination.
 
-use crate::pregel::{NodeValue, PregelConfig, ProgressTracker};
+use crate::core::utils::progress::tasks::LeafTask;
+use crate::pregel::{NodeValue, PregelConfig};
 use crate::types::graph::Graph;
 use std::sync::Arc;
 
@@ -36,7 +37,7 @@ pub struct MasterComputeContext<C: PregelConfig> {
     graph: Arc<dyn Graph>,
     iteration: usize,
     node_values: Arc<parking_lot::RwLock<NodeValue>>,
-    progress_tracker: Arc<ProgressTracker>,
+    progress_task: Option<Arc<LeafTask>>,
 }
 
 impl<C: PregelConfig> MasterComputeContext<C> {
@@ -46,14 +47,14 @@ impl<C: PregelConfig> MasterComputeContext<C> {
         graph: Arc<dyn Graph>,
         iteration: usize,
         node_values: Arc<parking_lot::RwLock<NodeValue>>,
-        progress_tracker: Arc<ProgressTracker>,
+        progress_task: Option<Arc<LeafTask>>,
     ) -> Self {
         Self {
             config,
             graph,
             iteration,
             node_values,
-            progress_tracker,
+            progress_task,
         }
     }
     /// Get the current superstep number (0-indexed).
