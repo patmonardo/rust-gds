@@ -231,7 +231,7 @@ impl HugeLongPriorityQueue {
             }
 
             let mut best = left;
-            if left + 1 <= self.size {
+            if left < self.size {
                 let right = left + 1;
                 let left_element = self.get_heap_element(left);
                 let right_element = self.get_heap_element(right);

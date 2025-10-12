@@ -94,17 +94,11 @@ where
     }
 
     fn poll_next(&self) -> Option<T> {
-        match self.queue.poll(self.timeout) {
-            Ok(value) => value,
-            Err(BlockingQueueError::Interrupted) => None,
-        }
+        self.queue.poll(self.timeout).unwrap_or_default()
     }
 
     fn poll_initial(queue: &Arc<Q>, timeout: Duration) -> Option<T> {
-        match queue.poll(timeout) {
-            Ok(value) => value,
-            Err(BlockingQueueError::Interrupted) => None,
-        }
+        queue.poll(timeout).unwrap_or_default()
     }
 }
 

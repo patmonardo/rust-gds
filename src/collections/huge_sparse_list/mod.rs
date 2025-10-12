@@ -4,14 +4,14 @@
 /// pages where values actually exist, using HashMap-based page tracking.
 ///
 /// Unlike sparse arrays (which build once), sparse lists are mutable after creation.
-pub mod consumers;
+pub mod huge_sparse_consumers;
 pub mod huge_sparse_double_array_list;
 pub mod huge_sparse_double_list;
 pub mod huge_sparse_long_array_array_list;
 pub mod huge_sparse_long_array_list;
 pub mod huge_sparse_long_list;
 
-pub use consumers::{
+pub use huge_sparse_consumers::{
     LongByteArrayArrayConsumer, LongByteArrayConsumer, LongDoubleArrayArrayConsumer,
     LongDoubleArrayConsumer, LongDoubleConsumer, LongFloatArrayConsumer, LongIntConsumer,
     LongLongArrayArrayConsumer, LongLongArrayConsumer, LongLongConsumer,

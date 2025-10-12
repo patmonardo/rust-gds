@@ -5,6 +5,8 @@
 
 use crate::collections::cursor::{HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor};
 use crate::collections::{ArrayUtil, PageUtil};
+use crate::concurrency::Concurrency;
+use crate::core::utils::paged::ParallelLongPageCreator;
 
 /// Maximum size for single-page arrays (from PageUtil)
 const MAX_ARRAY_LENGTH: usize = 1 << 28; // ~268 million elements
@@ -86,6 +88,45 @@ impl HugeLongArray {
         }
     }
 
+    /// Creates a new array from pre-allocated pages.
+    ///
+    /// This method is used by `HugeLongArrayBuilder` to construct arrays
+    /// from pages that have been filled concurrently.
+    ///
+    /// # Arguments
+    ///
+    /// * `pages` - Pre-allocated and filled page vector
+    /// * `size` - Logical size of the array (number of valid elements)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    ///
+    /// // Create pages manually
+    /// let page1 = vec![1, 2, 3, 4, 5];
+    /// let page2 = vec![6, 7, 8, 9, 10];
+    /// let pages = vec![page1, page2];
+    ///
+    /// let array = HugeLongArray::of(pages, 10);
+    /// assert_eq!(array.get(0), 1);
+    /// assert_eq!(array.get(9), 10);
+    /// ```
+    pub fn of(pages: Vec<Vec<i64>>, size: usize) -> Self {
+        if pages.is_empty() {
+            // Empty array
+            Self::Single(SingleHugeLongArray::new(0))
+        } else if pages.len() == 1 && size <= MAX_ARRAY_LENGTH {
+            // Single page - truncate to actual size
+            let mut page = pages.into_iter().next().unwrap();
+            page.truncate(size);
+            Self::Single(SingleHugeLongArray { data: page })
+        } else {
+            // Multiple pages
+            Self::Paged(PagedHugeLongArray::from_pages(pages, size))
+        }
+    }
+
     /// Creates a new array from the provided values.
     ///
     /// # Examples
@@ -103,6 +144,57 @@ impl HugeLongArray {
             array.set(i, value);
         }
         array
+    }
+
+    /// Creates a new array with values generated in parallel using the provided function.
+    ///
+    /// This method uses parallel page creation for optimal performance on large arrays.
+    /// For small arrays (≤ MAX_ARRAY_LENGTH), uses single-page sequential generation.
+    ///
+    /// # Arguments
+    ///
+    /// * `size` - Number of elements in the array
+    /// * `concurrency` - Parallelism level for page creation
+    /// * `generator` - Function that generates value for each index
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeLongArray;
+    /// use rust_gds::concurrency::Concurrency;
+    ///
+    /// // Create 1 billion node IDs in parallel
+    /// let node_ids = HugeLongArray::with_generator(
+    ///     1_000_000_000,
+    ///     Concurrency::of(8),
+    ///     |i| i as i64
+    /// );
+    /// assert_eq!(node_ids.get(0), 0);
+    /// assert_eq!(node_ids.get(999_999_999), 999_999_999);
+    ///
+    /// // Custom sequence generation
+    /// let squares = HugeLongArray::with_generator(
+    ///     10_000,
+    ///     Concurrency::of(4),
+    ///     |i| (i * i) as i64
+    /// );
+    /// assert_eq!(squares.get(100), 10_000);
+    /// ```
+    pub fn with_generator<F>(size: usize, concurrency: Concurrency, generator: F) -> Self
+    where
+        F: Fn(usize) -> i64 + Send + Sync + 'static,
+    {
+        if size <= MAX_ARRAY_LENGTH {
+            // Small arrays: use single-page sequential generation
+            let mut array = Self::Single(SingleHugeLongArray::new(size));
+            array.set_all(generator);
+            array
+        } else {
+            // Large arrays: use parallel page creation
+            let creator = ParallelLongPageCreator::of(concurrency, generator);
+            let pages = creator.create_pages(size);
+            Self::Paged(PagedHugeLongArray::from_pages(pages, size))
+        }
     }
 
     /// Returns the value at the given index.
@@ -459,6 +551,28 @@ impl PagedHugeLongArray {
         }
     }
 
+    /// Creates a PagedHugeLongArray from pre-allocated pages.
+    ///
+    /// This is an internal constructor used by `with_generator` for parallel page creation.
+    /// Pages must already be allocated and filled with appropriate values.
+    fn from_pages(pages: Vec<Vec<i64>>, size: usize) -> Self {
+        // Calculate page parameters based on first page size
+        let page_size = if !pages.is_empty() {
+            pages[0].capacity()
+        } else {
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<i64>())
+        };
+        let page_shift = page_size.trailing_zeros();
+        let page_mask = page_size - 1;
+
+        Self {
+            pages,
+            size,
+            page_shift,
+            page_mask,
+        }
+    }
+
     fn get(&self, index: usize) -> i64 {
         let page_index = PageUtil::page_index(index, self.page_shift);
         let index_in_page = PageUtil::index_in_page(index, self.page_mask);
@@ -721,5 +835,158 @@ mod tests {
         }
 
         assert_eq!(sum, 45); // Sum of 0..9
+    }
+
+    // with_generator tests
+
+    #[test]
+    fn test_with_generator_small_array() {
+        use crate::concurrency::Concurrency;
+
+        // Small array should use single-page implementation
+        let array = HugeLongArray::with_generator(1000, Concurrency::of(4), |i| i as i64);
+
+        assert_eq!(array.size(), 1000);
+        assert_eq!(array.get(0), 0);
+        assert_eq!(array.get(500), 500);
+        assert_eq!(array.get(999), 999);
+
+        // Verify it's actually single-page variant
+        assert!(matches!(array, HugeLongArray::Single(_)));
+    }
+
+    #[test]
+    fn test_with_generator_large_array() {
+        use crate::concurrency::Concurrency;
+
+        // Large array should use paged implementation
+        let size = MAX_ARRAY_LENGTH + 10000;
+        let array = HugeLongArray::with_generator(size, Concurrency::of(4), |i| i as i64);
+
+        assert_eq!(array.size(), size);
+        assert_eq!(array.get(0), 0);
+        assert_eq!(array.get(MAX_ARRAY_LENGTH), MAX_ARRAY_LENGTH as i64);
+        assert_eq!(array.get(size - 1), (size - 1) as i64);
+
+        // Verify it's paged variant
+        assert!(matches!(array, HugeLongArray::Paged(_)));
+    }
+
+    #[test]
+    fn test_with_generator_identity_mapping() {
+        use crate::concurrency::Concurrency;
+
+        // Test identity mapping for 1 million elements
+        let array = HugeLongArray::with_generator(1_000_000, Concurrency::of(8), |i| i as i64);
+
+        // Spot checks
+        assert_eq!(array.get(0), 0);
+        assert_eq!(array.get(12345), 12345);
+        assert_eq!(array.get(999_999), 999_999);
+    }
+
+    #[test]
+    fn test_with_generator_custom_function() {
+        use crate::concurrency::Concurrency;
+
+        // Test custom generator: squares
+        let array = HugeLongArray::with_generator(1000, Concurrency::of(4), |i| (i * i) as i64);
+
+        assert_eq!(array.get(0), 0);
+        assert_eq!(array.get(1), 1);
+        assert_eq!(array.get(10), 100);
+        assert_eq!(array.get(100), 10_000);
+    }
+
+    #[test]
+    fn test_with_generator_parallel_consistency() {
+        use crate::concurrency::Concurrency;
+
+        // Test that different concurrency levels produce same results
+        let size = 100_000;
+
+        let array1 = HugeLongArray::with_generator(size, Concurrency::of(1), |i| (i * 3) as i64);
+        let array2 = HugeLongArray::with_generator(size, Concurrency::of(4), |i| (i * 3) as i64);
+        let array8 = HugeLongArray::with_generator(size, Concurrency::of(8), |i| (i * 3) as i64);
+
+        // Spot check several indices
+        for idx in [0, 1000, 50000, 99999] {
+            let expected = (idx * 3) as i64;
+            assert_eq!(array1.get(idx), expected);
+            assert_eq!(array2.get(idx), expected);
+            assert_eq!(array8.get(idx), expected);
+        }
+    }
+
+    #[test]
+    fn test_with_generator_billion_elements() {
+        use crate::concurrency::Concurrency;
+
+        // Test with 1 billion elements (this is fast with parallel creation!)
+        let size = 1_000_000_000;
+        let array = HugeLongArray::with_generator(size, Concurrency::of(8), |i| {
+            if i % 1_000_000 == 0 {
+                i as i64
+            } else {
+                0
+            }
+        });
+
+        // Check size
+        assert_eq!(array.size(), size);
+
+        // Check milestone values
+        assert_eq!(array.get(0), 0);
+        assert_eq!(array.get(1_000_000), 1_000_000);
+        assert_eq!(array.get(500_000_000), 500_000_000);
+        assert_eq!(array.get(999_000_000), 999_000_000);
+
+        // Check non-milestone values
+        assert_eq!(array.get(1), 0);
+        assert_eq!(array.get(999_999), 0);
+    }
+
+    #[test]
+    fn test_with_generator_boundary_conditions() {
+        use crate::concurrency::Concurrency;
+
+        // Test exact page boundary
+        let page_size =
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<i64>());
+        let array = HugeLongArray::with_generator(page_size * 10, Concurrency::of(4), |i| i as i64);
+
+        // Check boundaries between pages
+        assert_eq!(array.get(page_size - 1), (page_size - 1) as i64);
+        assert_eq!(array.get(page_size), page_size as i64);
+        assert_eq!(array.get(page_size + 1), (page_size + 1) as i64);
+    }
+
+    #[test]
+    fn test_with_generator_compatibility_with_operations() {
+        use crate::concurrency::Concurrency;
+
+        // Verify that arrays created with with_generator work with all operations
+        let mut array = HugeLongArray::with_generator(10000, Concurrency::of(4), |i| i as i64);
+
+        // Test set/get
+        array.set(5000, 999);
+        assert_eq!(array.get(5000), 999);
+
+        // Test add_to
+        array.add_to(5000, 1);
+        assert_eq!(array.get(5000), 1000);
+
+        // Test fill
+        array.fill(42);
+        assert_eq!(array.get(0), 42);
+        assert_eq!(array.get(9999), 42);
+
+        // Test set_all
+        array.set_all(|i| (i * 2) as i64);
+        assert_eq!(array.get(100), 200);
+
+        // Test iteration
+        let sum: i64 = array.iter().take(10).sum();
+        assert_eq!(sum, 90); // 0 + 2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18
     }
 }

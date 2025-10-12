@@ -32,6 +32,7 @@ pub const UNKNOWN_VOLUME: usize = usize::MAX;
 pub struct Task {
     pub description: String,
     pub volume: usize,
+    start_time_millis: i64,
 }
 
 impl Task {
@@ -43,6 +44,10 @@ impl Task {
         Self {
             description,
             volume,
+            start_time_millis: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as i64,
         }
     }
 
@@ -51,6 +56,10 @@ impl Task {
         Self {
             description,
             volume: UNKNOWN_VOLUME,
+            start_time_millis: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as i64,
         }
     }
 
@@ -67,5 +76,10 @@ impl Task {
     /// Check if volume is known.
     pub fn has_known_volume(&self) -> bool {
         self.volume != UNKNOWN_VOLUME
+    }
+
+    /// Get the task start time as milliseconds since Unix epoch.
+    pub fn start_time(&self) -> i64 {
+        self.start_time_millis
     }
 }

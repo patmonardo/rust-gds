@@ -5,6 +5,8 @@
 
 use crate::collections::cursor::{HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor};
 use crate::collections::PageUtil;
+use crate::concurrency::Concurrency;
+use crate::core::utils::paged::ParallelDoublePageCreator;
 
 /// Maximum size for single-page arrays
 const MAX_ARRAY_LENGTH: usize = 1 << 28;
@@ -88,6 +90,57 @@ impl HugeDoubleArray {
             array.set(i, value);
         }
         array
+    }
+
+    /// Creates a new array with values generated in parallel using the provided function.
+    ///
+    /// This method leverages parallel page creation for efficient initialization of large arrays,
+    /// making it significantly faster than sequential initialization for arrays with millions or
+    /// billions of elements.
+    ///
+    /// # Arguments
+    ///
+    /// * `size` - Number of elements in the array
+    /// * `concurrency` - Parallelism configuration (Sequential, Single, or specific worker count)
+    /// * `generator` - Function that maps index to value: `Fn(usize) -> f64`
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rust_gds::collections::huge_array::HugeDoubleArray;
+    /// use rust_gds::concurrency::Concurrency;
+    ///
+    /// // Identity mapping
+    /// let array = HugeDoubleArray::with_generator(
+    ///     1_000_000,
+    ///     Concurrency::Single,
+    ///     |i| i as f64
+    /// );
+    /// assert_eq!(array.get(42), 42.0);
+    ///
+    /// // Custom computation
+    /// let weights = HugeDoubleArray::with_generator(
+    ///     10_000,
+    ///     Concurrency::Single,
+    ///     |i| (i as f64).sqrt()
+    /// );
+    /// assert_eq!(weights.get(100), 10.0);
+    /// ```
+    pub fn with_generator<F>(size: usize, concurrency: Concurrency, generator: F) -> Self
+    where
+        F: Fn(usize) -> f64 + Send + Sync + 'static,
+    {
+        if size <= MAX_ARRAY_LENGTH {
+            // Small array: use single-page variant
+            let mut array = Self::Single(SingleHugeDoubleArray::new(size));
+            array.set_all(generator);
+            array
+        } else {
+            // Large array: use parallel page creation
+            let page_creator = ParallelDoublePageCreator::of(concurrency, generator);
+            let pages = page_creator.create_pages(size);
+            Self::Paged(PagedHugeDoubleArray::from_pages(size, pages))
+        }
     }
 
     /// Returns the value at the given index.
@@ -426,6 +479,25 @@ impl PagedHugeDoubleArray {
         }
     }
 
+    /// Creates a new paged array from pre-populated pages.
+    ///
+    /// Used internally by `with_generator` after parallel page creation.
+    /// Pages must be properly sized according to PageUtil calculations.
+    /// Uses 32KB pages to match ParallelDoublePageCreator.
+    fn from_pages(size: usize, pages: Vec<Vec<f64>>) -> Self {
+        let page_size =
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_32KB, std::mem::size_of::<f64>());
+        let page_shift = page_size.trailing_zeros();
+        let page_mask = page_size - 1;
+
+        Self {
+            pages,
+            size,
+            page_shift,
+            page_mask,
+        }
+    }
+
     fn get(&self, index: usize) -> f64 {
         let page_index = PageUtil::page_index(index, self.page_shift);
         let index_in_page = PageUtil::index_in_page(index, self.page_mask);
@@ -664,5 +736,146 @@ mod tests {
         }
 
         assert_eq!(sum, 45.0); // Sum of 0..9
+    }
+
+    #[test]
+    fn test_with_generator_small_array() {
+        use crate::concurrency::Concurrency;
+
+        // Small array should use single-page implementation
+        let array = HugeDoubleArray::with_generator(1000, Concurrency::of(4), |i| i as f64);
+
+        assert_eq!(array.size(), 1000);
+        assert_eq!(array.get(0), 0.0);
+        assert_eq!(array.get(500), 500.0);
+        assert_eq!(array.get(999), 999.0);
+
+        // Verify it's actually single-page variant
+        assert!(matches!(array, HugeDoubleArray::Single(_)));
+    }
+
+    #[test]
+    fn test_with_generator_large_array() {
+        use crate::concurrency::Concurrency;
+
+        // Large array should use paged implementation
+        let size = MAX_ARRAY_LENGTH + 10000;
+        let array = HugeDoubleArray::with_generator(size, Concurrency::of(4), |i| i as f64);
+
+        assert_eq!(array.size(), size);
+        assert_eq!(array.get(0), 0.0);
+        assert_eq!(array.get(MAX_ARRAY_LENGTH), MAX_ARRAY_LENGTH as f64);
+        assert_eq!(array.get(size - 1), (size - 1) as f64);
+
+        // Verify it's actually paged variant
+        assert!(matches!(array, HugeDoubleArray::Paged(_)));
+    }
+
+    #[test]
+    fn test_with_generator_custom_computation() {
+        use crate::concurrency::Concurrency;
+
+        // Test with sqrt computation
+        let size = 10_000;
+        let array =
+            HugeDoubleArray::with_generator(size, Concurrency::of(4), |i| (i as f64).sqrt());
+
+        assert_eq!(array.get(0), 0.0);
+        assert_eq!(array.get(100), 10.0);
+        assert_eq!(array.get(10000 - 1), (9999.0_f64).sqrt());
+    }
+
+    #[test]
+    fn test_with_generator_parallel_consistency() {
+        use crate::concurrency::Concurrency;
+
+        // Test that different concurrency levels produce same results
+        let size = 100_000;
+
+        let array1 =
+            HugeDoubleArray::with_generator(size, Concurrency::of(1), |i| (i as f64) * 0.5);
+        let array2 =
+            HugeDoubleArray::with_generator(size, Concurrency::of(4), |i| (i as f64) * 0.5);
+        let array8 =
+            HugeDoubleArray::with_generator(size, Concurrency::of(8), |i| (i as f64) * 0.5);
+
+        // Spot check several indices
+        for idx in [0, 1000, 50000, 99999] {
+            let expected = (idx as f64) * 0.5;
+            assert_eq!(array1.get(idx), expected);
+            assert_eq!(array2.get(idx), expected);
+            assert_eq!(array8.get(idx), expected);
+        }
+    }
+
+    #[test]
+    fn test_with_generator_million_elements() {
+        use crate::concurrency::Concurrency;
+
+        // Test with 10 million elements
+        let size = 10_000_000;
+        let array = HugeDoubleArray::with_generator(size, Concurrency::of(8), |i| {
+            if i % 1_000_000 == 0 {
+                i as f64
+            } else {
+                0.0
+            }
+        });
+
+        assert_eq!(array.size(), size);
+        assert_eq!(array.get(0), 0.0);
+        assert_eq!(array.get(5_000_000), 5_000_000.0);
+        assert_eq!(array.get(9_999_999), 0.0);
+    }
+
+    #[test]
+    fn test_with_generator_identity_mapping() {
+        use crate::concurrency::Concurrency;
+
+        let array = HugeDoubleArray::with_generator(1000, Concurrency::of(4), |i| i as f64);
+
+        for i in 0..1000 {
+            assert_eq!(array.get(i), i as f64);
+        }
+    }
+
+    #[test]
+    fn test_with_generator_constant_values() {
+        use crate::concurrency::Concurrency;
+
+        let array = HugeDoubleArray::with_generator(1000, Concurrency::of(4), |_| 3.14159);
+
+        for i in 0..1000 {
+            assert_eq!(array.get(i), 3.14159);
+        }
+    }
+
+    #[test]
+    fn test_with_generator_zero_values() {
+        use crate::concurrency::Concurrency;
+
+        let array = HugeDoubleArray::with_generator(1000, Concurrency::of(4), |_| 0.0);
+
+        for i in 0..1000 {
+            assert_eq!(array.get(i), 0.0);
+        }
+    }
+
+    #[test]
+    fn test_with_generator_alternating_pattern() {
+        use crate::concurrency::Concurrency;
+
+        let array = HugeDoubleArray::with_generator(100, Concurrency::of(4), |i| {
+            if i % 2 == 0 {
+                1.0
+            } else {
+                -1.0
+            }
+        });
+
+        assert_eq!(array.get(0), 1.0);
+        assert_eq!(array.get(1), -1.0);
+        assert_eq!(array.get(50), 1.0);
+        assert_eq!(array.get(51), -1.0);
     }
 }

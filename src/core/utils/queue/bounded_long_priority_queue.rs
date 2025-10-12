@@ -102,9 +102,7 @@ impl BoundedLongPriorityQueue {
 
     /// Checks if the queue already contains the element.
     pub fn contains(&self, element: i64) -> bool {
-        self.elements[..self.element_count]
-            .iter()
-            .any(|&el| el == element)
+        self.elements[..self.element_count].contains(&element)
     }
 
     /// Returns the element at the given index (priority order).

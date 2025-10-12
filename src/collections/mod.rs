@@ -8,7 +8,6 @@ pub mod bit_set;
 pub mod cursor;
 pub mod huge_array;
 pub mod huge_atomic_array;
-pub mod huge_atomic_bitset;
 pub mod huge_sparse_array;
 pub mod huge_sparse_list;
 pub mod indirect_comparator;
@@ -24,7 +23,8 @@ pub use cursor::{
 };
 pub use huge_array::{HugeDoubleArray, HugeLongArray, HugeObjectArray};
 pub use huge_atomic_array::{HugeAtomicDoubleArray, HugeAtomicLongArray};
-pub use huge_atomic_bitset::HugeAtomicBitSet;
+// Re-exported from core::utils::paged for backward compatibility
+pub use crate::core::utils::paged::{HugeAtomicBitSet, HugeAtomicGrowingBitSet};
 pub use huge_sparse_array::{
     HugeSparseDoubleArray, HugeSparseDoubleArrayArray, HugeSparseDoubleArrayArrayBuilder,
     HugeSparseDoubleArrayBuilder, HugeSparseLongArray, HugeSparseLongArrayArray,

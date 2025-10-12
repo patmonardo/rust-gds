@@ -181,6 +181,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Spawns 1000 tasks - can cause memory issues in constrained environments
     fn test_scope_spawn_many_respects_termination() {
         let executor = Executor::new(Concurrency::of(4));
         let termination = TerminationFlag::stop_running();

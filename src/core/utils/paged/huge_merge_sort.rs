@@ -123,7 +123,7 @@ impl HugeMergeSort {
             // For simplicity and safety, we sort sequentially at each level
             // Rayon's work-stealing scheduler will still parallelize across
             // the recursive tree from parent calls
-            let half_concurrency = Concurrency::of((concurrency.value() + 1) / 2);
+            let half_concurrency = Concurrency::of(concurrency.value().div_ceil(2));
 
             Self::parallel_merge_sort(array, temp, start, mid, half_concurrency, termination);
             Self::parallel_merge_sort(array, temp, mid + 1, end, half_concurrency, termination);
