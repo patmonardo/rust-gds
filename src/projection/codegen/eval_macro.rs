@@ -58,9 +58,9 @@ macro_rules! value_type_table {
             /// Generated module for the property type
             #[allow(non_snake_case)]
             pub mod $type_name {
-                use $crate::projection::property_descriptor::{PropertyDescriptor, StorageHint};
-                use $crate::projection::form_processor;
-                use $crate::projection::functors::{GrossToSubtle, SubtleToGross};
+                use $crate::projection::codegen::property_descriptor::{PropertyDescriptor, StorageHint};
+                use $crate::projection::native::form_processor;
+                use $crate::projection::codegen::functors::{GrossToSubtle, SubtleToGross};
                 use $crate::types::ValueType;
                 use $crate::values::traits::GdsValue;
                 use std::sync::Arc;

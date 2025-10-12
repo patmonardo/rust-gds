@@ -129,7 +129,9 @@ pub fn register_computer_factory(descriptor_id: u32, factory: ComputerFactory) -
 /// Macro-generated code provides matching factory keyed by descriptor id.
 pub fn instantiate_computer_from_descriptor(id: u32) -> Result<Box<dyn Computer>, ComputeError> {
     // First check if descriptor exists
-    if let Some(desc) = crate::projection::computation_descriptor::get_computation_descriptor(id) {
+    if let Some(desc) =
+        crate::projection::codegen::computation_descriptor::get_computation_descriptor(id)
+    {
         // Check if factory registered
         let factories = COMPUTER_FACTORIES
             .read()
@@ -150,7 +152,7 @@ pub fn instantiate_computer_from_descriptor(id: u32) -> Result<Box<dyn Computer>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::computation_descriptor::{
+    use crate::projection::codegen::computation_descriptor::{
         clear_computation_registry, register_computation_descriptor, ComputationDescriptor,
         ComputationPattern, ComputationSpecies,
     };
@@ -225,13 +227,14 @@ mod tests {
         let graph_arc: Arc<dyn Graph> = graph.clone();
 
         // Create pipeline and computation descriptors
-        let property = crate::projection::PropertyDescriptor::new(0, "test", ValueType::Double);
+        let property =
+            crate::projection::codegen::PropertyDescriptor::new(0, "test", ValueType::Double);
         let pipeline = PipelineDescriptor::new("TestPipeline").with_property(property);
         let computation = ComputationDescriptor::new(
             0,
             "test_computation",
-            crate::projection::ComputationSpecies::Bsp,
-            crate::projection::ComputationPattern::VertexCentric,
+            ComputationSpecies::Bsp,
+            ComputationPattern::VertexCentric,
         );
 
         let mut ctx = ComputeContext::new(&graph_arc, &pipeline, &computation);
@@ -287,13 +290,14 @@ mod tests {
         let graph = graph_store.graph();
         let graph_arc: Arc<dyn Graph> = graph.clone();
 
-        let property = crate::projection::PropertyDescriptor::new(0, "test", ValueType::Double);
+        let property =
+            crate::projection::codegen::PropertyDescriptor::new(0, "test", ValueType::Double);
         let pipeline = PipelineDescriptor::new("TestPipeline").with_property(property);
         let computation = ComputationDescriptor::new(
             99,
             "factory_test",
-            crate::projection::ComputationSpecies::Bsp,
-            crate::projection::ComputationPattern::VertexCentric,
+            ComputationSpecies::Bsp,
+            ComputationPattern::VertexCentric,
         );
 
         let mut ctx = ComputeContext::new(&graph_arc, &pipeline, &computation);

@@ -1,101 +1,51 @@
 //! Projection-related types for graph data science.
 //!
-//! This module is intentionally small. Complex codegen and macro machinery
-//! lives in the `projection::codegen` submodule to keep the root lightweight.
+//! Simple module containing lightweight projection types (labels, relationship types,
+//! orientations) and delegating heavy codegen machinery to the `codegen` submodule.
 //!
-//! The root re-exports the small, public projection surface used across the crate
-//! (labels, relation types, orientations and traits) and leaves heavy internals
-//! under `projection::codegen` and other submodules.
+//! ## Architecture
+//!
+//! - **projection/** - Core projection types (this module)
+//! - **projection/codegen/** - Code generation descriptors and runtime
+//! - **native/** - Native implementations, including form_processor
+//!
+//! ## Tomorrow's Work Focus
+//!
+//! We'll be working primarily in two folders:
+//! 1. **codegen/** - Generate descriptors and specifications
+//! 2. **native/** - Implement runtime execution (form_processor is the nexus)
 
-// The eval macro and other heavy codegen live under `projection::codegen`.
-// We don't declare `eval_macro` at the projection root to avoid attempting to
-// load files that live under `projection/codegen`.
-// `eval_macro` lives under `projection::codegen`. The macro itself is exported
-// with `#[macro_export]` so it is available crate-wide. We no longer forward
-// the module at the projection root to prefer a single canonical location.
-
-// Lightweight, widely-used projection types
+// ------------------------------------------------------------------------
+// Core projection types (simple, widely used)
+// ------------------------------------------------------------------------
 pub mod impls;
 pub mod node_label;
 pub mod orientation;
 pub mod relationship_type;
 pub mod traits;
 
-// Keep form_processor available at the root for convenience
-pub mod form_processor;
-// Re-export functors from the codegen submodule (they live under codegen)
-pub mod functors {
-    pub use crate::projection::codegen::functors::*;
-}
-
-// Codegen moved into a dedicated submodule to keep the root small
-pub mod codegen;
-
-// Re-export the small, stable projection surface
+// Re-export the stable projection surface
 pub use impls::*;
 pub use node_label::*;
 pub use orientation::*;
 pub use relationship_type::*;
 pub use traits::*;
 
-// Re-export commonly-used helpers
-pub use form_processor::{
-    checked_u64_to_usize, widen_f32_to_f64, widen_i32_to_i64, FormProcessorError,
-};
-pub use functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};
+// ------------------------------------------------------------------------
+// Native implementation layer (form_processor, native_factory)
+// ------------------------------------------------------------------------
+pub mod native;
 
-// Re-export select codegen items at the projection root for compatibility
-// Explicit re-exports from codegen to avoid ambiguous glob re-exports
-pub use codegen::computation_descriptor::{
-    ComputationDescriptor, ComputationPattern, ComputationSpecies,
-};
-pub use codegen::computation_runtime::{
-    instantiate_computer_from_descriptor, register_computer_factory, ComputeContext, ComputeError,
-    ComputeStep, Computer, Messages,
-};
-pub use codegen::pipeline_descriptor::{
-    FieldDescriptor, PipelineDescriptor, PropertyId, StructDescriptor, StructId,
-};
-pub use codegen::property_descriptor::{PropertyDescriptor, StorageHint};
-pub use codegen::storage_descriptor::{
-    AccessPattern, BackendTechnology, Compression, ConcurrencyModel, Density, GrowthPolicy,
-    Locality, MemoryProfile, Mutability, Persistence, PersistenceConfig, PhysicalGeometry,
-    StorageDescriptor, StorageLayout, SyncPolicy,
-};
-pub use codegen::storage_runtime::{
-    instantiate_storage_runtime_from_descriptor, register_storage_runtime_factory, AccessMode,
-    StorageAccessor, StorageContext, StorageError, StorageRuntime, StorageValue,
-};
-pub use codegen::value_type_table::*;
+// ------------------------------------------------------------------------
+// Heavy codegen machinery (isolated in submodule)
+// ------------------------------------------------------------------------
+pub mod codegen;
 
-// --- Compatibility re-exports (forward to codegen) -------------------------
-// Some parts of the codebase import `crate::projection::pipeline_descriptor` or
-// `crate::projection::storage_descriptor` directly. Forward those names to the
-// `projection::codegen` equivalents to minimize changes.
-pub mod pipeline_descriptor {
-    pub use crate::projection::codegen::pipeline_descriptor::*;
-}
+// Re-export commonly used codegen types
+pub use codegen::functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};
+pub use codegen::property_descriptor;
 
-pub mod storage_descriptor {
-    pub use crate::projection::codegen::storage_descriptor::*;
-}
-
-pub mod storage_runtime {
-    pub use crate::projection::codegen::storage_runtime::*;
-}
-
-pub mod computation_descriptor {
-    pub use crate::projection::codegen::computation_descriptor::*;
-}
-
-pub mod computation_runtime {
-    pub use crate::projection::codegen::computation_runtime::*;
-}
-
-pub mod property_descriptor {
-    pub use crate::projection::codegen::property_descriptor::*;
-}
-
-pub mod value_type_table {
-    pub use crate::projection::codegen::value_type_table::*;
-}
+// That's it! Everything else stays under codegen:: or native::.
+// If you need ComputationDescriptor, use: crate::projection::codegen::computation_descriptor::ComputationDescriptor
+// If you need StorageDescriptor, use: crate::projection::codegen::storage_descriptor::StorageDescriptor
+// If you need form_processor, use: crate::projection::native::form_processor

@@ -7,7 +7,7 @@
 //! The Form Processor implements these functors and the Eval macro generates
 //! specific adapter implementations per ValueType.
 
-use crate::projection::form_processor::FormProcessorError;
+use crate::projection::native::FormProcessorError;
 use crate::values::traits::GdsValue;
 use std::sync::Arc;
 

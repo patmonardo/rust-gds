@@ -16,8 +16,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
 
-use crate::projection::pipeline_descriptor::PipelineDescriptor;
-use crate::projection::storage_descriptor::StorageDescriptor;
+use crate::projection::codegen::pipeline_descriptor::PipelineDescriptor;
+use crate::projection::codegen::storage_descriptor::StorageDescriptor;
 use crate::types::graph::Graph;
 
 /// Errors produced by storage runtime execution
@@ -181,7 +181,7 @@ pub fn instantiate_storage_runtime_from_descriptor(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::storage_descriptor::{BackendTechnology, StorageDescriptor};
+    use crate::projection::codegen::storage_descriptor::{BackendTechnology, StorageDescriptor};
     use crate::types::graph_store::DefaultGraphStore;
     use crate::types::random::RandomGraphConfig;
     use crate::types::ValueType;
@@ -248,7 +248,7 @@ mod tests {
 
     #[test]
     fn dummy_storage_runtime_lifecycle() {
-        use crate::projection::PropertyDescriptor;
+        use crate::projection::codegen::PropertyDescriptor;
 
         let config = RandomGraphConfig::default().with_seed(42);
         let graph_store = DefaultGraphStore::random(&config).expect("graph creation failed");
@@ -308,7 +308,7 @@ mod tests {
         let runtime = instantiate_storage_runtime_from_descriptor(99).expect("instantiate ok");
 
         // Verify it's a valid runtime by running lifecycle
-        use crate::projection::PropertyDescriptor;
+        use crate::projection::codegen::PropertyDescriptor;
 
         let config = RandomGraphConfig::default().with_seed(42);
         let graph_store = DefaultGraphStore::random(&config).expect("graph creation failed");

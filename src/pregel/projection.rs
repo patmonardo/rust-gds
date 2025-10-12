@@ -17,7 +17,7 @@
 //! This implements the **Representation → View → Agent** pipeline.
 
 use crate::pregel::schema::DefaultValue;
-use crate::projection::form_processor::FormProcessorError;
+use crate::projection::native::form_processor::FormProcessorError;
 use crate::types::properties::node::NodePropertyValues;
 use crate::types::ValueType;
 use crate::values::traits::GdsValue;

@@ -15,6 +15,7 @@ use std::error::Error;
 use std::fmt;
 use std::sync::RwLock;
 
+use crate::projection::codegen::property_descriptor::PropertyDescriptor;
 use crate::types::ValueType;
 
 /// Errors produced by the form processor helpers
@@ -77,7 +78,7 @@ pub fn widen_f32_to_f64(v: f32) -> f64 {
 // ============================================================================
 
 lazy_static::lazy_static! {
-    static ref PROPERTY_REGISTRY: RwLock<HashMap<u32, super::property_descriptor::PropertyDescriptor>> =
+    static ref PROPERTY_REGISTRY: RwLock<HashMap<u32, PropertyDescriptor>> =
         RwLock::new(HashMap::new());
 }
 
@@ -91,7 +92,7 @@ lazy_static::lazy_static! {
 
 /// Register a PropertyDescriptor at runtime (called by macro-generated init code).
 /// Returns true if newly registered, false if already present.
-pub fn register_property_descriptor(desc: super::property_descriptor::PropertyDescriptor) -> bool {
+pub fn register_property_descriptor(desc: PropertyDescriptor) -> bool {
     #[cfg(test)]
     let _guard = PROPERTY_REGISTRY_TEST_LOCK.lock().unwrap();
     use std::collections::hash_map::Entry;
@@ -106,7 +107,7 @@ pub fn register_property_descriptor(desc: super::property_descriptor::PropertyDe
 }
 
 /// Lookup a PropertyDescriptor by id.
-pub fn get_property_descriptor(id: u32) -> Option<super::property_descriptor::PropertyDescriptor> {
+pub fn get_property_descriptor(id: u32) -> Option<PropertyDescriptor> {
     #[cfg(test)]
     let _guard = PROPERTY_REGISTRY_TEST_LOCK.lock().unwrap();
     let registry = PROPERTY_REGISTRY.read().unwrap();
@@ -142,7 +143,7 @@ mod tests {
 
     #[test]
     fn test_registry() {
-        use crate::projection::property_descriptor::PropertyDescriptor;
+        use crate::projection::codegen::property_descriptor::PropertyDescriptor;
         use crate::types::ValueType;
 
         clear_property_registry();

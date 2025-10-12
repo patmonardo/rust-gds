@@ -34,7 +34,7 @@ value_type_table! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::form_processor;
+    use crate::projection::native::form_processor;
     use crate::types::ValueType;
 
     #[test]
