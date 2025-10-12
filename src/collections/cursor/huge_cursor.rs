@@ -20,7 +20,7 @@
 ///
 /// # Example: Basic Iteration
 ///
-/// ```
+/// ```text
 /// use rust_gds::collections::cursor::{HugeCursor, SinglePageCursor};
 ///
 /// let data = vec![1, 2, 3, 4, 5];
@@ -35,6 +35,7 @@
 ///         println!("Index {}: {}", global_idx, value);
 ///     }
 /// }
+/// ```
 ///
 /// Number of elements in a single page
 const PAGE_SIZE: usize = 4096;

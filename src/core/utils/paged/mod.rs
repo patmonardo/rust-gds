@@ -1,1 +1,26 @@
+mod huge_double_array_stack;
+mod huge_long_array_queue;
+mod huge_long_array_stack;
+mod huge_long_double_map;
+mod huge_long_long_double_map;
+mod huge_long_long_map;
+mod huge_long_matrix;
+mod huge_long_square_matrix;
+mod huge_long_triangular_matrix;
+mod huge_matrices;
+mod huge_merge_sort;
+mod huge_serial_indirect_merge_sort;
+mod huge_serial_object_merge_sort;
 
+pub use huge_double_array_stack::HugeDoubleArrayStack;
+pub use huge_long_array_queue::HugeLongArrayQueue;
+pub use huge_long_array_stack::HugeLongArrayStack;
+pub use huge_long_double_map::HugeLongDoubleMap;
+pub use huge_long_long_double_map::HugeLongLongDoubleMap;
+pub use huge_long_long_map::HugeLongLongMap;
+pub use huge_long_matrix::HugeLongMatrix;
+pub use huge_long_square_matrix::HugeLongSquareMatrix;
+pub use huge_long_triangular_matrix::HugeLongTriangularMatrix;
+pub use huge_merge_sort::HugeMergeSort;
+pub use huge_serial_indirect_merge_sort::HugeSerialIndirectMergeSort;
+pub use huge_serial_object_merge_sort::HugeSerialObjectMergeSort;

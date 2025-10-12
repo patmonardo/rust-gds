@@ -53,6 +53,7 @@ This file contains targeted, actionable guidance for AI coding agents to be prod
 - Preserve ADRs in `doc/` and follow existing module responsibilities.
 - Prefer small, focused PRs that change one subsystem (projection, types, storage) and update `examples/` to show intended use.
 - Avoid enabling broad feature sets by default; mirror existing feature usage in `Cargo.toml` and tests.
+- Do not add runnable Rust doctests; prefer `text`/`ignore` fences so docs stay descriptive without introducing new doctest failures.
 - **Import discipline**: Always import from top-level `mod.rs` exports. Never use implementation file names in paths (e.g., use `crate::types::PropertyState`, not `crate::types::property_state::PropertyState`).
 - **Property trait impls**: Use the standard pattern with explicit `as Arc<dyn PropertyValues>` cast. See `doc/property_trait_implementation_pattern.md`.
 - **DefaultValue API**: Use modern lowercase constructors (`DefaultValue::long(42)`, not enum-style `DefaultValue::Long(42)`). See `doc/default_value_api_modernization.md`.

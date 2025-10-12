@@ -50,4 +50,5 @@ pub use intersections::Intersections;
 pub use lazy_batch_collection::LazyBatchCollection;
 pub use progress_timer::ProgressTimer;
 pub use raw_values::RawValues;
+pub use shuffle::{Random as ShuffleRandom, ShuffleUtil, SplittableRandom};
 pub use time_util::{TimeUtil, ZoneId};

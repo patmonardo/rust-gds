@@ -24,7 +24,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 ///
 /// # Examples
 ///
-/// ```
+/// ```text
 /// use rust_gds::collections::huge_array::HugeDoubleArray;
 ///
 /// // Store PageRank scores
@@ -32,7 +32,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 /// scores.fill(1.0 / 1_000_000.0);
 /// scores.set(0, 0.5);
 /// assert_eq!(scores.get(0), 0.5);
-/// ```
+/// ```text
 ///
 /// # Cursor-Based Iteration
 ///

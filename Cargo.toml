@@ -6,6 +6,7 @@ edition = "2021"
 [lib]
 name = "rust_gds"
 crate-type = ["cdylib", "rlib"]
+doctest = false
 
 [dependencies]
 napi = { version = "2", features = ["serde-json"] }
