@@ -499,7 +499,7 @@ impl PagedHugeDoubleArray {
     fn from_pages(size: usize, pages: Vec<Vec<f64>>) -> Self {
         // Determine page size from the actual filled page length (first page).
         // Fall back to the default page size if pages are empty or the first page has zero length.
-        let page_size = if !pages.is_empty() && pages[0].len() > 0 {
+        let page_size = if !pages.is_empty() && !pages[0].is_empty() {
             pages[0].len()
         } else {
             PageUtil::page_size_for(PageUtil::PAGE_SIZE_32KB, std::mem::size_of::<f64>())

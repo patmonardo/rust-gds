@@ -20,8 +20,70 @@
 //!
 //! Simplified version without Neo4j kernel dependencies.
 
-use crate::core::utils::progress::{TaskStore, TaskStoreHolder};
-use std::sync::Arc;
+use crate::core::utils::progress::{PerDatabaseTaskStore, TaskStore};
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+/// Global registry for TaskStore instances per database.
+///
+/// Simpler, mutex-backed implementation: creation happens inside the Mutex
+/// so concurrent get/create races are avoided without complex double-checked locking.
+pub struct TaskStoreHolder;
+
+static TASK_STORES: Lazy<Mutex<HashMap<String, Arc<dyn TaskStore>>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+
+impl TaskStoreHolder {
+    /// Get or create a TaskStore for the given database.
+    ///
+    /// Database names are normalized to lowercase for consistency.
+    pub fn get_task_store(database_name: &str) -> Arc<dyn TaskStore> {
+        let normalized = Self::to_lowercase(database_name);
+
+        // Lock the registry for read/create (simple and safe).
+        let mut stores = TASK_STORES.lock().expect("task store registry poisoned");
+
+        if let Some(store) = stores.get(&normalized) {
+            return Arc::clone(store);
+        }
+
+        // Create new store and insert
+        let store: Arc<dyn TaskStore> = Arc::new(PerDatabaseTaskStore::new());
+        stores.insert(normalized.clone(), Arc::clone(&store));
+        store
+    }
+
+    /// Remove the TaskStore for the given database.
+    pub fn purge(database_name: &str) {
+        let normalized = Self::to_lowercase(database_name);
+        let mut stores = TASK_STORES.lock().expect("task store registry poisoned");
+        stores.remove(&normalized);
+    }
+
+    /// Clear all TaskStores.
+    pub fn clear() {
+        let mut stores = TASK_STORES.lock().expect("task store registry poisoned");
+        stores.clear();
+    }
+
+    /// Get all registered database names.
+    pub fn database_names() -> Vec<String> {
+        let stores = TASK_STORES.lock().expect("task store registry poisoned");
+        stores.keys().cloned().collect()
+    }
+
+    /// Get the number of registered databases.
+    pub fn size() -> usize {
+        let stores = TASK_STORES.lock().expect("task store registry poisoned");
+        stores.len()
+    }
+
+    /// Normalize database name to lowercase.
+    fn to_lowercase(s: &str) -> String {
+        s.to_lowercase()
+    }
+}
 
 /// Provider trait for TaskStore instances.
 ///

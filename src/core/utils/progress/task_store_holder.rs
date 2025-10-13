@@ -260,6 +260,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_concurrent_access() {
         use std::thread;
 

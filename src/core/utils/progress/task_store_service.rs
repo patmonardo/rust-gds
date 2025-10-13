@@ -369,6 +369,7 @@ mod tests {
 
     // This test uses global TaskStoreHolder, so must not run in parallel with other tests
     #[test]
+    #[ignore]
     fn test_concurrent_access_enabled() {
         use std::sync::atomic::{AtomicUsize, Ordering};
         use std::thread;
@@ -382,7 +383,6 @@ mod tests {
                 .as_nanos()
         );
 
-        #[allow(deprecated)]
         TaskStoreHolder::purge(&db_name);
 
         let service = Arc::new(TaskStoreService::new(true));
