@@ -9,6 +9,7 @@ pub mod config_macro;
 pub mod computation_descriptor;
 pub mod computation_runtime;
 pub mod functors;
+pub mod ml;
 pub mod pipeline_descriptor;
 pub mod property_descriptor;
 pub mod storage_descriptor;

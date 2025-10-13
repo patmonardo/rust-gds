@@ -33,6 +33,12 @@ pub enum ConfigError {
 
     #[error("Property key cannot be empty")]
     EmptyPropertyKey,
+
+    #[error("Configuration parameter '{parameter}' is invalid: {reason}")]
+    InvalidParameter { parameter: String, reason: String },
+
+    #[error("Configuration parameter '{0}' is missing")]
+    MissingParameter(String),
 }
 
 /// Validation utilities
@@ -173,5 +179,26 @@ mod tests {
         assert!(ConfigValidation::validate_property_key("key").is_ok());
         assert!(ConfigValidation::validate_property_key("").is_err());
         assert!(ConfigValidation::validate_property_key("   ").is_err());
+    }
+
+    #[test]
+    fn test_invalid_parameter() {
+        let error = ConfigError::InvalidParameter {
+            parameter: "modelName".to_string(),
+            reason: "Model name cannot be empty".to_string(),
+        };
+        assert_eq!(
+            error.to_string(),
+            "Configuration parameter 'modelName' is invalid: Model name cannot be empty"
+        );
+    }
+
+    #[test]
+    fn test_missing_parameter() {
+        let error = ConfigError::MissingParameter("modelName".to_string());
+        assert_eq!(
+            error.to_string(),
+            "Configuration parameter 'modelName' is missing"
+        );
     }
 }

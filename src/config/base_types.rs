@@ -120,3 +120,58 @@ impl Default for BuilderConfig {
 }
 
 impl Config for BuilderConfig {}
+
+/// Base configuration interface for ML models
+pub trait BaseConfig: Config {
+    fn parameters(&self) -> std::collections::HashMap<String, serde_json::Value>;
+}
+
+/// CustomInfo trait for model custom information.
+pub trait CustomInfo: ToMapConvertible + serde::Serialize + serde::de::DeserializeOwned {
+    /// Optional training method.
+    fn optional_trainer_method(&self) -> Option<TrainingMethod> {
+        None
+    }
+}
+
+/// Training method enumeration
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum TrainingMethod {
+    /// Supervised training
+    Supervised,
+    /// Unsupervised training
+    Unsupervised,
+    /// Semi-supervised training
+    SemiSupervised,
+}
+
+/// Graph schema for model training
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct GraphSchema {
+    pub node_labels: Vec<String>,
+    pub relationship_types: Vec<String>,
+    pub node_properties: Vec<String>,
+    pub relationship_properties: Vec<String>,
+}
+
+impl GraphSchema {
+    pub fn new() -> Self {
+        Self {
+            node_labels: Vec::new(),
+            relationship_types: Vec::new(),
+            node_properties: Vec::new(),
+            relationship_properties: Vec::new(),
+        }
+    }
+}
+
+impl Default for GraphSchema {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Trait for types that can be converted to a map
+pub trait ToMapConvertible {
+    fn to_map(&self) -> std::collections::HashMap<String, serde_json::Value>;
+}

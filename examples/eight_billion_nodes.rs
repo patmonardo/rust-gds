@@ -83,7 +83,7 @@ fn main() {
     println!("   Concurrency level: {} workers", num_workers);
     println!();
 
-    // Test 1: 8 Billion i64 Array (64GB - will use swap on 32GB system)
+    // Test 1: 4 Billion i64 Array (8GB - will use swap on 4GB system)
     println!("════════════════════════════════════════════════════════════════");
     println!("TEST 1: 8 Billion i64 Array (Planetary Scale!)");
     println!("════════════════════════════════════════════════════════════════");

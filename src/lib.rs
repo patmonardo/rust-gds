@@ -9,6 +9,7 @@ pub mod concurrency;
 pub mod config;
 pub mod core;
 pub mod mem;
+pub mod ml;
 pub mod pregel;
 pub mod projection;
 pub mod termination;

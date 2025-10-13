@@ -35,6 +35,12 @@ impl fmt::Display for ComputeError {
 
 impl std::error::Error for ComputeError {}
 
+impl From<crate::types::properties::PropertyValuesError> for ComputeError {
+    fn from(error: crate::types::properties::PropertyValuesError) -> Self {
+        ComputeError::StepFailed(format!("Property value error: {}", error))
+    }
+}
+
 use super::{ComputationDescriptor, PipelineDescriptor};
 
 /// Minimal execution environment passed to Computer and ComputeStep.
