@@ -344,7 +344,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Large test (1M elements, 8 threads) - run with: cargo test -- --ignored
     fn test_large_array() {
         let creator = ParallelBytePageCreator::identity(Concurrency::of(8));
         let pages = creator.create_pages(1_000_000);

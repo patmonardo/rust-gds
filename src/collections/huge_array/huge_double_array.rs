@@ -296,6 +296,18 @@ impl HugeDoubleArray {
             index: 0,
         }
     }
+
+    /// Inherent helper so callers (and doctests) can call `new_cursor()` without
+    /// importing the `HugeCursorSupport` trait.
+    pub fn new_cursor(&self) -> HugeDoubleArrayCursor<'_> {
+        match self {
+            Self::Single(arr) => HugeDoubleArrayCursor::Single(SinglePageCursor::new(&arr.data)),
+            Self::Paged(arr) => {
+                let capacity = arr.size;
+                HugeDoubleArrayCursor::Paged(PagedCursor::new(&arr.pages, capacity))
+            }
+        }
+    }
 }
 
 /// Iterator for HugeDoubleArray
@@ -485,8 +497,13 @@ impl PagedHugeDoubleArray {
     /// Pages must be properly sized according to PageUtil calculations.
     /// Uses 32KB pages to match ParallelDoublePageCreator.
     fn from_pages(size: usize, pages: Vec<Vec<f64>>) -> Self {
-        let page_size =
-            PageUtil::page_size_for(PageUtil::PAGE_SIZE_32KB, std::mem::size_of::<f64>());
+        // Determine page size from the actual filled page length (first page).
+        // Fall back to the default page size if pages are empty or the first page has zero length.
+        let page_size = if !pages.is_empty() && pages[0].len() > 0 {
+            pages[0].len()
+        } else {
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_32KB, std::mem::size_of::<f64>())
+        };
         let page_shift = page_size.trailing_zeros();
         let page_mask = page_size - 1;
 

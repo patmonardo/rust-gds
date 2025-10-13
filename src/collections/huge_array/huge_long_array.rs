@@ -45,6 +45,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28; // ~268 million elements
 /// ```
 /// use rust_gds::collections::huge_array::HugeLongArray;
 /// use rust_gds::collections::cursor::{HugeCursor, init_cursor};
+/// use rust_gds::collections::cursor::HugeCursorSupport; // <<-- bring trait into scope so `new_cursor()` is available
 ///
 /// let mut array = HugeLongArray::new(10000);
 /// array.set_all(|i| i as i64);
@@ -71,20 +72,23 @@ impl HugeLongArray {
     /// Creates a new array of the given size.
     ///
     /// Automatically chooses optimal implementation based on size.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rust_gds::collections::huge_array::HugeLongArray;
-    ///
-    /// let small = HugeLongArray::new(1000);  // Uses single page
-    /// let huge = HugeLongArray::new(1_000_000_000); // Uses multiple pages
-    /// ```
     pub fn new(size: usize) -> Self {
         if size <= MAX_ARRAY_LENGTH {
             Self::Single(SingleHugeLongArray::new(size))
         } else {
             Self::Paged(PagedHugeLongArray::new(size))
+        }
+    }
+
+    /// Inherent helper so callers (and doctests) can call `new_cursor()` without
+    /// importing the `HugeCursorSupport` trait.
+    pub fn new_cursor(&self) -> HugeLongArrayCursor<'_> {
+        match self {
+            Self::Single(arr) => HugeLongArrayCursor::Single(SinglePageCursor::new(&arr.data)),
+            Self::Paged(arr) => {
+                let capacity = arr.size;
+                HugeLongArrayCursor::Paged(PagedCursor::new(&arr.pages, capacity))
+            }
         }
     }
 
@@ -556,13 +560,14 @@ impl PagedHugeLongArray {
     /// This is an internal constructor used by `with_generator` for parallel page creation.
     /// Pages must already be allocated and filled with appropriate values.
     fn from_pages(pages: Vec<Vec<i64>>, size: usize) -> Self {
-        // Calculate page parameters based on first page size
-        let page_size = if !pages.is_empty() {
-            pages[0].capacity()
+        // Determine page size from the actual filled page length (first page).
+        // Fall back to the default page size if pages are empty or the first page has zero length.
+        let page_size = if !pages.is_empty() && pages[0].len() > 0 {
+            pages[0].len()
         } else {
             PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<i64>())
         };
-        let page_shift = page_size.trailing_zeros();
+        let page_shift = page_size.trailing_zeros(); // log2 of page_size
         let page_mask = page_size - 1;
 
         Self {

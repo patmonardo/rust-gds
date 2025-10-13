@@ -174,7 +174,15 @@ mod tests {
         matrix.fill_row(1, 7);
         matrix.fill_col(2, 9);
 
-        assert!(matrix.row(1).iter().all(|&value| value == 7));
+        // Row 1 should be 7 except where column 2 was overwritten to 9.
+        for col in 0..matrix.cols() {
+            if col == 2 {
+                assert_eq!(matrix.get(1, col), 9);
+            } else {
+                assert_eq!(matrix.get(1, col), 7);
+            }
+        }
+
         for row in 0..3 {
             assert_eq!(matrix.get(row, 2), 9);
         }

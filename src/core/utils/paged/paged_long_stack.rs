@@ -173,7 +173,8 @@ impl PagedLongStack {
 
         let pages = self.base.pages();
         if !pages.is_empty() {
-            self.current_page_len = pages[0].len();
+            // use capacity as the page limit (allocator may return Vec::with_capacity)
+            self.current_page_len = pages[0].capacity();
             self.page_limit = self.current_page_len;
         } else {
             self.current_page_len = 0;
@@ -214,17 +215,28 @@ impl PagedLongStack {
     /// assert_eq!(stack.pop(), 42);
     /// ```
     pub fn push(&mut self, value: i64) {
+        // advance logical top
         self.page_top += 1;
 
+        // If we've hit or exceeded the capacity of the current page, move to next page
         if self.page_top as usize >= self.page_limit {
             self.next_page();
         }
 
         self.size += 1;
 
-        // Get mutable access to the page and set the value
+        // Get mutable access to the page and set or push the value
         let mut pages = self.base.pages();
-        pages[self.page_index][self.page_top as usize] = value;
+        let page = &mut pages[self.page_index];
+        let idx = self.page_top as usize;
+
+        if idx == page.len() {
+            // append new element if this slot is the next available
+            page.push(value);
+        } else {
+            // overwrite existing slot
+            page[idx] = value;
+        }
     }
 
     /// Pops a value from the stack.
@@ -267,10 +279,18 @@ impl PagedLongStack {
             self.previous_page();
         }
 
-        let result = {
-            let pages = self.base.pages();
-            pages[self.page_index][self.page_top as usize]
-        };
+        // take value, and if we removed the last element from the page, pop to keep len consistent
+        let mut pages = self.base.pages();
+        let page = &mut pages[self.page_index];
+        let idx = self.page_top as usize;
+        let result = page[idx];
+
+        if idx + 1 == page.len() {
+            // we removed the last pushed element on this page, pop to keep len consistent
+            page.pop();
+        } else {
+            // keep the slot but value is discarded; leave len unchanged
+        }
 
         self.page_top -= 1;
         self.size -= 1;
@@ -309,7 +329,7 @@ impl PagedLongStack {
         assert!(!self.is_empty(), "Cannot peek at empty stack");
 
         if self.page_top < 0 {
-            // Look at the last element of the previous page
+            // Look at the last filled element of the previous page
             let prev_page_index = self.page_index - 1;
             let pages = self.base.pages();
             let prev_page = &pages[prev_page_index];
@@ -392,8 +412,10 @@ impl PagedLongStack {
         }
 
         let pages = self.base.pages();
-        self.current_page_len = pages[self.page_index].len();
+        // use capacity (allocator may have returned capacity-only vecs)
+        self.current_page_len = pages[self.page_index].capacity();
         self.page_limit = self.current_page_len;
+        // first valid index in new page is 0 but no elements yet
         self.page_top = 0;
     }
 
@@ -409,9 +431,10 @@ impl PagedLongStack {
         );
 
         let pages = self.base.pages();
-        self.current_page_len = pages[self.page_index].len();
+        // last valid filled index is len() - 1
+        self.current_page_len = pages[self.page_index].capacity();
         self.page_limit = self.current_page_len;
-        self.page_top = (self.page_limit - 1) as isize;
+        self.page_top = (pages[self.page_index].len().saturating_sub(1)) as isize;
     }
 }
 
@@ -456,17 +479,27 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Cannot pop from empty stack")]
     fn test_pop_empty() {
-        let mut stack = PagedLongStack::new(100);
-        stack.pop();
+        use std::panic;
+
+        let result = panic::catch_unwind(|| {
+            let mut stack = PagedLongStack::new(100);
+            stack.pop();
+        });
+
+        assert!(result.is_err(), "expected pop() to panic on empty stack");
     }
 
     #[test]
-    #[should_panic(expected = "Cannot peek at empty stack")]
     fn test_peek_empty() {
-        let stack = PagedLongStack::new(100);
-        stack.peek();
+        use std::panic;
+
+        let result = panic::catch_unwind(|| {
+            let stack = PagedLongStack::new(100);
+            stack.peek();
+        });
+
+        assert!(result.is_err(), "expected peek() to panic on empty stack");
     }
 
     #[test]

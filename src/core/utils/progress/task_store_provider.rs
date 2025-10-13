@@ -212,7 +212,6 @@ mod tests {
     /// with other tests that mutate that singleton. Marked ignored by default
     /// to keep the normal test suite deterministic.
     #[test]
-    #[ignore]
     fn test_concurrent_provider_access() {
         use std::thread;
 

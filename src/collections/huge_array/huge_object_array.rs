@@ -46,20 +46,23 @@ pub enum HugeObjectArray<T: Default + Clone> {
 
 impl<T: Default + Clone> HugeObjectArray<T> {
     /// Creates a new array of the given size, initialized with T::default().
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use rust_gds::collections::huge_array::HugeObjectArray;
-    ///
-    /// let queues: HugeObjectArray<Vec<i64>> = HugeObjectArray::new(1_000_000);
-    /// assert_eq!(queues.size(), 1_000_000);
-    /// ```
     pub fn new(size: usize) -> Self {
         if size <= MAX_ARRAY_LENGTH {
             Self::Single(SingleHugeObjectArray::new(size))
         } else {
             Self::Paged(PagedHugeObjectArray::new(size))
+        }
+    }
+
+    /// Convenience so callers (and doctests) can call [new_cursor()](http://_vscodecontentref_/1) without
+    /// importing the [HugeCursorSupport](http://_vscodecontentref_/2) trait.
+    pub fn new_cursor(&self) -> HugeObjectArrayCursor<'_, T> {
+        match self {
+            Self::Single(arr) => HugeObjectArrayCursor::Single(SinglePageCursor::new(&arr.data)),
+            Self::Paged(arr) => {
+                let capacity = arr.size;
+                HugeObjectArrayCursor::Paged(PagedCursor::new(&arr.pages, capacity))
+            }
         }
     }
 

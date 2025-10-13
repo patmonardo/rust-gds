@@ -297,7 +297,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Spawns 1000 tasks - can cause memory issues in constrained environments
     fn test_parallel_for_respects_termination() {
         let executor = Executor::new(Concurrency::of(4));
         let termination = TerminationFlag::stop_running();
@@ -341,7 +340,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Spawns 1000 tasks - can cause memory issues in constrained environments
     fn test_parallel_map_respects_termination() {
         let executor = Executor::new(Concurrency::of(4));
         let termination = TerminationFlag::stop_running();
@@ -376,7 +374,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Spawns 1000 tasks - can cause memory issues in constrained environments
     fn test_parallel_reduce_respects_termination() {
         let executor = Executor::new(Concurrency::of(4));
         let termination = TerminationFlag::stop_running();

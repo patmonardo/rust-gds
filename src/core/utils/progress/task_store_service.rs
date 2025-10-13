@@ -369,7 +369,6 @@ mod tests {
 
     // This test uses global TaskStoreHolder, so must not run in parallel with other tests
     #[test]
-    #[ignore] // Run with --ignored to test concurrency without cross-test interference
     fn test_concurrent_access_enabled() {
         use std::sync::atomic::{AtomicUsize, Ordering};
         use std::thread;

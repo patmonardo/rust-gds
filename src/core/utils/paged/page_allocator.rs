@@ -377,7 +377,8 @@ impl<T> DirectPageAllocator<T> {
 
 impl PageAllocator<Vec<i64>> for DirectPageAllocator<Vec<i64>> {
     fn new_page(&self) -> Vec<i64> {
-        vec![0i64; self.page_size]
+        // allocate capacity but keep len == 0 (empty but reserved)
+        Vec::with_capacity(self.page_size)
     }
 
     fn page_size(&self) -> usize {
@@ -391,7 +392,7 @@ impl PageAllocator<Vec<i64>> for DirectPageAllocator<Vec<i64>> {
 
 impl PageAllocator<Vec<f64>> for DirectPageAllocator<Vec<f64>> {
     fn new_page(&self) -> Vec<f64> {
-        vec![0.0f64; self.page_size]
+        Vec::with_capacity(self.page_size)
     }
 
     fn page_size(&self) -> usize {
@@ -405,7 +406,7 @@ impl PageAllocator<Vec<f64>> for DirectPageAllocator<Vec<f64>> {
 
 impl PageAllocator<Vec<i32>> for DirectPageAllocator<Vec<i32>> {
     fn new_page(&self) -> Vec<i32> {
-        vec![0i32; self.page_size]
+        Vec::with_capacity(self.page_size)
     }
 
     fn page_size(&self) -> usize {
@@ -419,7 +420,7 @@ impl PageAllocator<Vec<i32>> for DirectPageAllocator<Vec<i32>> {
 
 impl PageAllocator<Vec<u8>> for DirectPageAllocator<Vec<u8>> {
     fn new_page(&self) -> Vec<u8> {
-        vec![0u8; self.page_size]
+        Vec::with_capacity(self.page_size)
     }
 
     fn page_size(&self) -> usize {
