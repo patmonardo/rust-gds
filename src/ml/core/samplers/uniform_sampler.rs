@@ -134,7 +134,7 @@ impl UniformSampler {
         skip_factor *= self.compute_skip_factor(number_of_samples);
 
         let mut idx = number_of_samples;
-        while let Some(input_value) = input_iter.next() {
+        for input_value in input_iter {
             if idx == next_idx_to_sample {
                 // Replace random element in reservoir
                 let replace_idx = self.rng.gen_range(0..number_of_samples);

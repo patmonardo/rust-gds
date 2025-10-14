@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn test_variable_base_creation_no_parents() {
         let base = VariableBase::new(vec![], dimensions::vector(3));
-        assert_eq!(base.dimensions(), &[3]);
+        assert_eq!(base.dimensions(), &[3, 1]);
         assert!(!base.require_gradient());
         assert_eq!(base.parents().len(), 0);
     }
@@ -161,7 +161,7 @@ mod tests {
     fn test_render_dimensions() {
         let base = VariableBase::new(vec![], dimensions::vector(5));
         let rendered = base.render_dimensions();
-        assert_eq!(rendered, "Vector(5)");
+        assert_eq!(rendered, "Matrix(5, 1)");
     }
 
     // Note: Testing with actual Variable parents requires creating mock Variables,

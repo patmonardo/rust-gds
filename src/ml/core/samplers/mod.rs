@@ -29,8 +29,16 @@
 //! let walk = walker.walk(start_node);
 //! ```
 
+mod long_uniform_sampler_by_exclusion;
+mod long_uniform_sampler_from_range;
+mod long_uniform_sampler_with_retries;
 mod random_walk_sampler;
 mod uniform_sampler;
+mod weighted_uniform_sampler;
 
+pub use long_uniform_sampler_by_exclusion::LongUniformSamplerByExclusion;
+pub use long_uniform_sampler_from_range::LongUniformSamplerFromRange;
+pub use long_uniform_sampler_with_retries::LongUniformSamplerWithRetries;
 pub use random_walk_sampler::{CumulativeWeightSupplier, RandomWalkSampler};
 pub use uniform_sampler::UniformSampler;
+pub use weighted_uniform_sampler::WeightedUniformSampler;

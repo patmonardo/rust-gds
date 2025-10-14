@@ -5,5 +5,8 @@
 
 pub mod algo;
 pub mod core;
+pub mod training_method;
 
-// pub use algo::decision_tree;
+pub use algo::*;
+pub use core::*;
+pub use training_method::*;

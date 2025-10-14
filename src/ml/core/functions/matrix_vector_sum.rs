@@ -100,7 +100,7 @@ impl Variable for MatrixVectorSum {
             // Gradient for matrix: pass through
             // Java: `if (parent == matrix) return ctx.gradient(this);`
             let grad_tensor = ctx.gradient(self).expect("Gradient not computed");
-            return grad_tensor.create_with_same_dimensions();
+            grad_tensor.create_with_same_dimensions()
         } else if std::ptr::eq(parent, self.vector()) {
             // Gradient for vector: sum across columns
             // Java: `else return ctx.gradient(this).sumPerColumn();`

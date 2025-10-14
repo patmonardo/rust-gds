@@ -3,16 +3,40 @@
 //! Translated from Java GDS ml-core BatchQueue.java.
 //! This is a literal 1:1 translation following repository translation policy.
 
-use super::Batch;
-use std::sync::Arc;
+use super::{Batch, RangeBatch};
 
 /// Default batch size for processing.
 pub const DEFAULT_BATCH_SIZE: usize = 100;
 
+/// Trait object-compatible batch interface.
+///
+/// This allows BatchQueue to return different batch implementations
+/// without fixing the iterator type at compile time.
+pub trait AnyBatch {
+    /// Get a boxed iterator over element IDs.
+    fn element_ids_boxed(&self) -> Box<dyn Iterator<Item = u64> + '_>;
+
+    /// Get the size of this batch.
+    fn size(&self) -> usize;
+}
+
+/// Blanket implementation: any Batch can be an AnyBatch.
+impl<T: Batch> AnyBatch for T {
+    fn element_ids_boxed(&self) -> Box<dyn Iterator<Item = u64> + '_> {
+        Box::new(self.element_ids())
+    }
+
+    fn size(&self) -> usize {
+        Batch::size(self)
+    }
+}
+
 /// Abstract batch queue for managing batches in parallel processing.
 pub trait BatchQueue {
     /// Pop the next batch from the queue.
-    fn pop(&mut self) -> Option<Box<dyn Batch<ElementIdsIter = std::vec::IntoIter<u64>>>>;
+    ///
+    /// Returns a type-erased batch that can contain any iterator implementation.
+    fn pop(&mut self) -> Option<Box<dyn AnyBatch>>;
 
     /// Get the total size of all elements.
     fn total_size(&self) -> u64;
@@ -54,11 +78,13 @@ pub fn consecutive_with_batch_size(total_size: u64, batch_size: usize) -> Box<dy
 }
 
 /// Consecutive batch queue implementation.
+///
+/// Matches Java's ConsecutiveBatchQueue which tracks batches by index
+/// and creates RangeBatch instances on demand.
 pub struct ConsecutiveBatchQueue {
     total_size: u64,
     batch_size: usize,
     current_batch: u64,
-    current_index: u64,
 }
 
 impl ConsecutiveBatchQueue {
@@ -67,29 +93,26 @@ impl ConsecutiveBatchQueue {
             total_size,
             batch_size,
             current_batch: 0,
-            current_index: 0,
         }
     }
 }
 
 impl BatchQueue for ConsecutiveBatchQueue {
-    fn pop(&mut self) -> Option<Box<dyn Batch<ElementIdsIter = std::vec::IntoIter<u64>>>> {
-        if self.current_index >= self.total_size {
+    fn pop(&mut self) -> Option<Box<dyn AnyBatch>> {
+        if self.current_batch * self.batch_size as u64 >= self.total_size {
             return None;
         }
 
-        let start_index = self.current_index;
-        let end_index = (start_index + self.batch_size as u64).min(self.total_size);
-        let size = (end_index - start_index) as usize;
+        let batch = RangeBatch::new(
+            self.current_batch * self.batch_size as u64,
+            self.batch_size,
+            self.total_size,
+        );
 
-        let elements: Vec<u64> = (start_index..end_index).collect();
-
-        self.current_index = end_index;
         self.current_batch += 1;
 
-        Some(Box::new(SimpleBatch::new(elements)))
+        Some(Box::new(batch))
     }
-
     fn total_size(&self) -> u64 {
         self.total_size
     }
@@ -100,29 +123,6 @@ impl BatchQueue for ConsecutiveBatchQueue {
 
     fn current_batch(&self) -> u64 {
         self.current_batch
-    }
-}
-
-/// Simple batch implementation for consecutive ranges.
-pub struct SimpleBatch {
-    elements: Vec<u64>,
-}
-
-impl SimpleBatch {
-    pub fn new(elements: Vec<u64>) -> Self {
-        Self { elements }
-    }
-}
-
-impl Batch for SimpleBatch {
-    type ElementIdsIter = std::vec::IntoIter<u64>;
-
-    fn element_ids(&self) -> Self::ElementIdsIter {
-        self.elements.clone().into_iter()
-    }
-
-    fn size(&self) -> usize {
-        self.elements.len()
     }
 }
 
@@ -137,25 +137,25 @@ mod tests {
         // First batch: [0, 1, 2]
         let batch1 = queue.pop().unwrap();
         assert_eq!(batch1.size(), 3);
-        let ids1: Vec<u64> = batch1.element_ids().collect();
+        let ids1: Vec<u64> = batch1.element_ids_boxed().collect();
         assert_eq!(ids1, vec![0, 1, 2]);
 
         // Second batch: [3, 4, 5]
         let batch2 = queue.pop().unwrap();
         assert_eq!(batch2.size(), 3);
-        let ids2: Vec<u64> = batch2.element_ids().collect();
+        let ids2: Vec<u64> = batch2.element_ids_boxed().collect();
         assert_eq!(ids2, vec![3, 4, 5]);
 
         // Third batch: [6, 7, 8]
         let batch3 = queue.pop().unwrap();
         assert_eq!(batch3.size(), 3);
-        let ids3: Vec<u64> = batch3.element_ids().collect();
+        let ids3: Vec<u64> = batch3.element_ids_boxed().collect();
         assert_eq!(ids3, vec![6, 7, 8]);
 
         // Fourth batch: [9] (remaining)
         let batch4 = queue.pop().unwrap();
         assert_eq!(batch4.size(), 1);
-        let ids4: Vec<u64> = batch4.element_ids().collect();
+        let ids4: Vec<u64> = batch4.element_ids_boxed().collect();
         assert_eq!(ids4, vec![9]);
 
         // No more batches

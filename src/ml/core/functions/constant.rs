@@ -128,14 +128,14 @@ mod tests {
     #[test]
     fn test_scalar_constant() {
         let c = Constant::scalar(42.0);
-        assert_eq!(c.dimensions(), &[1]);
+        assert_eq!(c.dimensions(), &[1, 1]);
         assert!(!c.require_gradient());
     }
 
     #[test]
     fn test_vector_constant() {
         let c = Constant::vector(vec![1.0, 2.0, 3.0]);
-        assert_eq!(c.dimensions(), &[3]);
+        assert_eq!(c.dimensions(), &[3, 1]);
     }
 
     #[test]

@@ -7,14 +7,14 @@
 pub const ROWS_INDEX: usize = 0;
 pub const COLUMNS_INDEX: usize = 1;
 
-/// Create scalar dimensions [1]
+/// Create scalar dimensions [1, 1]
 pub fn scalar() -> Vec<usize> {
-    vec![1]
+    vec![1, 1]
 }
 
-/// Create vector dimensions [size]
+/// Create vector dimensions [size, 1]
 pub fn vector(size: usize) -> Vec<usize> {
-    vec![size]
+    vec![size, 1]
 }
 
 /// Create matrix dimensions [rows, cols]

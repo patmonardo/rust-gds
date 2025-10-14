@@ -5,6 +5,7 @@
 
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions::{COLUMNS_INDEX, ROWS_INDEX};
+use crate::ml::core::subgraph::BatchNeighbors;
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
 use crate::ml::core::variable_base::VariableBase;
@@ -17,11 +18,11 @@ use std::fmt;
 /// Uses composition pattern: VariableBase holds parent (matrix to aggregate).
 pub struct MultiMean {
     base: VariableBase,
-    sub_graph: BatchNeighbors,
+    sub_graph: Box<dyn BatchNeighbors>,
 }
 
 impl MultiMean {
-    pub fn new(parent: Box<dyn Variable>, sub_graph: BatchNeighbors) -> Self {
+    pub fn new(parent: Box<dyn Variable>, sub_graph: Box<dyn BatchNeighbors>) -> Self {
         assert!(
             parent.dimension(ROWS_INDEX) >= sub_graph.node_count(),
             "Expecting a row for each node in the subgraph"
@@ -165,36 +166,5 @@ impl fmt::Display for MultiMean {
     }
 }
 
-/// Placeholder for BatchNeighbors until subgraph module is available.
-///
-/// TODO: Replace with actual BatchNeighbors from ml-core subgraph module.
-#[derive(Debug, Clone)]
-pub struct BatchNeighbors {
-    // Placeholder fields - actual implementation will come from subgraph module
-}
-
-impl BatchNeighbors {
-    pub fn batch_size(&self) -> usize {
-        todo!("Implement when BatchNeighbors is available")
-    }
-
-    pub fn node_count(&self) -> usize {
-        todo!("Implement when BatchNeighbors is available")
-    }
-
-    pub fn batch_ids(&self) -> &[usize] {
-        todo!("Implement when BatchNeighbors is available")
-    }
-
-    pub fn neighbors(&self, _node_id: usize) -> &[usize] {
-        todo!("Implement when BatchNeighbors is available")
-    }
-
-    pub fn relationship_weight(&self, _source: usize, _target: usize) -> f64 {
-        todo!("Implement when BatchNeighbors is available")
-    }
-
-    pub fn degree(&self, _node_id: usize) -> usize {
-        todo!("Implement when BatchNeighbors is available")
-    }
-}
+// BatchNeighbors trait is now available from crate::ml::core::subgraph
+// No placeholder needed - use the trait bound directly

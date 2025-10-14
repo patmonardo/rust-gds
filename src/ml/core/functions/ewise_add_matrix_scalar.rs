@@ -40,12 +40,14 @@
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor};
 use crate::ml::core::variable::Variable;
+use crate::ml::core::variable_base::VariableBase;
 
 /// Element-wise addition of matrix and scalar.
 ///
 /// Computes: `result[i, j] = matrix[i, j] + scalar`
 ///
 /// This is a two-parent variable (matrix and scalar inputs).
+/// Uses composition pattern: VariableBase holds parents [matrix, scalar].
 ///
 /// # Examples
 ///
@@ -60,10 +62,7 @@ use crate::ml::core::variable::Variable;
 /// // Result: [[11.0, 12.0], [13.0, 14.0]]
 /// ```
 pub struct EWiseAddMatrixScalar {
-    matrix_variable: Box<dyn Variable>,
-    scalar_variable: Box<dyn Variable>,
-    dimensions: Vec<usize>,
-    require_gradient: bool,
+    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parents)
 }
 
 impl EWiseAddMatrixScalar {
@@ -85,25 +84,22 @@ impl EWiseAddMatrixScalar {
     /// ```
     pub fn new(matrix_variable: Box<dyn Variable>, scalar_variable: Box<dyn Variable>) -> Self {
         let dimensions = matrix_variable.dimensions().to_vec();
-        let require_gradient =
-            matrix_variable.require_gradient() || scalar_variable.require_gradient();
 
-        Self {
-            matrix_variable,
-            scalar_variable,
-            dimensions,
-            require_gradient,
-        }
+        // Java: super(List.of(matrixVariable, scalarVariable), matrixVariable.dimensions())
+        // Store parents [matrix, scalar] in VariableBase
+        let base = VariableBase::new(vec![matrix_variable, scalar_variable], dimensions);
+
+        Self { base }
     }
 
-    /// Get the matrix variable.
-    pub fn matrix_variable(&self) -> &dyn Variable {
-        self.matrix_variable.as_ref()
+    /// Get the matrix variable (first parent).
+    fn matrix_variable(&self) -> &dyn Variable {
+        self.base.parents()[0].as_ref()
     }
 
-    /// Get the scalar variable.
-    pub fn scalar_variable(&self) -> &dyn Variable {
-        self.scalar_variable.as_ref()
+    /// Get the scalar variable (second parent).
+    fn scalar_variable(&self) -> &dyn Variable {
+        self.base.parents()[1].as_ref()
     }
 }
 
@@ -122,11 +118,11 @@ impl Variable for EWiseAddMatrixScalar {
     /// ```
     fn apply(&self, ctx: &ComputationContext) -> Box<dyn Tensor> {
         let matrix = ctx
-            .data(self.matrix_variable.as_ref())
+            .data(self.matrix_variable())
             .expect("Matrix data not computed");
 
         let scalar = ctx
-            .data(self.scalar_variable.as_ref())
+            .data(self.scalar_variable())
             .expect("Scalar data not computed");
 
         // Downcast to concrete types
@@ -174,9 +170,9 @@ impl Variable for EWiseAddMatrixScalar {
             .downcast_ref::<Matrix>()
             .expect("Expected Matrix gradient");
 
-        // Compare parent pointers
-        let matrix_ptr = self.matrix_variable.as_ref() as *const dyn Variable;
-        let scalar_ptr = self.scalar_variable.as_ref() as *const dyn Variable;
+        // Compare parent pointers using helper methods
+        let matrix_ptr = self.matrix_variable() as *const dyn Variable;
+        let scalar_ptr = self.scalar_variable() as *const dyn Variable;
         let parent_ptr = parent as *const dyn Variable;
 
         if parent_ptr == matrix_ptr {
@@ -192,20 +188,15 @@ impl Variable for EWiseAddMatrixScalar {
     }
 
     fn dimensions(&self) -> &[usize] {
-        &self.dimensions
+        self.base.dimensions()
     }
 
     fn require_gradient(&self) -> bool {
-        self.require_gradient
+        self.base.require_gradient()
     }
 
     fn parents(&self) -> &[Box<dyn Variable>] {
-        // Return slice containing both parents
-        // Note: This is a limitation - we can't return a slice of two separate Box fields
-        // In practice, most code uses the Variable trait and doesn't need this
-        // For now, return matrix_variable (the primary parent)
-        std::slice::from_ref(&self.matrix_variable)
-        // TODO: Properly support multiple parents - maybe store in Vec<Box<dyn Variable>>
+        self.base.parents()
     }
 }
 

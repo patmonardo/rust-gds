@@ -5,7 +5,7 @@
 
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions::{COLUMNS_INDEX, ROWS_INDEX};
-use crate::ml::core::functions::multi_mean::BatchNeighbors;
+use crate::ml::core::subgraph::BatchNeighbors;
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
 use crate::ml::core::variable_base::VariableBase;
@@ -20,11 +20,11 @@ const INVALID_NEIGHBOR: i32 = -1;
 /// Uses composition pattern: VariableBase holds parent (matrix to aggregate).
 pub struct ElementWiseMax {
     base: VariableBase,
-    batch_neighbors: BatchNeighbors,
+    batch_neighbors: Box<dyn BatchNeighbors>,
 }
 
 impl ElementWiseMax {
-    pub fn new(parent: Box<dyn Variable>, batch_neighbors: BatchNeighbors) -> Self {
+    pub fn new(parent: Box<dyn Variable>, batch_neighbors: Box<dyn BatchNeighbors>) -> Self {
         assert!(
             parent.dimension(ROWS_INDEX) >= batch_neighbors.node_count(),
             "Expecting a row for each node in the subgraph"

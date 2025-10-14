@@ -69,11 +69,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ml::core::batch::{IdentityBatchTransformer, SimpleBatch};
+    use crate::ml::core::batch::{IdentityBatchTransformer, ListBatch};
 
     #[test]
     fn test_mapped_batch_with_identity() {
-        let delegate = SimpleBatch::new(vec![1, 2, 3, 4, 5]);
+        let delegate = ListBatch::new(vec![1, 2, 3, 4, 5]);
         let transformer = IdentityBatchTransformer;
         let mapped = MappedBatch::new(delegate, transformer);
 
@@ -95,7 +95,7 @@ mod tests {
             }
         }
 
-        let delegate = SimpleBatch::new(vec![1, 2, 3]);
+        let delegate = ListBatch::new(vec![1, 2, 3]);
         let transformer = OffsetTransformer { offset: 10 };
         let mapped = MappedBatch::new(delegate, transformer);
 
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_mapped_iterator_size_hint() {
-        let delegate = SimpleBatch::new(vec![1, 2, 3, 4, 5]);
+        let delegate = ListBatch::new(vec![1, 2, 3, 4, 5]);
         let transformer = IdentityBatchTransformer;
         let mapped = MappedBatch::new(delegate, transformer);
 

@@ -265,7 +265,8 @@ mod sigmoid_tests {
         let sigmoid = Sigmoid::new(parent);
 
         assert_eq!(sigmoid.dimensions(), &[1, 1]);
-        assert!(sigmoid.require_gradient());
+        // Constant parent doesn't require gradient, so sigmoid won't either
+        assert!(!sigmoid.require_gradient());
     }
 
     #[test]

@@ -278,7 +278,7 @@ impl PipelineDescriptorBuilder {
             .training_config
             .ok_or_else(|| "Training config is required".to_string())?;
 
-        let pipeline_config = self.pipeline_config.unwrap_or_else(PipelineConfig::default);
+        let pipeline_config = self.pipeline_config.unwrap_or_default();
 
         let metadata = self
             .metadata

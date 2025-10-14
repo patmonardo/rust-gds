@@ -68,13 +68,13 @@ impl FocalLoss {
         let chain_rule_gradient =
             predicted_probability_for_wrong_classes.powf(self.focus_weight - 1.0);
 
-        let focal_loss_per_example = self.class_weights[true_class]
+        
+
+        self.class_weights[true_class]
             * (self.focus_weight * chain_rule_gradient * predicted_probability_for_true_class.ln()
                 - chain_rule_gradient * predicted_probability_for_wrong_classes
                     / predicted_probability_for_true_class)
-            / number_of_examples as f64;
-
-        focal_loss_per_example
+            / number_of_examples as f64
     }
 
     fn gradient_for_predictions(&self, ctx: &ComputationContext) -> Box<dyn Tensor> {

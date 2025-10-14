@@ -6,6 +6,9 @@
 use super::FeatureExtractor;
 
 /// Interface for array feature extractors.
+///
+/// Array extractors produce multiple features (dimension > 1).
+/// Each implementation must specify its dimension via the FeatureExtractor trait.
 pub trait ArrayFeatureExtractor: FeatureExtractor {
     /// Extract an array feature for the given node.
     fn extract(&self, node_id: u64) -> Vec<f64>;

@@ -18,14 +18,12 @@ where
     let cols_b = b.cols();
 
     // Validation
-    assert_ne!(
-        std::ptr::eq(a, c),
-        true,
+    assert!(
+        !std::ptr::eq(a, c),
         "'a' cannot be the same matrix as 'c'"
     );
-    assert_ne!(
-        std::ptr::eq(b, c),
-        true,
+    assert!(
+        !std::ptr::eq(b, c),
         "'b' cannot be the same matrix as 'c'"
     );
     assert_eq!(

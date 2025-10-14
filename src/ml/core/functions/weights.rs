@@ -161,14 +161,14 @@ mod tests {
     #[test]
     fn test_vector_weights() {
         let w = Weights::of_vector(vec![1.0, 2.0, 3.0]);
-        assert_eq!(w.dimensions(), &[3]);
+        assert_eq!(w.dimensions(), &[3, 1]);
         assert!(w.require_gradient());
     }
 
     #[test]
     fn test_scalar_weights() {
         let w = Weights::of_scalar(42.0);
-        assert_eq!(w.dimensions(), &[1]);
+        assert_eq!(w.dimensions(), &[1, 1]);
         assert!(w.require_gradient());
     }
 

@@ -8,15 +8,8 @@ use super::FeatureExtractor;
 /// Interface for extractors that produce scalar (single f64) features.
 ///
 /// This corresponds to the ScalarFeatureExtractor interface in Java GDS.
-/// Provides a default implementation of dimension() returning 1.
+/// Scalar extractors always have dimension = 1.
 pub trait ScalarFeatureExtractor: FeatureExtractor {
     /// Extract a scalar feature value from a node.
     fn extract(&self, node_id: u64) -> f64;
-
-    /// Default dimension is 1 for scalar features.
-    ///
-    /// This matches Java's default method implementation.
-    fn dimension(&self) -> usize {
-        1
-    }
 }

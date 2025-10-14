@@ -5,17 +5,21 @@
 //! ## Core Components (1:1 from Java)
 //!
 //! - **FeatureExtractor** - Marker trait with `dimension()` method
-//! - **ScalarFeatureExtractor** - Extracts scalar (f64) features
-//! - **ArrayFeatureExtractor** - Extracts array (Vec<f64>) features  
+//! - **ScalarFeatureExtractor** - Extracts scalar (f64) features (dimension=1)
+//! - **ArrayFeatureExtractor** - Extracts array (Vec<f64>) features (dimension=N)
 //! - **FeatureConsumer** - Interface for consuming extracted features
 //! - **FeatureExtraction** - Utility functions for orchestrating extraction
+//! - **AnyFeatureExtractor** - Enum wrapper for type-safe dispatch
 //!
-//! ## Translation Notes
+//! ## Translation Patterns
 //!
 //! This is a literal 1:1 translation from Java GDS ml-core/features package.
 //! - Java's static utility class → Rust module with functions
-//! - Java's instanceof → Rust trait downcasting (to be implemented)
-//! - Java's FeatureConsumer.NOOP → Rust NoopConsumer constant
+//! - Java's instanceof → Rust enum dispatch (`AnyFeatureExtractor`)
+//! - Java's FeatureConsumer.NOOP → Rust `NOOP` constant
+//!
+//! **Key Insight**: Java's dynamic `instanceof` pattern translates to Rust's
+//! static enum dispatch. This is more type-safe and avoids runtime casting.
 
 pub mod array_feature_extractor;
 pub mod bias_feature;
