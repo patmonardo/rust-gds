@@ -1,9 +1,11 @@
 //! Rust GDS - Graph Data Science library
 //!
 //! A modular graph data structure and algorithms library.
+#![allow(ambiguous_wide_pointer_comparisons)]
 
 pub mod collections;
 pub mod concurrency;
+
 // Ensure projection (codegen macros) is compiled before config so macro_rules! defs
 // inside projection::codegen are available to config modules that invoke them.
 pub mod config;
@@ -14,5 +16,6 @@ pub mod pregel;
 pub mod projection;
 pub mod termination;
 pub mod types;
+pub mod util;
 pub mod values;
 pub use core::*;

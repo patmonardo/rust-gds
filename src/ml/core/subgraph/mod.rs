@@ -8,7 +8,7 @@ pub mod local_id_map;
 pub mod neighborhood_sampler;
 pub mod subgraph;
 
-pub use batch_neighbors::BatchNeighbors;
-pub use local_id_map::LocalIdMap;
-pub use neighborhood_sampler::NeighborhoodSampler;
-pub use subgraph::SubGraph;
+pub use batch_neighbors::*;
+pub use local_id_map::*;
+pub use neighborhood_sampler::*;
+pub use subgraph::*;
