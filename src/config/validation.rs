@@ -130,6 +130,36 @@ impl ConfigValidation {
             Ok(())
         }
     }
+
+    /// Validate that a string is non-empty
+    pub fn validate_non_empty_string(value: &str, parameter: &str) -> Result<(), ConfigError> {
+        if value.trim().is_empty() {
+            Err(ConfigError::InvalidParameter {
+                parameter: parameter.to_string(),
+                reason: format!("{} cannot be empty", parameter),
+            })
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Validate model name: non-empty, no whitespace
+    pub fn validate_model_name(name: &str) -> Result<(), ConfigError> {
+        let trimmed = name.trim();
+        if trimmed.is_empty() {
+            return Err(ConfigError::InvalidParameter {
+                parameter: "modelName".to_string(),
+                reason: "Model name cannot be empty".to_string(),
+            });
+        }
+        if trimmed.chars().any(|c| c.is_whitespace()) {
+            return Err(ConfigError::InvalidParameter {
+                parameter: "modelName".to_string(),
+                reason: "Model name cannot contain whitespace".to_string(),
+            });
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]

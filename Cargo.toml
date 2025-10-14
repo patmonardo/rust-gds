@@ -26,6 +26,7 @@ polars = { version = "0.32", features = [
 memmap2 = "0.5"
 arrow2 = "0.15"
 rand = { version = "0.8", features = ["std", "std_rng"] }
+rand_chacha = "0.3"
 num_cpus = "1.16"
 parking_lot = "0.12"
 rayon = "1.10"

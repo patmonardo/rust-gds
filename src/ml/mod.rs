@@ -1,2 +1,9 @@
-// pub mod algo; // TODO: Add when algo module is implemented
+//! Machine Learning module for GDS.
+//!
+//! Contains both core ML primitives (tensors, variables, functions)
+//! and algorithm implementations (decision trees, etc.).
+
+pub mod algo;
 pub mod core;
+
+// pub use algo::decision_tree;

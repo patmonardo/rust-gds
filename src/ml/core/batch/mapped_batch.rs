@@ -28,14 +28,14 @@ where
 impl<B, T> Batch for MappedBatch<B, T>
 where
     B: Batch,
-    T: BatchTransformer,
+    T: BatchTransformer + Copy,
 {
     type ElementIdsIter = MappedIterator<B::ElementIdsIter, T>;
 
     fn element_ids(&self) -> Self::ElementIdsIter {
         MappedIterator {
             iter: self.delegate.element_ids(),
-            transformer: &self.transformer,
+            transformer: self.transformer,
         }
     }
 
@@ -84,6 +84,7 @@ mod tests {
 
     #[test]
     fn test_mapped_batch_with_offset() {
+        #[derive(Copy, Clone)]
         struct OffsetTransformer {
             offset: u64,
         }

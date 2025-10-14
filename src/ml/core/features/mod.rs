@@ -24,14 +24,13 @@ pub mod feature_extraction;
 pub mod feature_extractor;
 pub mod scalar_feature_extractor;
 pub mod scalar_property_extractor;
-pub use array_feature_extractor::ArrayFeatureExtractor;
-pub mod array_property_extractor;
-pub use array_property_extractor::ArrayPropertyExtractor;
 
 // Re-export core types
-pub use bias_feature::BiasFeature;
-pub use feature_consumer::{FeatureConsumer, NoopConsumer, NOOP};
-pub use feature_extraction::{extract, feature_count};
-pub use feature_extractor::FeatureExtractor;
-pub use scalar_feature_extractor::ScalarFeatureExtractor;
-pub use scalar_property_extractor::ScalarPropertyExtractor;
+
+pub use array_feature_extractor::*;
+pub use bias_feature::*;
+pub use feature_consumer::*;
+pub use feature_extraction::*;
+pub use feature_extractor::*;
+pub use scalar_feature_extractor::*;
+pub use scalar_property_extractor::*;

@@ -61,7 +61,7 @@ where
                     index_b += 1;
                 }
 
-                c.set_data_at(c_index, total);
+                c.set_data_at_flat(c_index, total);
             } else {
                 index_b += cols_b;
             }

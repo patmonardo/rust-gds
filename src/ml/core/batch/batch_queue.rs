@@ -109,7 +109,7 @@ pub struct SimpleBatch {
 }
 
 impl SimpleBatch {
-    fn new(elements: Vec<u64>) -> Self {
+    pub fn new(elements: Vec<u64>) -> Self {
         Self { elements }
     }
 }

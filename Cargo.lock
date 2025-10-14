@@ -1446,6 +1446,7 @@ dependencies = [
  "parking_lot",
  "polars",
  "rand",
+ "rand_chacha",
  "rayon",
  "serde",
  "serde_json",

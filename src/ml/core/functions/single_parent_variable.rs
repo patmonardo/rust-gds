@@ -1,70 +1,79 @@
 //! Single parent variable base implementation for ML functions in GDS.
 //!
-//! Translated from Java GDS ml-core functions SingleParentVariable.
+//! Translated from Java GDS ml-core functions/SingleParentVariable.java.
 //! This is a literal 1:1 translation following repository translation policy.
+//!
+//! Uses type erasure pattern (Box<dyn Variable>) to match our architecture.
 
-use super::abstract_variable::AbstractVariable;
+use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::Tensor;
-use crate::ml::core::variable::{ComputationContext, Variable};
-use std::rc::Rc;
+use crate::ml::core::variable::Variable;
 
-/// Abstract base class for variables with a single parent.
+/// Abstract base for variables with a single parent.
 ///
-/// This provides common functionality for functions that have exactly one input.
-pub struct SingleParentVariable<P: Tensor, T: Tensor> {
-    base: AbstractVariable<T>,
-    parent: Rc<dyn Variable<P>>,
+/// Provides common functionality for functions that have exactly one input variable.
+/// Uses type erasure pattern - parent is `Box<dyn Variable>`, not generic.
+///
+/// NOTE: This is rarely used directly. Most functions (Sigmoid, Relu, etc.)
+/// directly embed the pattern instead of using this struct.
+pub struct SingleParentVariable {
+    parent: Box<dyn Variable>,
+    dimensions: Vec<usize>,
+    require_gradient: bool,
 }
 
-impl<P: Tensor, T: Tensor> SingleParentVariable<P, T> {
+impl SingleParentVariable {
     /// Create a new single parent variable.
-    pub fn new(parent: Rc<dyn Variable<P>>, dimensions: Vec<usize>) -> Self {
-        let parents = vec![parent.clone()];
+    pub fn new(parent: Box<dyn Variable>, dimensions: Vec<usize>) -> Self {
+        let require_gradient = parent.require_gradient();
         Self {
-            base: AbstractVariable::new(parents, dimensions),
             parent,
+            dimensions,
+            require_gradient,
         }
     }
 
     /// Get the parent variable.
-    pub fn parent(&self) -> &Rc<dyn Variable<P>> {
-        &self.parent
+    pub fn parent(&self) -> &dyn Variable {
+        self.parent.as_ref()
     }
 
     /// Validate that the given variable is our parent.
-    pub fn validate_parent(&self, variable: &dyn Variable<P>) {
-        if !Rc::ptr_eq(&self.parent, &Rc::new(variable)) {
+    pub fn validate_parent(&self, variable: &dyn Variable) {
+        let parent_ptr = self.parent.as_ref() as *const dyn Variable;
+        let variable_ptr = variable as *const dyn Variable;
+
+        if parent_ptr != variable_ptr {
             panic!("Calling gradient with a `parent` that was not expected");
         }
     }
 }
 
-impl<P: Tensor, T: Tensor> Variable<T> for SingleParentVariable<P, T> {
-    fn apply(&self, ctx: &ComputationContext) -> T {
-        // This should be overridden by subclasses
-        unimplemented!("apply should be implemented by subclasses")
+impl Variable for SingleParentVariable {
+    fn apply(&self, _ctx: &ComputationContext) -> Box<dyn Tensor> {
+        unimplemented!("apply() must be implemented by concrete subclasses (Sigmoid, Relu, etc.)")
     }
 
-    fn gradient(&self, variable: &dyn Variable<T>, ctx: &ComputationContext) -> T {
-        self.validate_parent(variable);
-        self.gradient_for_parent(ctx)
+    fn gradient(&self, parent: &dyn Variable, _ctx: &ComputationContext) -> Box<dyn Tensor> {
+        self.validate_parent(parent);
+        unimplemented!("gradient_for_parent() must be implemented by concrete subclasses")
     }
 
     fn dimensions(&self) -> &[usize] {
-        self.base.dimensions()
+        &self.dimensions
     }
 
     fn require_gradient(&self) -> bool {
-        self.base.require_gradient()
+        self.require_gradient
     }
 
-    fn parents(&self) -> &[Rc<dyn Variable<T>>] {
-        self.base.parents()
+    fn parents(&self) -> &[Box<dyn Variable>] {
+        std::slice::from_ref(&self.parent)
     }
 }
 
-/// Trait for single parent variables to implement gradient computation.
-pub trait SingleParentGradient<P: Tensor, T: Tensor> {
-    /// Compute the gradient with respect to the parent.
-    fn gradient_for_parent(&self, ctx: &ComputationContext) -> P;
+impl std::fmt::Display for SingleParentVariable {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SingleParentVariable")
+    }
 }

@@ -10,17 +10,12 @@ pub trait BatchTransformer {
 }
 
 /// Identity batch transformer that returns the index unchanged.
+#[derive(Copy, Clone, Debug, Default)]
 pub struct IdentityBatchTransformer;
 
 impl BatchTransformer for IdentityBatchTransformer {
     fn apply(&self, index: u64) -> u64 {
         index
-    }
-}
-
-impl Default for IdentityBatchTransformer {
-    fn default() -> Self {
-        Self
     }
 }
 

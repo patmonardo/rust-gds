@@ -31,6 +31,9 @@ pub trait Tensor: fmt::Debug + fmt::Display + AsAny {
     fn ones_like(&self) -> Box<dyn Tensor>;
     fn equals(&self, other: &dyn Tensor, tolerance: f64) -> bool;
 
+    /// Mutable downcast for trait objects.
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
+
     fn total_size(&self) -> usize {
         self.dimensions().iter().product()
     }

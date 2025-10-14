@@ -7,6 +7,7 @@ use crate::ml::core::dimensions;
 use crate::ml::core::tensor::Tensor;
 use crate::ml::core::variable::Variable;
 use std::any::Any;
+use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
 
 /// The computation context is used for forward and backward propagation over a computation graph
@@ -14,16 +15,17 @@ use std::collections::{HashMap, VecDeque};
 ///
 /// This implementation is not thread-safe!
 /// Uses type erasure - all tensors are stored as `Box<dyn Tensor>`.
+/// Uses interior mutability (RefCell) for caching during forward/backward passes.
 pub struct ComputationContext {
-    data: HashMap<*const dyn Any, Box<dyn Tensor>>,
-    gradients: HashMap<*const dyn Any, Box<dyn Tensor>>,
+    data: RefCell<HashMap<*const dyn Any, Box<dyn Tensor>>>,
+    gradients: RefCell<HashMap<*const dyn Any, Box<dyn Tensor>>>,
 }
 
 impl ComputationContext {
     pub fn new() -> Self {
         Self {
-            data: HashMap::new(),
-            gradients: HashMap::new(),
+            data: RefCell::new(HashMap::new()),
+            gradients: RefCell::new(HashMap::new()),
         }
     }
 
@@ -31,11 +33,12 @@ impl ComputationContext {
     ///
     /// Only one forward call is expected for the caching strategy.
     /// Returns boxed tensor due to type erasure.
-    pub fn forward(&mut self, variable: &dyn Variable) -> Box<dyn Tensor> {
+    /// Uses interior mutability to allow caching even with immutable reference.
+    pub fn forward(&self, variable: &dyn Variable) -> Box<dyn Tensor> {
         let var_key = variable as *const _ as *const dyn Any;
 
         // Check cache
-        if let Some(cached) = self.data.get(&var_key) {
+        if let Some(cached) = self.data.borrow().get(&var_key) {
             // Clone the boxed tensor
             return cached.clone_box();
         }
@@ -47,24 +50,25 @@ impl ComputationContext {
 
         // Compute this variable
         let result = variable.apply(self);
-        self.data.insert(var_key, result.clone_box());
+        self.data.borrow_mut().insert(var_key, result.clone_box());
         result
     }
 
     /// Get cached data for a variable.
     pub fn data(&self, variable: &dyn Variable) -> Option<Box<dyn Tensor>> {
         let var_key = variable as *const _ as *const dyn Any;
-        self.data.get(&var_key).map(|t| t.clone_box())
+        self.data.borrow().get(&var_key).map(|t| t.clone_box())
     }
 
     /// Get cached gradient for a variable.
     pub fn gradient(&self, variable: &dyn Variable) -> Option<Box<dyn Tensor>> {
         let var_key = variable as *const _ as *const dyn Any;
-        self.gradients.get(&var_key).map(|t| t.clone_box())
+        self.gradients.borrow().get(&var_key).map(|t| t.clone_box())
     }
 
     /// Backward pass - compute gradients via backpropagation.
-    pub fn backward(&mut self, function: &dyn Variable) {
+    /// Uses interior mutability to modify gradients.
+    pub fn backward(&self, function: &dyn Variable) {
         assert!(
             dimensions::is_scalar(function.dimensions()),
             "Root variable must be scalar."
@@ -74,7 +78,7 @@ impl ComputationContext {
             "Root variable must have requireGradient==true"
         );
 
-        self.gradients.clear();
+        self.gradients.borrow_mut().clear();
 
         // Use dummy PassThrough variable to start gradient computation
         let mut execution_queue: VecDeque<BackPropTask> = VecDeque::new();
@@ -93,7 +97,7 @@ impl ComputationContext {
     }
 
     fn backward_queue(
-        &mut self,
+        &self,
         execution_queue: &mut VecDeque<BackPropTask>,
         upstream_counters: &mut HashMap<*const dyn Any, usize>,
     ) {
@@ -101,7 +105,7 @@ impl ComputationContext {
             // Process task (implementation details preserved from Java)
             let _var_key = task.variable_key;
             let _child_key = task.child_key;
-            
+
             // Decrement upstream counter
             if let Some(count) = upstream_counters.get_mut(&task.variable_key) {
                 *count -= 1;
@@ -121,7 +125,7 @@ impl ComputationContext {
         upstream_counters: &mut HashMap<*const dyn Any, usize>,
     ) {
         let var_key = function as *const _ as *const dyn Any;
-        
+
         // Count how many children will propagate gradients to this variable
         let parent_count = function.parents().len();
         if parent_count > 0 {
@@ -154,7 +158,7 @@ mod tests {
     #[test]
     fn test_context_creation() {
         let ctx = ComputationContext::new();
-        assert!(ctx.data.is_empty());
-        assert!(ctx.gradients.is_empty());
+        assert!(ctx.data.borrow().is_empty());
+        assert!(ctx.gradients.borrow().is_empty());
     }
 }
