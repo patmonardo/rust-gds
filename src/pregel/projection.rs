@@ -17,11 +17,31 @@
 //! This implements the **Representation → View → Agent** pipeline.
 
 use crate::pregel::schema::DefaultValue;
-use crate::projection::native::form_processor::FormProcessorError;
+// use crate::projection::native::form_processor::FormProcessorError;  // Form processor dependency
 use crate::types::properties::node::NodePropertyValues;
 use crate::types::ValueType;
 use crate::values::traits::GdsValue;
 use std::sync::Arc;
+
+// Temporary error type until form_processor is re-enabled
+#[derive(Debug, Clone)]
+pub enum FormProcessorError {
+    UnsupportedValueType,
+    Unsupported(String),
+    ConversionFailed(String),
+}
+
+impl std::fmt::Display for FormProcessorError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::UnsupportedValueType => write!(f, "Unsupported value type"),
+            Self::Unsupported(msg) => write!(f, "Unsupported: {}", msg),
+            Self::ConversionFailed(msg) => write!(f, "Conversion failed: {}", msg),
+        }
+    }
+}
+
+impl std::error::Error for FormProcessorError {}
 
 /// Optional projection from PropertyStore into Pregel DefaultValue.
 ///

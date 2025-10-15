@@ -121,7 +121,7 @@ impl GraphProcedure for MockPageRankProcedure {
         graph: &dyn Graph,
         _config: &HashMap<String, String>,
     ) -> Result<Arc<dyn PropertyValues>, ComputeError> {
-        use crate::projection::native::form::mock_property_values::MockLongPropertyValues;
+        use crate::projection::native::ml::mock_property_values::MockLongPropertyValues;
 
         let node_count = graph.node_count() as usize;
 
@@ -167,7 +167,7 @@ impl GraphProcedure for MockFastRPProcedure {
         graph: &dyn Graph,
         _config: &HashMap<String, String>,
     ) -> Result<Arc<dyn PropertyValues>, ComputeError> {
-        use crate::projection::native::form::mock_property_values::MockEmbeddingPropertyValues;
+        use crate::projection::native::ml::mock_property_values::MockEmbeddingPropertyValues;
 
         let node_count = graph.node_count() as usize;
 
@@ -205,7 +205,7 @@ impl GraphProcedure for MockLouvainProcedure {
         graph: &dyn Graph,
         _config: &HashMap<String, String>,
     ) -> Result<Arc<dyn PropertyValues>, ComputeError> {
-        use crate::projection::native::form::mock_property_values::MockLongPropertyValues;
+        use crate::projection::native::ml::mock_property_values::MockLongPropertyValues;
 
         let node_count = graph.node_count() as usize;
 

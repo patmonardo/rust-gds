@@ -12,7 +12,7 @@ use crate::projection::codegen::computation_runtime::ComputeError;
 use crate::projection::codegen::ml::step_descriptor::{
     FeatureStepDescriptor, NodePropertyStepDescriptor,
 };
-use crate::projection::native::form::pipeline_state::PipelineState;
+use crate::projection::native::ml::pipeline_state::PipelineState;
 use crate::types::graph::Graph;
 use crate::types::properties::PropertyValues;
 
@@ -105,7 +105,7 @@ impl NodePropertyStepExecutor {
         // 3. Write property to graph
         // 4. Return PropertyValues
 
-        use crate::projection::native::form::MockLongPropertyValues;
+        use crate::projection::native::ml::MockLongPropertyValues;
 
         let node_count = graph.node_count();
 
@@ -187,7 +187,7 @@ impl FeatureStepExecutor {
         // Phase 2.2: Mock feature computation based on feature_type
         // Phase 2.3+: Replace with actual algorithm implementations
 
-        use crate::projection::native::form::MockEmbeddingPropertyValues;
+        use crate::projection::native::ml::MockEmbeddingPropertyValues;
 
         let node_count = graph.node_count();
         let dimension = self.descriptor.target_dimension.unwrap_or(128);

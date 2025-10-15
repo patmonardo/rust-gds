@@ -138,7 +138,7 @@ impl Model for DecisionTreeClassifier {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::native::form::MockDoublePropertyValues;
+    use crate::projection::native::ml::MockDoublePropertyValues;
 
     fn create_test_features() -> HashMap<String, Arc<dyn PropertyValues>> {
         let mut features = HashMap::new();

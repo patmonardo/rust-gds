@@ -2,7 +2,7 @@
 ///
 /// Provides polymorphic transformation dispatch for feature engineering.
 use crate::projection::codegen::ComputeError;
-use crate::projection::native::form::mock_property_values::MockDoublePropertyValues;
+use crate::projection::native::ml::mock_property_values::MockDoublePropertyValues;
 use crate::types::properties::node::NodePropertyValues;
 use crate::types::properties::PropertyValues;
 use crate::types::ValueType;
@@ -314,7 +314,7 @@ fn compute_mean_stddev<T: NodePropertyValues + ?Sized>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::native::form::mock_property_values::MockLongPropertyValues;
+    use crate::projection::native::ml::mock_property_values::MockLongPropertyValues;
     use crate::types::properties::node::NodePropertyValues;
 
     #[test]

@@ -95,7 +95,7 @@ impl DecisionTreeClassifier {
         features: &HashMap<String, Arc<dyn PropertyValues>>,
         node_ids: &[usize],
     ) -> Result<Vec<Vec<f64>>, ModelError> {
-        use crate::projection::native::form::MockDoublePropertyValues;
+        use crate::projection::native::ml::MockDoublePropertyValues;
         let mut feature_matrix = Vec::new();
 
         for &node_id in node_ids {
@@ -134,7 +134,7 @@ impl DecisionTreeClassifier {
         target: &Arc<dyn PropertyValues>,
         node_ids: &[usize],
     ) -> Result<Vec<f64>, ModelError> {
-        use crate::projection::native::form::MockDoublePropertyValues;
+        use crate::projection::native::ml::MockDoublePropertyValues;
         let mut target_vec = Vec::new();
 
         // Phase 2.3: Direct downcast via Any trait
@@ -446,7 +446,7 @@ impl Model for DecisionTreeClassifier {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::native::form::MockDoublePropertyValues;
+    use crate::projection::native::ml::MockDoublePropertyValues;
 
     /// Create simple node features for testing.
     fn create_test_features() -> HashMap<String, Arc<dyn PropertyValues>> {

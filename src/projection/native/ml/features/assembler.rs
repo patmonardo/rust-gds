@@ -58,7 +58,7 @@ pub trait FeatureAssembler: Send + Sync {
 /// # Examples
 ///
 /// ```ignore
-/// use rust_gds::projection::native::form::features::DefaultFeatureAssembler;
+/// use rust_gds::projection::native::ml::features::DefaultFeatureAssembler;
 ///
 /// let assembler = DefaultFeatureAssembler::new();
 /// let feature = assembler.assemble(&properties, &step_descriptor)?;
@@ -152,7 +152,7 @@ impl FeatureAssembler for DefaultFeatureAssembler {
 mod tests {
     use super::*;
     use crate::projection::codegen::ml::step_descriptor::FeatureType;
-    use crate::projection::native::form::mock_property_values::{
+    use crate::projection::native::ml::mock_property_values::{
         MockDoublePropertyValues, MockEmbeddingPropertyValues, MockLongPropertyValues,
     };
 

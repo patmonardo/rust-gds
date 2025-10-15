@@ -7,6 +7,7 @@ This file contains targeted, actionable guidance for AI coding agents to be prod
 - Rust-GDS is a modular property-graph library written in Rust with N-API/TypeScript bindings in `ts-gds/`.
 - Core runtime lives in `src/` (notably `projection/`, `types/`, `values/`); `GraphStore` is the top-level runtime holder.
 - Design notes and rationale live in `doc/` (see `adr0002_triadic_graphstore_architecture.md` and `projection_philosophy.md`).
+- **Java GDS source reference**: The original Neo4j Graph Data Science Java source is maintained at `/home/pat/GitHub/graph-data-science`. This is the authoritative reference for Pipeline translation and other Java GDS features. Always check Java source files there for 1:1 translation accuracy.
 
 2. Key concepts and project-specific patterns
 

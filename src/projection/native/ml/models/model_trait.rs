@@ -176,7 +176,7 @@ impl ModelMetadata {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::native::form::MockDoublePropertyValues;
+    use crate::projection::native::ml::MockDoublePropertyValues;
 
     /// Mock model for testing Model trait.
     struct MockModel {

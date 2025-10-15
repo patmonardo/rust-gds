@@ -7,6 +7,7 @@ pub mod features;
 pub mod graph_procedure;
 pub mod mock_property_values;
 pub mod models;
+pub mod pipeline;
 pub mod pipeline_executor;
 pub mod pipeline_state;
 pub mod step_executor;
@@ -25,6 +26,7 @@ pub use mock_property_values::{
     MockDoublePropertyValues, MockEmbeddingPropertyValues, MockLongPropertyValues,
 };
 pub use models::{DecisionTreeClassifier, Model, ModelError, ModelMetadata};
+pub use pipeline::{ExecutableNodePropertyStep, FeatureStep, Pipeline, PipelineValidationError};
 pub use pipeline_executor::{PipelineExecutor, PipelineResult};
 pub use pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
 pub use step_executor::{

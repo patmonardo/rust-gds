@@ -31,7 +31,7 @@ pub fn validate_features(features: &Arc<dyn PropertyValues>) -> Result<(), Compu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::native::form::{MockDoublePropertyValues, MockLongPropertyValues};
+    use crate::projection::native::ml::{MockDoublePropertyValues, MockLongPropertyValues};
 
     #[test]
     fn test_property_dimension_scalar() {

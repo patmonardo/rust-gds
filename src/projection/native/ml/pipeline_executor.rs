@@ -13,8 +13,8 @@ use crate::projection::codegen::computation_descriptor::ComputationDescriptor;
 use crate::projection::codegen::computation_runtime::{ComputeContext, ComputeError, Computer};
 use crate::projection::codegen::ml::pipeline_descriptor::PipelineDescriptor;
 use crate::projection::codegen::ml::step_descriptor::StepDescriptor;
-use crate::projection::native::form::graph_procedure::GraphProcedureRegistry;
-use crate::projection::native::form::pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
+use crate::projection::native::ml::graph_procedure::GraphProcedureRegistry;
+use crate::projection::native::ml::pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
 use crate::types::graph::Graph;
 use crate::types::properties::PropertyValues;
 
@@ -350,7 +350,7 @@ impl PipelineExecutor {
         graph: &Arc<dyn Graph>,
     ) -> Result<(), ComputeError> {
         // Create step executor and run it
-        use crate::projection::native::form::step_executor::create_step_executor;
+        use crate::projection::native::ml::step_executor::create_step_executor;
 
         let executor = create_step_executor(step);
         let _result = executor.execute(graph, &mut self.state)?;

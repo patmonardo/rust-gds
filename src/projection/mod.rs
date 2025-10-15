@@ -42,7 +42,7 @@ pub mod native;
 pub mod codegen;
 
 // Re-export commonly used codegen types
-pub use codegen::functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};
+// pub use codegen::functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};  // Form processor dependency
 pub use codegen::property_descriptor;
 
 // That's it! Everything else stays under codegen:: or native::.

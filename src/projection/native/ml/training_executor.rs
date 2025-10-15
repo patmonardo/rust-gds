@@ -3,7 +3,7 @@
 /// Orchestrates model training with hyperparameter search and model selection.
 /// Node-centric: trains models to predict node properties/labels.
 use crate::projection::codegen::ml::{ModelCandidate, ValidationMetric};
-use crate::projection::native::form::pipeline_state::DatasetSplits;
+use crate::projection::native::ml::pipeline_state::DatasetSplits;
 use crate::types::properties::PropertyValues;
 use std::collections::HashMap;
 use std::fmt;
@@ -218,7 +218,7 @@ impl TrainingExecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::native::form::MockDoublePropertyValues;
+    use crate::projection::native::ml::MockDoublePropertyValues;
 
     fn create_test_features() -> HashMap<String, Arc<dyn PropertyValues>> {
         let mut features = HashMap::new();
