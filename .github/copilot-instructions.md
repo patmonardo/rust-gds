@@ -62,6 +62,11 @@ This file contains targeted, actionable guidance for AI coding agents to be prod
 - Avoid using long module paths directly inside expressions in function bodies (e.g. `crate::types::graph::RelationshipType::of(...)`). Add module-level `use` statements instead so expressions stay concise and imports are explicit.
 - Avoid dropping Trait or Struct implementations you need in newly generated code. Always consult the types in src/types and preserve (or explicitly port) required impls when generating or refactoring core code so library behaviour and public APIs remain consistent.
 - **Translation policy**: When asked to translate code from TypeScript/Java to Rust, translate EXACTLY what is in the source file. Do not add "helpful" extensions, "simple standalone versions", convenience implementations, or any other additions unless explicitly requested. A translation request means a literal 1:1 mapping of the source material to idiomatic Rust.
+- **Procedure architecture**: Understand the critical distinction:
+  - `src/projection/eval/procedure/` = **Executor RUNTIME** (fixed GDSL Runtime, HOW to execute algorithms, involved in NativeFactory codegen)
+  - `src/procedure/` = **Algorithm implementations** (extensible content, WHAT to execute, PageRank/Louvain/etc.)
+  - The executor defines `AlgorithmSpec` trait; algorithms implement it
+  - See `doc/PROCEDURE_EXECUTOR_TRANSLATION.md` and `doc/PROCEDURE_INFRASTRUCTURE_OVERVIEW.md`
 
 ## Naming conventions (recommended)
 

@@ -715,7 +715,7 @@ fn process_node_batch(
 /// if the consumer signalled backpressure (rejected a record). This function
 /// mirrors `process_node_batch` but routes records to a consumer instead of an
 /// accumulator.
-fn process_node_batch_with_consumer(
+pub(super) fn process_node_batch_with_consumer(
     batch: &ArrowBatchReference,
     consumer: &mut dyn super::consumer::RecordConsumer<super::consumer::NodeRecord>,
 ) -> Result<bool, ImporterError> {
@@ -871,7 +871,7 @@ fn process_edge_batch(
 /// Returns Ok(true) if the entire batch was accepted by the consumer, Ok(false)
 /// if the consumer signalled backpressure (rejected a record). This mirrors
 /// `process_edge_batch` but routes records to a consumer instead of an accumulator.
-fn process_edge_batch_with_consumer(
+pub(super) fn process_edge_batch_with_consumer(
     batch: &ArrowBatchReference,
     consumer: &mut dyn super::consumer::RecordConsumer<super::consumer::RelationshipRecord>,
 ) -> Result<bool, ImporterError> {

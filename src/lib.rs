@@ -13,6 +13,7 @@ pub mod core;
 pub mod mem;
 pub mod ml;
 pub mod pregel;
+pub mod procedure; // Infrastructure layer - The Machine
 pub mod projection;
 pub mod termination;
 pub mod types;

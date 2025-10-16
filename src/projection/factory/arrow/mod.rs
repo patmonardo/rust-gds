@@ -16,6 +16,10 @@ pub use self::consumer::{
     BufferedEdgeConsumer, BufferedNodeConsumer, CompositeEdgeConsumer, NodeRecord,
     RecordConsumer as ConsumerTrait, RelationshipRecord,
 };
+pub use self::consumer_task::{
+    ConsumerEdgeImportTask, ConsumerEdgeImportTaskFactory, ConsumerNodeImportTask,
+    ConsumerNodeImportTaskFactory,
+};
 pub use self::factory::ArrowNativeFactory;
 pub use self::importer::{
     EdgeAccumulator, EdgeImportTask, EdgeImportTaskFactory, ImporterError, NodeAccumulator,
@@ -37,6 +41,7 @@ pub use self::task::{
 // Module organization
 mod config;
 mod consumer; // Phase 7: BufferedConsumers (IMPLEMENTED)
+mod consumer_task; // Phase 8: Consumer-based ImportTask implementations (Option A)
 mod factory;
 mod importer; // Phase 5: NodeImportTask, EdgeImportTask, accumulators (GAMMA STRATEGY) + Phase 6 properties
 mod reference; // Phase 2: TableReference, BatchReference (IMPLEMENTED with arrow2)

@@ -21,7 +21,7 @@ pub struct StructDescriptor {
 }
 
 /// Storage hint for property backends
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum StorageHint {
     FixedWidth,
     VariableLength,
