@@ -447,10 +447,15 @@ mod tests {
         }
 
         fn consume_batch(&mut self, _batch: &ArrowBatchReference) -> bool {
-            self.count += 1;
             if let Some(max) = self.max_count {
-                self.count < max
+                if self.count < max {
+                    self.count += 1;
+                    true
+                } else {
+                    false
+                }
             } else {
+                self.count += 1;
                 true
             }
         }

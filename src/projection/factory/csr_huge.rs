@@ -88,15 +88,21 @@ impl crate::projection::factory::GraphStoreFactoryTyped for CsrHugeGraphStoreFac
     }
 
     fn estimate_memory(&self, config: &Self::Config) -> Result<(usize, usize), Self::Error> {
-        <CsrHugeGraphStoreFactory as crate::projection::factory::GraphStoreFactory>::estimate_memory(self, config)
+        <CsrHugeGraphStoreFactory as crate::projection::factory::GraphStoreFactory>::estimate_memory(
+            self, config,
+        )
     }
 
     fn node_count(&self, config: &Self::Config) -> Result<usize, Self::Error> {
-        <CsrHugeGraphStoreFactory as crate::projection::factory::GraphStoreFactory>::node_count(self, config)
+        <CsrHugeGraphStoreFactory as crate::projection::factory::GraphStoreFactory>::node_count(
+            self, config,
+        )
     }
 
     fn edge_count(&self, config: &Self::Config) -> Result<usize, Self::Error> {
-        <CsrHugeGraphStoreFactory as crate::projection::factory::GraphStoreFactory>::edge_count(self, config)
+        <CsrHugeGraphStoreFactory as crate::projection::factory::GraphStoreFactory>::edge_count(
+            self, config,
+        )
     }
 }
 

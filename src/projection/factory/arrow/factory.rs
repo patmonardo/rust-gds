@@ -195,19 +195,27 @@ impl crate::projection::factory::GraphStoreFactoryTyped for ArrowNativeFactory {
 
     fn build_graph_store(&self, config: &Self::Config) -> Result<Self::Store, Self::Error> {
         // Delegate to existing GraphStoreFactory implementation
-        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::build_graph_store(self, config)
+        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::build_graph_store(
+            self, config,
+        )
     }
 
     fn estimate_memory(&self, config: &Self::Config) -> Result<(usize, usize), Self::Error> {
-        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::estimate_memory(self, config)
+        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::estimate_memory(
+            self, config,
+        )
     }
 
     fn node_count(&self, config: &Self::Config) -> Result<usize, Self::Error> {
-        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::node_count(self, config)
+        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::node_count(
+            self, config,
+        )
     }
 
     fn edge_count(&self, config: &Self::Config) -> Result<usize, Self::Error> {
-        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::edge_count(self, config)
+        <ArrowNativeFactory as crate::projection::factory::GraphStoreFactory>::edge_count(
+            self, config,
+        )
     }
 }
 

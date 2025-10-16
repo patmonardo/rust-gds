@@ -709,6 +709,51 @@ fn process_node_batch(
     Ok(count)
 }
 
+/// Processes a single node batch and offers each record to a provided consumer.
+///
+/// Returns Ok(true) if the entire batch was accepted by the consumer, Ok(false)
+/// if the consumer signalled backpressure (rejected a record). This function
+/// mirrors `process_node_batch` but routes records to a consumer instead of an
+/// accumulator.
+fn process_node_batch_with_consumer(
+    batch: &ArrowBatchReference,
+    consumer: &mut dyn super::consumer::RecordConsumer<super::consumer::NodeRecord>,
+) -> Result<bool, ImporterError> {
+    // Extract ID column (required, index 0)
+    let id_column = batch.int64_column(0).ok_or(ImporterError::MissingColumn {
+        column_name: "id".to_string(),
+    })?;
+
+    // Extract label column (optional, index 1)
+    let label_column = batch.utf8_column(1);
+
+    // Process each row in the batch range
+    for i in batch.start_offset()..batch.end_offset() {
+        let original_id = id_column.value(i);
+
+        // Extract labels if column exists
+        let labels = if let Some(label_col) = label_column {
+            let label_str = label_col.value(i);
+            vec![NodeLabel::of(label_str)]
+        } else {
+            vec![]
+        };
+
+        let record = super::consumer::NodeRecord {
+            node_id: original_id as u64,
+            labels,
+        };
+
+        // Offer to consumer; if it returns false, signal backpressure
+        let offered = consumer.offer(record);
+        if !offered {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
 // ================================================================================================
 // EdgeImportTask - ImportTask implementation for edges
 // ================================================================================================
@@ -819,6 +864,58 @@ fn process_edge_batch(
     }
 
     Ok(count)
+}
+
+/// Processes a single edge batch and offers each relationship record to a provided consumer.
+///
+/// Returns Ok(true) if the entire batch was accepted by the consumer, Ok(false)
+/// if the consumer signalled backpressure (rejected a record). This mirrors
+/// `process_edge_batch` but routes records to a consumer instead of an accumulator.
+fn process_edge_batch_with_consumer(
+    batch: &ArrowBatchReference,
+    consumer: &mut dyn super::consumer::RecordConsumer<super::consumer::RelationshipRecord>,
+) -> Result<bool, ImporterError> {
+    // Extract source column (required, index 0 or named "source")
+    let source_column = batch.int64_column(0).ok_or(ImporterError::MissingColumn {
+        column_name: "source".to_string(),
+    })?;
+
+    // Extract target column (required, index 1 or named "target")
+    let target_column = batch.int64_column(1).ok_or(ImporterError::MissingColumn {
+        column_name: "target".to_string(),
+    })?;
+
+    // Extract type column (optional, index 2)
+    let type_column = batch.utf8_column(2);
+    let default_rel_type = RelationshipType::of("RELATED");
+
+    // Process each row in the batch range
+    for i in batch.start_offset()..batch.end_offset() {
+        let source_id = source_column.value(i);
+        let target_id = target_column.value(i);
+
+        // Extract relationship type if column exists
+        let rel_type = if let Some(type_col) = type_column {
+            let type_str = type_col.value(i);
+            RelationshipType::of(type_str)
+        } else {
+            default_rel_type.clone()
+        };
+
+        let record = super::consumer::RelationshipRecord {
+            relationship_id: 0, // relationship id not available in this schema
+            source_node_id: source_id as u64,
+            target_node_id: target_id as u64,
+            relationship_type: rel_type,
+        };
+
+        let offered = consumer.offer(record);
+        if !offered {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
 }
 
 // ================================================================================================
