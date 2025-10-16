@@ -10,6 +10,7 @@ pub mod concurrency;
 // inside projection::codegen are available to config modules that invoke them.
 pub mod config;
 pub mod core;
+pub mod errors;
 pub mod mem;
 pub mod ml;
 pub mod pregel;

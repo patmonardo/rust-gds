@@ -2087,7 +2087,6 @@ mod tests {
     #[test]
     fn test_adaptive_recognize_from_computation() {
         let projector = AdaptiveProjector::new();
-        let form = PropertyDescriptor::new(69, "test", ValueType::Double);
 
         // Create BSP computation
         let computation = ComputationDescriptor::new(

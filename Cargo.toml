@@ -30,6 +30,7 @@ rand_chacha = "0.3"
 num_cpus = "1.16"
 parking_lot = "0.12"
 rayon = "1.10"
+hdrhistogram = "7.5" # Histogram data structure for statistics
 
 [build-dependencies]
 napi-build = "2"

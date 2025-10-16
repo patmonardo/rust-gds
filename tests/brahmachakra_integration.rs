@@ -142,7 +142,7 @@ fn test_complete_brahmachakra_five_fingers() {
     // ========================================================================
     println!("🖕 3RD MIDDLE FINGER: AdaptiveProjector learns and adapts...");
 
-    let mut adaptive = AdaptiveProjector::with_conservatism(0.1); // Very aggressive learning
+    let adaptive = AdaptiveProjector::with_conservatism(0.1); // Very aggressive learning
 
     // Project all three properties - Adaptive will learn from each!
     let age_adaptive_storage = adaptive

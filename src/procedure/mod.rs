@@ -80,14 +80,14 @@
 //!
 //! See: `src/projection/eval/procedure/` for the consciousness layer.
 
-// Module structure (to be implemented)
-// pub mod context;
-// pub mod mode;
-// pub mod result;
-// pub mod validation;
-// pub mod config;
-// pub mod error;
+// Module structure
 
-// Placeholder to make module valid
-#[allow(dead_code)]
-const MODULE_PURPOSE: &str = "Procedure infrastructure - The Machine (to be implemented)";
+/// Core utilities from Java GDS algo-common
+/// - Result builders and statistics (centrality, community, similarity)
+/// - Feature scaling for ML pipelines
+/// - Common algorithm utilities
+pub mod core;
+
+// Future modules (to be implemented)
+// pub mod algo;        // Algorithm implementations
+// pub mod facade;      // Public API facades
