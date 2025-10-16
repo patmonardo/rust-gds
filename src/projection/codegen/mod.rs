@@ -11,6 +11,7 @@ pub mod computation_runtime;
 // pub mod functors;  // Form processor dependency - commented out
 pub mod ml;
 pub mod pipeline_descriptor;
+pub mod procedure;  // Algorithm infrastructure macros
 pub mod property_descriptor;
 pub mod storage_descriptor;
 pub mod storage_runtime;

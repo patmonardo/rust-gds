@@ -91,3 +91,6 @@ pub mod core;
 // Future modules (to be implemented)
 // pub mod algo;        // Algorithm implementations
 // pub mod facade;      // Public API facades
+
+// Note: Code generation macros live in src/projection/codegen/procedure/
+// This keeps codegen infrastructure centralized with ML codegen
