@@ -63,10 +63,10 @@ use super::computation_descriptor::{
     ComputationDescriptor, ComputationPattern, ComputationSpecies,
 };
 use super::property_descriptor::{PropertyDescriptor, StorageHint};
-use super::storage_descriptor::{
-    AccessPattern, BackendTechnology, Density, Locality, MemoryProfile, Mutability,
-    StorageDescriptor, StorageLayout,
-};
+use super::storage_descriptor::StorageDescriptor;
+
+#[cfg(test)]
+use super::storage_descriptor::{AccessPattern, BackendTechnology, Mutability, StorageLayout};
 
 // ============================================================================
 // Error Types

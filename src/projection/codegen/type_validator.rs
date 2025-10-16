@@ -60,7 +60,6 @@
 //! assert!(TypeValidator::validate_values(&descriptor, &values).is_ok());
 //! ```
 
-use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 
@@ -246,7 +245,7 @@ impl TypeValidator {
     /// between Form (descriptor) and manifestation (values).
     pub fn validate_i64_values(
         descriptor: &PropertyDescriptor,
-        values: &[i64],
+        _values: &[i64],
     ) -> Result<(), ValidationError> {
         // Check value type matches
         if descriptor.value_type != ValueType::Long {
@@ -264,7 +263,7 @@ impl TypeValidator {
     /// Validate f64 values against PropertyDescriptor
     pub fn validate_f64_values(
         descriptor: &PropertyDescriptor,
-        values: &[f64],
+        _values: &[f64],
     ) -> Result<(), ValidationError> {
         if descriptor.value_type != ValueType::Double {
             return Err(ValidationError::TypeMismatch {
@@ -280,7 +279,7 @@ impl TypeValidator {
     /// Validate bool values against PropertyDescriptor
     pub fn validate_bool_values(
         descriptor: &PropertyDescriptor,
-        values: &[bool],
+        _values: &[bool],
     ) -> Result<(), ValidationError> {
         if descriptor.value_type != ValueType::Boolean {
             return Err(ValidationError::TypeMismatch {
@@ -296,7 +295,7 @@ impl TypeValidator {
     /// Validate String values against PropertyDescriptor
     pub fn validate_string_values(
         descriptor: &PropertyDescriptor,
-        values: &[String],
+        _values: &[String],
     ) -> Result<(), ValidationError> {
         if descriptor.value_type != ValueType::String {
             return Err(ValidationError::TypeMismatch {

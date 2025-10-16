@@ -198,7 +198,7 @@ impl MetricsCollector {
     pub fn record(&mut self, operation: &str, duration_ms: u64) {
         self.timings
             .entry(operation.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(duration_ms);
     }
 

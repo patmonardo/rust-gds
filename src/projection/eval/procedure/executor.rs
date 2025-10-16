@@ -169,7 +169,7 @@ impl ProcedureExecutor {
         }
 
         // Step 6: Validate AFTER graph load (config + graph)
-        validation.validate_after_load(&**graph_store, &config)?;
+        validation.validate_after_load(graph_store, &config)?;
 
         self.context
             .log(LogLevel::Debug, "After-load validation passed");

@@ -236,7 +236,7 @@ impl RequiredParameterValidator {
 
 impl BeforeLoadValidator for RequiredParameterValidator {
     fn validate(&self, config: &JsonValue) -> Result<(), ValidationError> {
-        if !config.get(&self.param).is_some() {
+        if config.get(&self.param).is_none() {
             return Err(ValidationError::MissingParameter(self.param.clone()));
         }
         Ok(())
