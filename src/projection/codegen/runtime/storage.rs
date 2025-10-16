@@ -16,8 +16,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::sync::Arc;
 
-use crate::projection::codegen::pipeline_descriptor::PipelineDescriptor;
-use crate::projection::codegen::storage_descriptor::StorageDescriptor;
+// Import descriptors from the descriptors module
+use crate::projection::codegen::descriptors::{PipelineDescriptor, StorageDescriptor};
 use crate::types::graph::Graph;
 
 /// Errors produced by storage runtime execution
@@ -181,7 +181,7 @@ pub fn instantiate_storage_runtime_from_descriptor(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::codegen::storage_descriptor::{BackendTechnology, StorageDescriptor};
+    use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
     use crate::types::graph_store::DefaultGraphStore;
     use crate::types::random::RandomGraphConfig;
     use crate::types::ValueType;
@@ -260,10 +260,7 @@ mod tests {
             "test_storage",
             BackendTechnology::HugeArray { page_size: 4096 },
         );
-        let property_desc = PropertyDescriptor::new(1, "test_prop", ValueType::Long);
-        let pipeline_desc = PipelineDescriptor::new("TestPipeline")
-            .with_property(property_desc.clone())
-            .with_storage_flow("huge_array");
+        let pipeline_desc = PipelineDescriptor::test_pipeline("TestPipeline");
 
         let mut ctx = StorageContext::new(&graph_arc, &pipeline_desc, &storage_desc);
         let mut runtime = DummyStorageRuntime::new();
@@ -317,10 +314,7 @@ mod tests {
 
         let storage_desc =
             StorageDescriptor::new(1, "test", BackendTechnology::HugeArray { page_size: 4096 });
-        let property_desc = PropertyDescriptor::new(1, "test", ValueType::Long);
-        let pipeline_desc = PipelineDescriptor::new("FactoryTest")
-            .with_property(property_desc.clone())
-            .with_storage_flow("huge_array");
+        let pipeline_desc = PipelineDescriptor::test_pipeline("FactoryTest");
 
         let mut ctx = StorageContext::new(&graph_arc, &pipeline_desc, &storage_desc);
         let mut runtime = runtime;

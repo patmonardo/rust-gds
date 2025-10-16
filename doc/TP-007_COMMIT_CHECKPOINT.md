@@ -51,6 +51,7 @@ Files: 10 new/modified, ~2,210 documentation lines, ~210 code lines
 ## Changes Summary
 
 ### Documentation (6 files, ~2,210 lines)
+
 1. **ALGORITHM_MACRO_DESIGN.md** - Complete macro specification
 2. **PROCEDURE_SUBSYSTEM_GUIDE.md** - How-to guide for users
 3. **TP-007_PAGERANK_TRUE_GAMMA_PLAN.md** - PageRank plan (deferred)
@@ -59,12 +60,14 @@ Files: 10 new/modified, ~2,210 documentation lines, ~210 code lines
 6. **TP-007_SESSION_SUMMARY.md** - Session summary & learnings
 
 ### Code (4 files, ~210 lines)
+
 1. **src/projection/codegen/procedure/mod.rs** - Module interface
 2. **src/projection/codegen/procedure/config_macro.rs** - Working config macro
 3. **src/projection/codegen/procedure/algorithm_macro.rs** - Design phase stub
 4. **src/projection/codegen/mod.rs** - Updated to include procedure module
 
 ### Modified (2 files)
+
 1. **Cargo.toml** - Added `paste` dependency
 2. **src/procedure/mod.rs** - Removed codegen reference, added location note
 
@@ -90,6 +93,7 @@ All tests passing ✅
 ### algorithm_config! Macro ✅
 
 **Input** (15 lines):
+
 ```rust
 algorithm_config! {
     pub struct MyConfig {
@@ -101,6 +105,7 @@ algorithm_config! {
 ```
 
 **Output** (80+ lines generated):
+
 - Config struct with Serialize/Deserialize
 - Builder struct with field methods
 - Builder::build() with validation
@@ -108,6 +113,7 @@ algorithm_config! {
 - MyConfig::builder() constructor
 
 **Usage**:
+
 ```rust
 let config = MyConfig::builder()
     .value1(42)
@@ -127,13 +133,14 @@ let config = MyConfig::builder()
 **Options**:
 
 **A) Trait-Based Pattern** (Recommended, ~2 hours)
+
 ```rust
 trait AlgorithmRegistration {
     type Config;
     type Result;
     const NAME: &'static str;
-    
-    fn compute(&self, graph: &impl GraphStore, config: &Self::Config) 
+
+    fn compute(&self, graph: &impl GraphStore, config: &Self::Config)
         -> Result<Self::Result>;
 }
 
@@ -142,6 +149,7 @@ impl<T: AlgorithmRegistration> AlgorithmSpec for T { ... }
 ```
 
 **B) Macro-Based Pattern** (~3-4 hours)
+
 ```rust
 define_algorithm! {
     name: DegreeCount,
@@ -152,6 +160,7 @@ define_algorithm! {
 ```
 
 **C) Simple Example First** (~1 hour)
+
 - Implement DegreeCount with manual AlgorithmSpec
 - Use algorithm_config! for configuration
 - Validate pattern before automation
@@ -161,6 +170,7 @@ define_algorithm! {
 ### Pregel & Concurrency Discussion
 
 **User Notes**:
+
 - "We do have a Pregel subsystem we should use it"
 - "It uses our Concurrency subsystem"
 - "All Concurrency in the Platform should go through our Concurrency subsystem"
@@ -168,6 +178,7 @@ define_algorithm! {
 - "We should discuss before we implement the algorithms"
 
 **Action Items**:
+
 1. Locate existing Pregel subsystem
 2. Review Concurrency wrapper
 3. Understand integration points
@@ -178,6 +189,7 @@ define_algorithm! {
 ## Known Limitations (To Address)
 
 ### Config Macro
+
 - ❌ No attribute parsing yet (#[default], #[range], etc.)
 - ❌ No validation code generation (manual validation required)
 - ❌ Error type is String (should be ConfigError)
@@ -185,12 +197,14 @@ define_algorithm! {
 - ✅ Tests passing
 
 **Future Enhancements**:
+
 1. Parse #[default(expr)] → generate Default impl
 2. Parse #[range(min..max)] → generate validation
 3. Use proper ConfigError type
 4. Add #[optional] for Option<T> fields
 
 ### Algorithm Macro
+
 - ❌ Not implemented yet (design phase only)
 - ⏸️ Waiting for pattern validation with example
 - 📋 Full specification documented
@@ -213,14 +227,16 @@ define_algorithm! {
 ## Post-Commit Plan
 
 ### Session Goals
+
 1. ✅ Implement algorithm registration macro or trait
 2. ✅ Create simple example (DegreeCount)
 3. ✅ Validate end-to-end workflow
 4. 📋 Discuss Pregel & Concurrency integration
 
 ### Timeline Estimate
+
 - Algorithm registration: 2-3 hours
-- Simple example: 1 hour  
+- Simple example: 1 hour
 - Pregel discussion: 30 minutes
 - **Total**: 3.5-4.5 hours (rest of day)
 

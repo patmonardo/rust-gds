@@ -2,7 +2,7 @@
 ///
 /// Defines the contract for trained ML models.
 /// Node-centric: models operate on node features to predict node properties.
-use crate::projection::codegen::ml::ModelType;
+use crate::projection::codegen::descriptors::ml::ModelType;
 use crate::types::properties::PropertyValues;
 use std::collections::HashMap;
 use std::fmt;

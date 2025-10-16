@@ -1,5 +1,5 @@
 /// Feature assembler for orchestrating feature transformations.
-use crate::projection::codegen::ml::step_descriptor::FeatureStepDescriptor;
+use crate::projection::codegen::descriptors::ml::step::FeatureStepDescriptor;
 use crate::projection::codegen::ComputeError;
 use crate::types::properties::PropertyValues;
 use std::collections::HashMap;
@@ -151,7 +151,7 @@ impl FeatureAssembler for DefaultFeatureAssembler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::codegen::ml::step_descriptor::FeatureType;
+    use crate::projection::codegen::descriptors::ml::step::FeatureType;
     use crate::projection::eval::ml::mock_property_values::{
         MockDoublePropertyValues, MockEmbeddingPropertyValues, MockLongPropertyValues,
     };

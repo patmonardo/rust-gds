@@ -4,7 +4,7 @@
 //! Node-centric: trains on node features, predicts node properties.
 
 use super::{Model, ModelError, ModelMetadata};
-use crate::projection::codegen::ml::ModelType;
+use crate::projection::codegen::descriptors::ml::ModelType;
 use crate::types::properties::node::NodePropertyValues;
 use crate::types::properties::PropertyValues;
 use std::collections::HashMap;

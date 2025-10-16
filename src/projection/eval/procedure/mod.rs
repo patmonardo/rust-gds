@@ -59,7 +59,7 @@
 //! ```
 
 // Module declarations
-mod algorithm_spec;
+// NOTE: algorithm_spec moved to codegen/procedure/ (the CONTRACT lives with the macros)
 mod computation_result;
 mod execution_context;
 mod execution_mode;
@@ -87,8 +87,8 @@ pub use validation_config::{
     ValidationError,
 };
 
-// Algorithm contract
-pub use algorithm_spec::{
+// Algorithm contract (imported from codegen/procedure/)
+pub use crate::projection::codegen::procedure::{
     get_optional_param,
     // Helper functions
     get_required_param,

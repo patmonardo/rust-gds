@@ -59,14 +59,16 @@ use std::fmt;
 
 use crate::types::ValueType;
 
-use super::computation_descriptor::{
-    ComputationDescriptor, ComputationPattern, ComputationSpecies,
+// Import descriptors from the descriptors module
+use crate::projection::codegen::descriptors::storage::StorageDescriptor;
+use crate::projection::codegen::descriptors::{
+    ComputationDescriptor, ComputationPattern, ComputationSpecies, PropertyDescriptor, StorageHint,
 };
-use super::property_descriptor::{PropertyDescriptor, StorageHint};
-use super::storage_descriptor::StorageDescriptor;
 
 #[cfg(test)]
-use super::storage_descriptor::{AccessPattern, BackendTechnology, Mutability, StorageLayout};
+use crate::projection::codegen::descriptors::storage::{
+    AccessPattern, BackendTechnology, Mutability, StorageLayout,
+};
 
 // ============================================================================
 // Error Types
@@ -259,7 +261,7 @@ impl TypeProjector for HugeArrayProjector {
         &self,
         form: &PropertyDescriptor,
     ) -> Result<StorageDescriptor, ProjectionError> {
-        use super::storage_descriptor::{
+        use crate::projection::codegen::descriptors::storage::{
             AccessPattern, BackendTechnology, ConcurrencyModel, Density, PersistenceConfig,
             StorageLayout,
         };
@@ -296,7 +298,7 @@ impl TypeProjector for HugeArrayProjector {
         &self,
         form: &PropertyDescriptor,
     ) -> Result<ComputationDescriptor, ProjectionError> {
-        use super::computation_descriptor::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
 
         // Vidyā: Reveal Form as Computation (Subtle/Sūkṣma)
         // HugeArray storage → BSP computation with VertexCentric pattern
@@ -321,7 +323,7 @@ impl TypeProjector for HugeArrayProjector {
         &self,
         storage: &StorageDescriptor,
     ) -> Result<PropertyDescriptor, ProjectionError> {
-        use super::storage_descriptor::BackendTechnology;
+        use crate::projection::codegen::descriptors::storage::BackendTechnology;
 
         // Avidyā: Recognize Form from Storage manifestation
         // Inverse projection: StorageDescriptor → PropertyDescriptor
@@ -354,7 +356,7 @@ impl TypeProjector for HugeArrayProjector {
             .to_string();
 
         let descriptor = PropertyDescriptor::new(storage.id, name, value_type)
-            .with_storage_hint(super::property_descriptor::StorageHint::FixedWidth)
+            .with_storage_hint(crate::projection::codegen::descriptors::property::StorageHint::FixedWidth)
             .with_nullable(true);
 
         Ok(descriptor)
@@ -364,7 +366,7 @@ impl TypeProjector for HugeArrayProjector {
         &self,
         computation: &ComputationDescriptor,
     ) -> Result<PropertyDescriptor, ProjectionError> {
-        use super::computation_descriptor::ComputationSpecies;
+        use crate::projection::codegen::descriptors::computation::ComputationSpecies;
 
         // Avidyā: Recognize Form from Computation manifestation
         // Inverse projection: ComputationDescriptor → PropertyDescriptor
@@ -391,7 +393,7 @@ impl TypeProjector for HugeArrayProjector {
         // Default to Long type (most common for graph properties)
         // In a real system, we'd need more metadata to infer the exact type
         let descriptor = PropertyDescriptor::new(computation.id, name, ValueType::Long)
-            .with_storage_hint(super::property_descriptor::StorageHint::FixedWidth)
+            .with_storage_hint(crate::projection::codegen::descriptors::property::StorageHint::FixedWidth)
             .with_nullable(true);
 
         Ok(descriptor)
@@ -403,8 +405,8 @@ impl TypeProjector for HugeArrayProjector {
         storage: &StorageDescriptor,
         computation: &ComputationDescriptor,
     ) -> Result<(), ProjectionError> {
-        use super::computation_descriptor::{ComputationPattern, ComputationSpecies};
-        use super::storage_descriptor::{AccessPattern, BackendTechnology, StorageLayout};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::storage::{AccessPattern, BackendTechnology, StorageLayout};
 
         // Brahman: Validate dialectical consistency
         // All three descriptors must be mutually consistent
@@ -522,7 +524,7 @@ impl TypeProjector for ArrowProjector {
         &self,
         form: &PropertyDescriptor,
     ) -> Result<StorageDescriptor, ProjectionError> {
-        use super::storage_descriptor::{
+        use crate::projection::codegen::descriptors::storage::{
             AccessPattern, BackendTechnology, ConcurrencyModel, Density, Mutability,
             PersistenceConfig, StorageLayout,
         };
@@ -559,7 +561,7 @@ impl TypeProjector for ArrowProjector {
         &self,
         form: &PropertyDescriptor,
     ) -> Result<ComputationDescriptor, ProjectionError> {
-        use super::computation_descriptor::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
 
         // Vidyā: Reveal Form as Dataflow Computation (Batch/Columnar)
         // Arrow storage → Dataflow computation with batch pattern
@@ -583,7 +585,7 @@ impl TypeProjector for ArrowProjector {
         &self,
         storage: &StorageDescriptor,
     ) -> Result<PropertyDescriptor, ProjectionError> {
-        use super::storage_descriptor::BackendTechnology;
+        use crate::projection::codegen::descriptors::storage::BackendTechnology;
 
         // Avidyā: Recognize Form from Arrow Storage manifestation
 
@@ -615,7 +617,7 @@ impl TypeProjector for ArrowProjector {
             .to_string();
 
         let descriptor = PropertyDescriptor::new(storage.id, name, value_type)
-            .with_storage_hint(super::property_descriptor::StorageHint::VariableLength)
+            .with_storage_hint(crate::projection::codegen::descriptors::property::StorageHint::VariableLength)
             .with_nullable(true);
 
         Ok(descriptor)
@@ -625,7 +627,7 @@ impl TypeProjector for ArrowProjector {
         &self,
         computation: &ComputationDescriptor,
     ) -> Result<PropertyDescriptor, ProjectionError> {
-        use super::computation_descriptor::ComputationSpecies;
+        use crate::projection::codegen::descriptors::computation::ComputationSpecies;
 
         // Avidyā: Recognize Form from Dataflow Computation manifestation
 
@@ -653,7 +655,7 @@ impl TypeProjector for ArrowProjector {
 
         // Default to Double type (common for analytical workloads)
         let descriptor = PropertyDescriptor::new(computation.id, name, ValueType::Double)
-            .with_storage_hint(super::property_descriptor::StorageHint::VariableLength)
+            .with_storage_hint(crate::projection::codegen::descriptors::property::StorageHint::VariableLength)
             .with_nullable(true);
 
         Ok(descriptor)
@@ -665,8 +667,8 @@ impl TypeProjector for ArrowProjector {
         storage: &StorageDescriptor,
         computation: &ComputationDescriptor,
     ) -> Result<(), ProjectionError> {
-        use super::computation_descriptor::{ComputationPattern, ComputationSpecies};
-        use super::storage_descriptor::{AccessPattern, BackendTechnology, StorageLayout};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::storage::{AccessPattern, BackendTechnology, StorageLayout};
 
         // Brahman: Validate dialectical consistency for Arrow
 
@@ -781,7 +783,7 @@ impl TypeProjector for PregelProjector {
         &self,
         form: &PropertyDescriptor,
     ) -> Result<StorageDescriptor, ProjectionError> {
-        use super::storage_descriptor::{
+        use crate::projection::codegen::descriptors::storage::{
             AccessPattern, BackendTechnology, ConcurrencyModel, Mutability, PersistenceConfig,
             StorageLayout,
         };
@@ -818,7 +820,7 @@ impl TypeProjector for PregelProjector {
         &self,
         form: &PropertyDescriptor,
     ) -> Result<ComputationDescriptor, ProjectionError> {
-        use super::computation_descriptor::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
 
         // Vidyā: Reveal Form as Computation (Subtle/Sūkṣma)
         // Pregel = BSP, vertex-centric message-passing
@@ -841,7 +843,7 @@ impl TypeProjector for PregelProjector {
         &self,
         storage: &StorageDescriptor,
     ) -> Result<PropertyDescriptor, ProjectionError> {
-        use super::storage_descriptor::{AccessPattern, BackendTechnology, StorageLayout};
+        use crate::projection::codegen::descriptors::storage::{AccessPattern, BackendTechnology, StorageLayout};
 
         // Avidyā: Recognize Form from Storage manifestation
 
@@ -883,7 +885,7 @@ impl TypeProjector for PregelProjector {
         &self,
         computation: &ComputationDescriptor,
     ) -> Result<PropertyDescriptor, ProjectionError> {
-        use super::property_descriptor::StorageHint;
+        use crate::projection::codegen::descriptors::property::StorageHint;
 
         // Avidyā: Recognize Form from Computation manifestation
 
@@ -920,7 +922,7 @@ impl TypeProjector for PregelProjector {
         storage: &StorageDescriptor,
         computation: &ComputationDescriptor,
     ) -> Result<(), ProjectionError> {
-        use super::storage_descriptor::{AccessPattern, BackendTechnology, StorageLayout};
+        use crate::projection::codegen::descriptors::storage::{AccessPattern, BackendTechnology, StorageLayout};
 
         // Brahman: Validate dialectical consistency for Pregel
 
@@ -1265,8 +1267,8 @@ mod tests {
 
     #[test]
     fn test_huge_array_project_long_to_storage() {
-        use super::super::property_descriptor::StorageHint;
-        use super::super::storage_descriptor::{
+        use crate::projection::codegen::descriptors::property::StorageHint;
+        use crate::projection::codegen::descriptors::storage::{
             AccessPattern, BackendTechnology, Density, StorageLayout,
         };
 
@@ -1294,7 +1296,7 @@ mod tests {
 
     #[test]
     fn test_huge_array_project_to_computation() {
-        use super::super::computation_descriptor::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
 
         let projector = HugeArrayProjector::new();
         let form = PropertyDescriptor::new(42, "pagerank", ValueType::Double);
@@ -1326,7 +1328,7 @@ mod tests {
 
     #[test]
     fn test_huge_array_recognize_from_storage() {
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = HugeArrayProjector::new();
 
@@ -1347,7 +1349,7 @@ mod tests {
 
     #[test]
     fn test_huge_array_recognize_from_storage_wrong_backend() {
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = HugeArrayProjector::new();
 
@@ -1367,7 +1369,7 @@ mod tests {
 
     #[test]
     fn test_huge_array_recognize_from_computation() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
 
@@ -1404,10 +1406,10 @@ mod tests {
 
     #[test]
     fn test_huge_array_validate_id_mismatch() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = HugeArrayProjector::new();
         let form = PropertyDescriptor::new(42, "test", ValueType::Long);
@@ -1439,10 +1441,10 @@ mod tests {
 
     #[test]
     fn test_huge_array_validate_wrong_backend() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = HugeArrayProjector::new();
         let form = PropertyDescriptor::new(42, "test", ValueType::Long);
@@ -1503,7 +1505,7 @@ mod tests {
         let storage = projector.project_to_storage(&form).unwrap();
 
         // Verify custom chunk size is used
-        if let super::super::storage_descriptor::BackendTechnology::HugeArray { page_size } =
+        if let crate::projection::codegen::descriptors::storage::BackendTechnology::HugeArray { page_size } =
             storage.backend
         {
             assert_eq!(page_size, 8192);
@@ -1518,8 +1520,8 @@ mod tests {
 
     #[test]
     fn test_arrow_project_to_storage() {
-        use super::super::property_descriptor::StorageHint;
-        use super::super::storage_descriptor::{AccessPattern, BackendTechnology, StorageLayout};
+        use crate::projection::codegen::descriptors::property::StorageHint;
+        use crate::projection::codegen::descriptors::storage::{AccessPattern, BackendTechnology, StorageLayout};
 
         let projector = ArrowProjector::new();
         let form = PropertyDescriptor::new(100, "analytics_score", ValueType::Double)
@@ -1538,7 +1540,7 @@ mod tests {
 
     #[test]
     fn test_arrow_project_to_computation() {
-        use super::super::computation_descriptor::{ComputationPattern, ComputationSpecies};
+        use crate::projection::codegen::descriptors::computation::{ComputationPattern, ComputationSpecies};
 
         let projector = ArrowProjector::new();
         let form = PropertyDescriptor::new(100, "analytics_score", ValueType::Double);
@@ -1567,7 +1569,7 @@ mod tests {
 
     #[test]
     fn test_arrow_recognize_from_storage() {
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = ArrowProjector::new();
 
@@ -1585,7 +1587,7 @@ mod tests {
 
     #[test]
     fn test_arrow_recognize_from_storage_wrong_backend() {
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = ArrowProjector::new();
 
@@ -1608,7 +1610,7 @@ mod tests {
 
     #[test]
     fn test_arrow_recognize_from_computation() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
 
@@ -1631,7 +1633,7 @@ mod tests {
 
     #[test]
     fn test_arrow_recognize_from_computation_wrong_species() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
 
@@ -1674,10 +1676,10 @@ mod tests {
 
     #[test]
     fn test_arrow_validate_wrong_backend() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
-        use super::super::storage_descriptor::{BackendTechnology, StorageDescriptor};
+        use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
 
         let projector = ArrowProjector::new();
         let form = PropertyDescriptor::new(100, "test", ValueType::Double);
@@ -1702,10 +1704,10 @@ mod tests {
 
     #[test]
     fn test_arrow_validate_wrong_layout() {
-        use super::super::computation_descriptor::{
+        use crate::projection::codegen::descriptors::computation::{
             ComputationDescriptor, ComputationPattern, ComputationSpecies,
         };
-        use super::super::storage_descriptor::{
+        use crate::projection::codegen::descriptors::storage::{
             BackendTechnology, StorageDescriptor, StorageLayout,
         };
 

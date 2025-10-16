@@ -12,8 +12,8 @@
 //! - Mode-based consumption routing
 //! - Simplified without separate consumer trait
 
-use super::algorithm_spec::ConsumerError;
 use super::{ComputationResult, ExecutionMode};
+use crate::projection::codegen::procedure::ConsumerError;
 
 /// Stream Results - Return all algorithm results
 ///

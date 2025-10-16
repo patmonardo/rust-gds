@@ -1,40 +1,88 @@
-// Ensure the eval macro is declared first so it is available to subsequent
-// modules inside `codegen` (the macro is used by `value_type_table`).
+//! Code Generation - The Projection System
+//!
+//! This module contains the complete code generation infrastructure for rust-gds,
+//! organized into five distinct concerns following the **Five-Fold Brahmachakra** pattern.
+//!
+//! ## The Five-Fold Brahmachakra
+//!
+//! ```text
+//! Macros (Tools that PROJECT)
+//!     ↓
+//! Descriptors (Identity/Science - WHAT things ARE)
+//!     ↓
+//! Runtime (Difference/Manifestation - HOW things EXECUTE)
+//!     ↓
+//! Transforms (Maya/Projection - MAPPINGS between extremes)
+//!     ↓
+//! Procedure (THE CONTRACT - what algorithms implement)
+//! ```
+//!
+//! ## Organization
+//!
+//! - `macros/` - Code generation TOOLS (eval_macro, config, procedure macros)
+//! - `descriptors/` - Compile-time SCHEMAS (property, computation, storage, pipeline, ML)
+//! - `runtime/` - Execution CONTRACTS (Computer, ComputeStep, StorageRuntime, etc.)
+//! - `procedure/` - Algorithm CONTRACT (AlgorithmSpec trait)
+//! - `transforms/` - Cross-cutting conversions (TypeProjector, TypeValidator, Functors)
+//!
+//! ## Usage
+//!
+//! ```rust,ignore
+//! // Get macros
+//! use rust_gds::projection::codegen::macros::*;
+//!
+//! // Get descriptors
+//! use rust_gds::projection::codegen::descriptors::*;
+//!
+//! // Get runtime contracts
+//! use rust_gds::projection::codegen::runtime::*;
+//!
+//! // Get algorithm contract
+//! use rust_gds::projection::codegen::procedure::AlgorithmSpec;
+//!
+//! // Get transforms
+//! use rust_gds::projection::codegen::transforms::*;
+//! ```
+
+// ============================================================================
+// MODULE DECLARATIONS
+// ============================================================================
+
 #[macro_use]
-pub mod eval_macro;
+pub mod macros;
+pub mod descriptors;
+pub mod procedure; // AlgorithmSpec trait (THE CONTRACT)
+pub mod runtime;
+pub mod transforms;
 
-// Lightweight in-repo config generation macro (demo)
-pub mod config_macro;
+// ============================================================================
+// RE-EXPORTS
+// ============================================================================
 
-pub mod computation_descriptor;
-pub mod computation_runtime;
-// pub mod functors;  // Form processor dependency - commented out
-pub mod ml;
-pub mod pipeline_descriptor;
-pub mod procedure;  // Algorithm infrastructure macros
-pub mod property_descriptor;
-pub mod storage_descriptor;
-pub mod storage_runtime;
-pub mod type_projector;
-pub mod type_validator;
-// pub mod value_type_table;  // Form processor dependency - commented out
+// Macros (re-exported at crate root via #[macro_export])
+pub use macros::*;
 
-// Re-exports for convenience when referencing codegen items directly.
-pub use computation_descriptor::*;
-pub use computation_runtime::*;
-// pub use functors::*;  // Form processor dependency - commented out
-// Explicit re-exports from pipeline_descriptor
-pub use pipeline_descriptor::{
-    FieldDescriptor, PipelineDescriptor, PropertyId, StructDescriptor, StructId,
+// Descriptors
+pub use descriptors::{
+    ComputationDescriptor, ComputationPattern, ComputationSpecies, FieldDescriptor,
+    PropertyDescriptor, PropertyId, StorageHint, StructDescriptor, StructId,
 };
 
-// Explicit re-exports from property_descriptor
-pub use property_descriptor::{PropertyDescriptor, StorageHint};
-pub use storage_descriptor::*;
-pub use storage_runtime::*;
-pub use type_projector::{
+// ML Pipeline is THE pipeline (re-export for convenience)
+pub use descriptors::PipelineDescriptor;
+
+// Runtime
+pub use runtime::{
+    instantiate_computer_from_descriptor, register_computer_factory, AccessMode, ComputeContext,
+    ComputeError, ComputeStep, Computer, ComputerFactory, Messages, StorageAccessor,
+    StorageContext, StorageError, StorageRuntime, StorageRuntimeFactory, StorageValue,
+};
+
+// Procedure contract
+pub use procedure::AlgorithmSpec;
+
+// Transforms
+pub use transforms::{
     AdaptiveProjector, ArrowProjector, HugeArrayProjector, PregelProjector, ProjectionError,
-    TypeProjector,
+    TypeProjector, TypeValidator, ValidationError,
 };
-pub use type_validator::{TypeValidator, ValidationError};
-// pub use value_type_table::*;  // Form processor dependency - commented out

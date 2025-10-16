@@ -41,7 +41,8 @@ impl From<crate::types::properties::PropertyValuesError> for ComputeError {
     }
 }
 
-use super::{ComputationDescriptor, PipelineDescriptor};
+// Import descriptors from the descriptors module
+use crate::projection::codegen::descriptors::{ComputationDescriptor, PipelineDescriptor};
 
 /// Minimal execution environment passed to Computer and ComputeStep.
 ///
@@ -136,7 +137,7 @@ pub fn register_computer_factory(descriptor_id: u32, factory: ComputerFactory) -
 pub fn instantiate_computer_from_descriptor(id: u32) -> Result<Box<dyn Computer>, ComputeError> {
     // First check if descriptor exists
     if let Some(desc) =
-        crate::projection::codegen::computation_descriptor::get_computation_descriptor(id)
+        crate::projection::codegen::descriptors::computation::get_computation_descriptor(id)
     {
         // Check if factory registered
         let factories = COMPUTER_FACTORIES
@@ -158,7 +159,7 @@ pub fn instantiate_computer_from_descriptor(id: u32) -> Result<Box<dyn Computer>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::codegen::computation_descriptor::{
+    use crate::projection::codegen::descriptors::computation::{
         clear_computation_registry, register_computation_descriptor, ComputationDescriptor,
         ComputationPattern, ComputationSpecies,
     };
@@ -233,9 +234,7 @@ mod tests {
         let graph_arc: Arc<dyn Graph> = graph.clone();
 
         // Create pipeline and computation descriptors
-        let property =
-            crate::projection::codegen::PropertyDescriptor::new(0, "test", ValueType::Double);
-        let pipeline = PipelineDescriptor::new("TestPipeline").with_property(property);
+        let pipeline = PipelineDescriptor::test_pipeline("TestPipeline");
         let computation = ComputationDescriptor::new(
             0,
             "test_computation",
@@ -296,9 +295,7 @@ mod tests {
         let graph = graph_store.graph();
         let graph_arc: Arc<dyn Graph> = graph.clone();
 
-        let property =
-            crate::projection::codegen::PropertyDescriptor::new(0, "test", ValueType::Double);
-        let pipeline = PipelineDescriptor::new("TestPipeline").with_property(property);
+        let pipeline = PipelineDescriptor::test_pipeline("TestPipeline");
         let computation = ComputationDescriptor::new(
             99,
             "factory_test",

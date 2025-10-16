@@ -1,56 +1,59 @@
-//! Procedure Code Generation - Algorithm Infrastructure Macros
+//! Procedure Contract - AlgorithmSpec Trait
 //!
-//! This module provides declarative macros for generating algorithm infrastructure:
+//! This module contains THE CONTRACT that all algorithms must implement
+//! to work with the ProcedureExecutor (GDSL Runtime).
 //!
-//! - `algorithm_config!` - Generate config struct + builder + validation
-//! - `define_algorithm!` - Generate AlgorithmSpec impl + execution modes + catalog
+//! **Moved from**: `src/projection/eval/procedure/algorithm_spec.rs`
+//! **Why moved**: Macros in `codegen/macros/procedure/` generate AlgorithmSpec impls
 //!
-//! ## Design Philosophy
+//! ## Architecture
 //!
-//! In GDS, adding an algorithm requires ~450 lines of repetitive boilerplate:
-//! - Configuration struct (~80 lines)
-//! - Builder with validation (~80 lines)
-//! - AlgorithmSpec implementation (~150 lines)
-//! - Execution mode wrappers (~200 lines)
+//! ```text
+//! codegen/procedure/
+//! └── algorithm_spec.rs  ← THE CONTRACT (this file)
 //!
-//! **Our approach**: Declare WHAT the algorithm is, generate HOW it integrates.
+//! codegen/macros/procedure/
+//! ├── algorithm.rs       ← Generates AlgorithmSpec impls
+//! └── config.rs          ← Generates config structs
 //!
-//! ## Example
+//! eval/procedure/
+//! └── executor.rs        ← Executes AlgorithmSpec impls
 //!
-//! ```rust,ignore
-//! use rust_gds::algorithm_config;
-//!
-//! // Configuration: 15 lines → generates 80+ lines
-//! algorithm_config! {
-//!     pub struct PageRankConfig {
-//!         #[default(0.85)]
-//!         #[range(0.0..1.0)]
-//!         pub damping_factor: f64,
-//!
-//!         #[default(1e-7)]
-//!         #[min(0.0)]
-//!         pub tolerance: f64,
-//!     }
-//! }
+//! procedure/
+//! ├── pagerank.rs        ← impl AlgorithmSpec for PageRank
+//! └── louvain.rs         ← impl AlgorithmSpec for Louvain
 //! ```
 //!
-//! **Result**: 35 lines → 430+ lines generated = **92% reduction**
+//! ## The Pattern
 //!
-//! ## Location Rationale
+//! 1. **Contract** (here): `pub trait AlgorithmSpec { ... }`
+//! 2. **Generators** (macros/procedure/): Generate `impl AlgorithmSpec for X`
+//! 3. **Executor** (eval/procedure/): `executor.compute::<A: AlgorithmSpec>(...)`
+//! 4. **Implementations** (procedure/): Concrete PageRank, Louvain, etc.
 //!
-//! This module lives in `projection/codegen/procedure/` because:
-//! - Part of the GDSL Runtime codegen infrastructure
-//! - Parallel to `projection/codegen/ml/` (ML pipeline codegen)
-//! - Generates code that integrates with `projection/eval/procedure/` (executor)
+//! ## Usage
 //!
-//! ## See Also
+//! ```rust,ignore
+//! use rust_gds::projection::codegen::procedure::AlgorithmSpec;
 //!
-//! - `doc/ALGORITHM_MACRO_DESIGN.md` - Detailed design documentation
-//! - `doc/PROCEDURE_SUBSYSTEM_GUIDE.md` - How to use the macros
-//! - `src/projection/eval/procedure/` - Algorithm executor (uses generated code)
+//! struct PageRankAlgorithm {
+//!     graph_name: String,
+//!     config: PageRankConfig,
+//! }
+//!
+//! impl AlgorithmSpec for PageRankAlgorithm {
+//!     type Output = Vec<(NodeId, f64)>;
+//!     
+//!     fn name(&self) -> &str { "pagerank" }
+//!     fn graph_name(&self) -> &str { &self.graph_name }
+//!     // ... implement other methods
+//! }
+//! ```
 
-pub mod algorithm_macro;
-pub mod config_macro;
+pub mod algorithm_spec;
 
-// Re-export macros at crate root (macros exported with #[macro_export] appear at crate root)
-// Users can access via: use rust_gds::algorithm_config;
+// Re-export the contract and all supporting types
+pub use algorithm_spec::{
+    get_optional_param, get_required_param, AlgorithmError, AlgorithmSpec, ConfigError,
+    ConsumerError, ProjectionHint,
+};

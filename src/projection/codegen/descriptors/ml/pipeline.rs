@@ -9,7 +9,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::step_descriptor::StepDescriptor;
+use super::step::StepDescriptor; // Updated: step_descriptor.rs → step.rs
 
 /// Descriptor for a complete ML pipeline.
 ///
@@ -228,6 +228,37 @@ impl PipelineDescriptor {
     /// Create a builder for constructing pipelines.
     pub fn builder(name: String, pipeline_type: PipelineType) -> PipelineDescriptorBuilder {
         PipelineDescriptorBuilder::new(name, pipeline_type)
+    }
+
+    /// Create a minimal test pipeline for unit testing.
+    ///
+    /// **Test-Only**: This is a simplified constructor for unit tests in runtime modules.
+    /// Production code should use the builder pattern.
+    #[cfg(test)]
+    pub fn test_pipeline(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            pipeline_type: PipelineType::NodeClassification {
+                target_property: "test_target".to_string(),
+            },
+            steps: Vec::new(),
+            training_config: TrainingConfig {
+                model_candidates: Vec::new(),
+                split_config: SplitConfig {
+                    train_fraction: 0.7,
+                    validation_fraction: 0.15,
+                    test_fraction: 0.15,
+                    seed: 42,
+                    stratify: false,
+                },
+                validation_metric: ValidationMetric::Accuracy,
+            },
+            config: PipelineConfig {
+                auto_tuning: None,
+                validation: None,
+            },
+            metadata: PipelineMetadata::new("test".to_string()),
+        }
     }
 }
 

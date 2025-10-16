@@ -2,15 +2,13 @@
 //!
 //! Validates that pipeline descriptors can be created, serialized, and round-tripped.
 
-use rust_gds::projection::codegen::ml::{
-    pipeline_descriptor::{
+use rust_gds::projection::codegen::descriptors::ml::{
+    pipeline::{
         AutoTuningConfig, ModelCandidate, ModelType, PipelineConfig, PipelineDescriptor,
         PipelineType, SearchStrategy, SplitConfig, TrainingConfig, ValidationConfig,
         ValidationMetric,
     },
-    step_descriptor::{
-        FeatureStepDescriptor, FeatureType, NodePropertyStepDescriptor, StepDescriptor,
-    },
+    step::{FeatureStepDescriptor, FeatureType, NodePropertyStepDescriptor, StepDescriptor},
 };
 use std::collections::HashMap;
 
@@ -22,11 +20,13 @@ fn test_pipeline_descriptor_creation() {
             target_property: "label".to_string(),
         },
     )
-    .add_step(StepDescriptor::NodeProperty(NodePropertyStepDescriptor::new(
-        "pagerank-step".to_string(),
-        "pageRank".to_string(),
-        "pageRank".to_string(),
-    )))
+    .add_step(StepDescriptor::NodeProperty(
+        NodePropertyStepDescriptor::new(
+            "pagerank-step".to_string(),
+            "pageRank".to_string(),
+            "pageRank".to_string(),
+        ),
+    ))
     .add_step(StepDescriptor::Feature(FeatureStepDescriptor::new(
         "feature-extraction".to_string(),
         FeatureType::Scalar,

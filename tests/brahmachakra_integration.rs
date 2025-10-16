@@ -10,11 +10,11 @@
 //!
 //! This IS the unity of Dialectical and Metaphysical Idealism in executable code!
 
+use rust_gds::projection::codegen::descriptors::{PropertyDescriptor, StorageHint};
 use rust_gds::projection::codegen::{
     AdaptiveProjector, ArrowProjector, HugeArrayProjector, PregelProjector, TypeProjector,
     TypeValidator,
 };
-use rust_gds::projection::property_descriptor::{PropertyDescriptor, StorageHint};
 use rust_gds::types::ValueType;
 
 /// The Complete Brahmachakra - All Five Fingers Working Together

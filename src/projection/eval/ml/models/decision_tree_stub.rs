@@ -10,7 +10,7 @@
 //! - Support multiple features, proper splits, pruning
 
 use super::{Model, ModelError, ModelMetadata};
-use crate::projection::codegen::ml::ModelType;
+use crate::projection::codegen::descriptors::ml::ModelType;
 use crate::types::properties::PropertyValues;
 use std::collections::HashMap;
 use std::sync::Arc;

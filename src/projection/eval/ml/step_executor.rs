@@ -9,7 +9,7 @@
 use std::sync::Arc;
 
 use crate::projection::codegen::computation_runtime::ComputeError;
-use crate::projection::codegen::ml::step_descriptor::{
+use crate::projection::codegen::descriptors::ml::step::{
     FeatureStepDescriptor, NodePropertyStepDescriptor,
 };
 use crate::projection::eval::ml::pipeline_state::PipelineState;
@@ -244,9 +244,9 @@ impl StepExecutor for FeatureStepExecutor {
 
 /// Factory function to create step executor from descriptor
 pub fn create_step_executor(
-    descriptor: &crate::projection::codegen::ml::step_descriptor::StepDescriptor,
+    descriptor: &crate::projection::codegen::descriptors::ml::step::StepDescriptor,
 ) -> Box<dyn StepExecutor> {
-    use crate::projection::codegen::ml::step_descriptor::StepDescriptor;
+    use crate::projection::codegen::descriptors::ml::step::StepDescriptor;
 
     match descriptor {
         StepDescriptor::NodeProperty(desc) => Box::new(NodePropertyStepExecutor::new(desc.clone())),
@@ -257,7 +257,7 @@ pub fn create_step_executor(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::codegen::ml::step_descriptor::FeatureType;
+    use crate::projection::codegen::descriptors::ml::step::FeatureType;
 
     #[test]
     fn test_step_result_success() {

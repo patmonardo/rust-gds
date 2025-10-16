@@ -54,10 +54,10 @@ pub mod codegen;
 
 // Re-export commonly used codegen types
 // pub use codegen::functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};  // Form processor dependency
-pub use codegen::property_descriptor;
+pub use codegen::descriptors::property;
 
 // That's it! Everything else stays under codegen::, factory::, or eval::.
-// If you need ComputationDescriptor, use: crate::projection::codegen::computation_descriptor::ComputationDescriptor
-// If you need StorageDescriptor, use: crate::projection::codegen::storage_descriptor::StorageDescriptor
+// If you need ComputationDescriptor, use: crate::projection::codegen::descriptors::computation::ComputationDescriptor
+// If you need StorageDescriptor, use: crate::projection::codegen::descriptors::storage::StorageDescriptor
 // If you need form_processor, use: crate::projection::eval::form_processor
 // If you need ArrowNativeFactory, use: crate::projection::factory::arrow::ArrowNativeFactory

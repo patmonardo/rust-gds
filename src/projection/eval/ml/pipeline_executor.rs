@@ -9,10 +9,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::projection::codegen::computation_descriptor::ComputationDescriptor;
+use crate::projection::codegen::descriptors::computation::ComputationDescriptor;
 use crate::projection::codegen::computation_runtime::{ComputeContext, ComputeError, Computer};
-use crate::projection::codegen::ml::pipeline_descriptor::PipelineDescriptor;
-use crate::projection::codegen::ml::step_descriptor::StepDescriptor;
+use crate::projection::codegen::descriptors::ml::pipeline::PipelineDescriptor;
+use crate::projection::codegen::descriptors::ml::step::StepDescriptor;
 use crate::projection::eval::ml::graph_procedure::GraphProcedureRegistry;
 use crate::projection::eval::ml::pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
 use crate::types::graph::Graph;
@@ -151,7 +151,7 @@ impl PipelineExecutor {
     /// 2. Execute procedure on graph with step config
     /// 3. Store resulting PropertyValues in state
     fn execute_node_property_steps(&mut self, graph: &Arc<dyn Graph>) -> Result<(), ComputeError> {
-        use crate::projection::codegen::ml::step_descriptor::NodePropertyStepDescriptor;
+        use crate::projection::codegen::descriptors::ml::step::NodePropertyStepDescriptor;
 
         self.state.set_phase(ExecutionPhase::NodePropertySteps);
 
@@ -201,7 +201,7 @@ impl PipelineExecutor {
     /// Phase 2.3: Simple identity transformation (copy property → feature)
     /// Phase 2.5: Full feature engineering (normalize, one-hot, combine)
     fn assemble_features(&mut self) -> Result<(), ComputeError> {
-        use crate::projection::codegen::ml::step_descriptor::FeatureStepDescriptor;
+        use crate::projection::codegen::descriptors::ml::step::FeatureStepDescriptor;
 
         self.state.set_phase(ExecutionPhase::FeatureSteps);
 
@@ -392,7 +392,7 @@ impl PipelineExecutor {
     ) -> Result<PipelineResult, ComputeError> {
         // Create dummy pipeline descriptor for context
         // In real usage, this comes from the pipeline itself
-        use crate::projection::codegen::pipeline_descriptor::PipelineDescriptor as CodegenPipelineDescriptor;
+        use crate::projection::codegen::descriptors::ml::pipeline::PipelineDescriptor;
         let codegen_pipeline = CodegenPipelineDescriptor {
             name: "ml_pipeline".into(),
             properties: vec![],
@@ -417,8 +417,8 @@ impl PipelineExecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::codegen::ml::pipeline_descriptor::PipelineDescriptor as MLPipelineDescriptor;
-    use crate::projection::codegen::ml::step_descriptor::{
+    use crate::projection::codegen::descriptors::ml::pipeline::PipelineDescriptor as MLPipelineDescriptor;
+    use crate::projection::codegen::descriptors::ml::step::{
         FeatureStepDescriptor, FeatureType, NodePropertyStepDescriptor,
     };
 
@@ -449,7 +449,7 @@ mod tests {
 
     #[test]
     fn test_pipeline_executor_creation() {
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
 
         let pipeline = MLPipelineDescriptor::builder(
             "test_pipeline".to_string(),
@@ -472,7 +472,7 @@ mod tests {
 
     #[test]
     fn test_validate_empty_pipeline() {
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
 
         let pipeline = MLPipelineDescriptor::builder(
             "empty_pipeline".to_string(),
@@ -497,7 +497,7 @@ mod tests {
 
     #[test]
     fn test_validate_node_property_step() {
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
 
         let step = StepDescriptor::NodeProperty(NodePropertyStepDescriptor::new(
             "pagerank_step".into(),
@@ -527,7 +527,7 @@ mod tests {
 
     #[test]
     fn test_pipeline_with_multiple_steps() {
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
 
         let step1 = StepDescriptor::NodeProperty(NodePropertyStepDescriptor::new(
             "pagerank_step".into(),
@@ -567,7 +567,7 @@ mod tests {
     #[test]
     fn test_execute_with_mock_registry() {
         use super::super::graph_procedure::create_mock_registry;
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
         use crate::types::graph_store::DefaultGraphStore;
         use crate::types::random::RandomGraphConfig;
 
@@ -621,7 +621,7 @@ mod tests {
 
     #[test]
     fn test_dataset_splitting() {
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
         use crate::types::graph_store::DefaultGraphStore;
         use crate::types::random::RandomGraphConfig;
 
@@ -670,7 +670,7 @@ mod tests {
     #[test]
     fn test_end_to_end_orchestration() {
         use super::super::graph_procedure::create_mock_registry;
-        use crate::projection::codegen::ml::pipeline_descriptor::*;
+        use crate::projection::codegen::descriptors::ml::pipeline::*;
         use crate::types::graph_store::DefaultGraphStore;
         use crate::types::random::RandomGraphConfig;
 

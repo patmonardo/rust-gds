@@ -28,11 +28,11 @@ use crate::types::prelude::GraphStore;
 use serde_json::Value as JsonValue;
 use std::time::Instant;
 
-// Re-export from sibling modules
-use super::algorithm_spec::{AlgorithmError, ConfigError, ConsumerError};
+// Re-export from sibling modules and codegen
 use super::execution_context::ContextError;
 use super::validation_config::ValidationError;
 use super::{AlgorithmSpec, ComputationResult, ExecutionContext, ExecutionMode, LogLevel};
+use crate::projection::codegen::procedure::{AlgorithmError, ConfigError, ConsumerError};
 
 /// Procedure Executor - GDSL Runtime for algorithm execution
 ///

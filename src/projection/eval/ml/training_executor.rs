@@ -2,7 +2,7 @@
 ///
 /// Orchestrates model training with hyperparameter search and model selection.
 /// Node-centric: trains models to predict node properties/labels.
-use crate::projection::codegen::ml::{ModelCandidate, ValidationMetric};
+use crate::projection::codegen::descriptors::ml::{ModelCandidate, ValidationMetric};
 use crate::projection::eval::ml::pipeline_state::DatasetSplits;
 use crate::types::properties::PropertyValues;
 use std::collections::HashMap;
@@ -242,7 +242,7 @@ mod tests {
     }
 
     fn create_test_candidate(
-        model_type: crate::projection::codegen::ml::ModelType,
+        model_type: crate::projection::codegen::descriptors::ml::ModelType,
     ) -> ModelCandidate {
         ModelCandidate {
             model_type,
@@ -252,7 +252,7 @@ mod tests {
 
     #[test]
     fn test_training_executor_creation() {
-        use crate::projection::codegen::ml::ModelType;
+        use crate::projection::codegen::descriptors::ml::ModelType;
         let candidates = vec![create_test_candidate(ModelType::LogisticRegression)];
         let executor = TrainingExecutor::new(candidates, ValidationMetric::Accuracy);
 
@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn test_train_single_candidate() {
-        use crate::projection::codegen::ml::ModelType;
+        use crate::projection::codegen::descriptors::ml::ModelType;
         let features = create_test_features();
         let splits = create_test_splits();
         let candidates = vec![create_test_candidate(ModelType::LogisticRegression)];
@@ -278,7 +278,7 @@ mod tests {
 
     #[test]
     fn test_train_multiple_candidates() {
-        use crate::projection::codegen::ml::ModelType;
+        use crate::projection::codegen::descriptors::ml::ModelType;
         let features = create_test_features();
         let splits = create_test_splits();
         let candidates = vec![
@@ -313,7 +313,7 @@ mod tests {
 
     #[test]
     fn test_train_no_features() {
-        use crate::projection::codegen::ml::ModelType;
+        use crate::projection::codegen::descriptors::ml::ModelType;
         let splits = create_test_splits();
         let candidates = vec![create_test_candidate(ModelType::LogisticRegression)];
 
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn test_train_target_not_found() {
-        use crate::projection::codegen::ml::ModelType;
+        use crate::projection::codegen::descriptors::ml::ModelType;
         let features = create_test_features();
         let splits = create_test_splits();
         let candidates = vec![create_test_candidate(ModelType::LogisticRegression)];
@@ -343,7 +343,7 @@ mod tests {
 
     #[test]
     fn test_training_statistics() {
-        use crate::projection::codegen::ml::ModelType;
+        use crate::projection::codegen::descriptors::ml::ModelType;
         let mut stats = TrainingStatistics::new();
 
         let candidate1 = create_test_candidate(ModelType::LogisticRegression);

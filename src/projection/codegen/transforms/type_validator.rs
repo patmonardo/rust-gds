@@ -65,7 +65,8 @@ use std::fmt;
 
 use crate::types::ValueType;
 
-use super::property_descriptor::{PropertyDescriptor, StorageHint};
+// Import descriptors from the descriptors module
+use crate::projection::codegen::descriptors::{PropertyDescriptor, StorageHint};
 
 // ============================================================================
 // Error Types
