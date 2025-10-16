@@ -59,7 +59,7 @@ macro_rules! value_type_table {
             #[allow(non_snake_case)]
             pub mod $type_name {
                 use $crate::projection::codegen::property_descriptor::{PropertyDescriptor, StorageHint};
-                use $crate::projection::native::form_processor;
+                use $crate::projection::eval::form_processor;
                 use $crate::projection::codegen::functors::{GrossToSubtle, SubtleToGross};
                 use $crate::types::ValueType;
                 use $crate::values::traits::GdsValue;

@@ -354,8 +354,8 @@ fn configuration(&self) -> &HashMap<String, serde_json::Value>;
 
 ```
 running 18 tests
-test projection::native::ml::pipeline::pipeline_trait::tests::test_validation_error_display ... ok
-test projection::native::ml::pipeline_executor::tests::test_* ... ok (17 existing tests)
+test projection::eval::ml::pipeline::pipeline_trait::tests::test_validation_error_display ... ok
+test projection::eval::ml::pipeline_executor::tests::test_* ... ok (17 existing tests)
 
 test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured
 ```

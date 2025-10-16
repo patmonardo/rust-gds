@@ -329,7 +329,7 @@ let graph_properties: HashSet<String> = HashSet::new();
 
 ### Passing Tests (18 total)
 
-From `cargo test --lib projection::native::ml::pipeline`:
+From `cargo test --lib projection::eval::ml::pipeline`:
 
 #### Pipeline Module Tests (1)
 

@@ -375,7 +375,7 @@ impl Computer for FormDBExecutor {
 use rust_gds::projection::codegen::ml::{
     PipelineDescriptor, StepDescriptor, NodePropertyStepDescriptor,
 };
-use rust_gds::projection::native::ml::PipelineExecutor;
+use rust_gds::projection::eval::ml::PipelineExecutor;
 
 let pipeline = PipelineDescriptor {
     name: "my_pipeline".into(),

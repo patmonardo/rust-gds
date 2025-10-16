@@ -3,17 +3,23 @@
 //! Simple module containing lightweight projection types (labels, relationship types,
 //! orientations) and delegating heavy codegen machinery to the `codegen` submodule.
 //!
-//! ## Architecture
+//! ## Architecture - GDSL Runtime
 //!
-//! - **projection/** - Core projection types (this module)
-//! - **projection/codegen/** - Code generation descriptors and runtime
-//! - **native/** - Native implementations, including form_processor
+//! The `projection` module is the **GDSL Runtime** (Graph Domain Specific Language).
+//! It provides the execution environment for graph computations and data transformations.
 //!
-//! ## Tomorrow's Work Focus
+//! - **projection/** - Core projection types (labels, orientations, relationship types)
+//! - **projection/traits/** - Core abstractions (ElementProjection, PropertyMapping)
+//! - **projection/impls/** - Concrete implementations
+//! - **projection/codegen/** - Code generation descriptors and utilities
+//! - **projection/factory/** - Data ingestion (Arrow → GraphStore, future Neo4j/Polars)
+//! - **projection/eval/** - Execution runtime (ML pipelines, Form evaluators, Procedures)
 //!
-//! We'll be working primarily in two folders:
-//! 1. **codegen/** - Generate descriptors and specifications
-//! 2. **native/** - Implement runtime execution (form_processor is the nexus)
+//! ## Module Separation
+//!
+//! - **factory** = CAR (given data) - Ingestion of external data into GraphStore
+//! - **eval** = CDR (derived computations) - Execution of computations on GraphStore
+//! - **codegen** = Utilities for generating execution code
 
 // ------------------------------------------------------------------------
 // Core projection types (simple, widely used)
@@ -32,12 +38,17 @@ pub use relationship_type::*;
 pub use traits::*;
 
 // ------------------------------------------------------------------------
-// Native implementation layer (form_processor, native_factory)
+// Factory layer (data ingestion: external data → GraphStore)
 // ------------------------------------------------------------------------
-pub mod native;
+pub mod factory;
 
 // ------------------------------------------------------------------------
-// Heavy codegen machinery (isolated in submodule)
+// Eval layer (execution runtime: ML, Form, Procedures)
+// ------------------------------------------------------------------------
+pub mod eval;
+
+// ------------------------------------------------------------------------
+// Codegen layer (code generation utilities)
 // ------------------------------------------------------------------------
 pub mod codegen;
 
@@ -45,7 +56,8 @@ pub mod codegen;
 // pub use codegen::functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};  // Form processor dependency
 pub use codegen::property_descriptor;
 
-// That's it! Everything else stays under codegen:: or native::.
+// That's it! Everything else stays under codegen::, factory::, or eval::.
 // If you need ComputationDescriptor, use: crate::projection::codegen::computation_descriptor::ComputationDescriptor
 // If you need StorageDescriptor, use: crate::projection::codegen::storage_descriptor::StorageDescriptor
-// If you need form_processor, use: crate::projection::native::form_processor
+// If you need form_processor, use: crate::projection::eval::form_processor
+// If you need ArrowNativeFactory, use: crate::projection::factory::arrow::ArrowNativeFactory

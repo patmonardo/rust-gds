@@ -262,8 +262,8 @@ test result: ok. 40 passed; 0 failed; 0 ignored
 
 ```rust
 use rust_gds::projection::codegen::ml::pipeline_descriptor::*;
-use rust_gds::projection::native::ml::graph_procedure::create_mock_registry;
-use rust_gds::projection::native::ml::pipeline_executor::PipelineExecutor;
+use rust_gds::projection::eval::ml::graph_procedure::create_mock_registry;
+use rust_gds::projection::eval::ml::pipeline_executor::PipelineExecutor;
 use rust_gds::types::graph_store::DefaultGraphStore;
 use rust_gds::types::random::RandomGraphConfig;
 
@@ -334,7 +334,7 @@ let pipeline = PipelineDescriptor::builder(name, pipeline_type)
 ### Example 3: Custom Procedure Registry
 
 ```rust
-use rust_gds::projection::native::ml::graph_procedure::{
+use rust_gds::projection::eval::ml::graph_procedure::{
     GraphProcedure, GraphProcedureRegistry, MockPageRankProcedure,
 };
 

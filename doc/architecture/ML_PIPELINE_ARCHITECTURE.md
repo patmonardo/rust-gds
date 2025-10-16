@@ -619,7 +619,7 @@ impl PipelineExecutor {
 /// Pipeline execution result.
 pub struct PipelineResult {
     /// Best model (from auto-tuning)
-    pub best_model: Box<dyn crate::projection::native::ml::model::Model>,
+    pub best_model: Box<dyn crate::projection::eval::ml::model::Model>,
 
     /// Validation metrics (for best model)
     pub validation_metrics: MetricsResult,
@@ -664,7 +664,7 @@ pub enum PipelineError {
 
 // Stub implementations for now
 struct TrainingResult {
-    best_model: Box<dyn crate::projection::native::ml::model::Model>,
+    best_model: Box<dyn crate::projection::eval::ml::model::Model>,
     validation_metrics: MetricsResult,
     test_metrics: MetricsResult,
     all_trials: Vec<TrialResult>,
@@ -765,7 +765,7 @@ impl GraphProcedure for MockPageRankProcedure {
         _config: &HashMap<String, serde_json::Value>,
     ) -> Result<Arc<dyn PropertyValues>, GraphProcedureError> {
         // Return mock PageRank scores
-        use crate::projection::native::ml::mock_property_values::MockDoublePropertyValues;
+        use crate::projection::eval::ml::mock_property_values::MockDoublePropertyValues;
 
         let node_count = graph_store.node_count();
         let values: Vec<f64> = (0..node_count)
@@ -797,7 +797,7 @@ impl GraphProcedure for MockFastRPProcedure {
         config: &HashMap<String, serde_json::Value>,
     ) -> Result<Arc<dyn PropertyValues>, GraphProcedureError> {
         // Return mock embeddings
-        use crate::projection::native::ml::mock_property_values::MockEmbeddingPropertyValues;
+        use crate::projection::eval::ml::mock_property_values::MockEmbeddingPropertyValues;
 
         let embedding_dim = config
             .get("embeddingDimension")

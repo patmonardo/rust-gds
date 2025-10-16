@@ -367,7 +367,7 @@ fn assemble_features(&mut self) -> Result<(), ComputeError> {
 
 ```rust
 fn assemble_features(&mut self) -> Result<(), ComputeError> {
-    use crate::projection::native::ml::features::{
+    use crate::projection::eval::ml::features::{
         FeatureAssembler, DefaultFeatureAssembler,
     };
 
