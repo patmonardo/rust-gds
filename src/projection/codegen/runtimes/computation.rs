@@ -226,8 +226,6 @@ mod tests {
 
     #[test]
     fn dummy_computer_lifecycle() {
-        use crate::types::ValueType;
-
         let config = RandomGraphConfig::default().with_seed(42);
         let graph_store = DefaultGraphStore::random(&config).expect("graph creation failed");
         let graph = graph_store.graph();
@@ -288,8 +286,6 @@ mod tests {
         let computer = instantiate_computer_from_descriptor(99).expect("instantiate ok");
 
         // Verify lifecycle works
-        use crate::types::ValueType;
-
         let config = RandomGraphConfig::default().with_seed(42);
         let graph_store = DefaultGraphStore::random(&config).expect("graph creation failed");
         let graph = graph_store.graph();

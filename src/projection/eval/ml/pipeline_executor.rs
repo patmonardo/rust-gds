@@ -10,9 +10,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::projection::codegen::descriptors::computation::ComputationDescriptor;
-use crate::projection::codegen::computation_runtime::{ComputeContext, ComputeError, Computer};
 use crate::projection::codegen::descriptors::ml::pipeline::PipelineDescriptor;
 use crate::projection::codegen::descriptors::ml::step::StepDescriptor;
+use crate::projection::codegen::runtimes::computation::{ComputeContext, ComputeError, Computer};
 use crate::projection::eval::ml::graph_procedure::GraphProcedureRegistry;
 use crate::projection::eval::ml::pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
 use crate::types::graph::Graph;

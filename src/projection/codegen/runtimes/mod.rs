@@ -11,7 +11,7 @@
 //! ## The Dialectic
 //!
 //! While `descriptors/` defines WHAT things ARE (Identity/Science),
-//! `runtime/` defines HOW things EXECUTE (Difference/Manifestation).
+//! `runtimes/` defines HOW things EXECUTE (Difference/Manifestation).
 //!
 //! Together they form the complete Five-Fold system:
 //! 1. PropertyDescriptor (Unity) - WHAT the property IS
@@ -23,7 +23,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::runtime::*;
+//! use rust_gds::projection::codegen::runtimes::*;
 //!
 //! // Implement Computer trait for BSP execution
 //! impl Computer for BspComputer {

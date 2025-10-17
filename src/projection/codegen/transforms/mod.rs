@@ -9,7 +9,7 @@
 //!
 //! ## The Transcendental Function
 //!
-//! While `descriptors/` and `runtime/` define the extremes (WHAT and HOW),
+//! While `descriptors/` and `runtimes/` define the extremes (WHAT and HOW),
 //! `transforms/` provides the MAPPINGS between them - the projective geometry
 //! of the type system.
 //!

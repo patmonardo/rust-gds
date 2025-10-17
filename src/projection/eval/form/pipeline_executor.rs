@@ -10,13 +10,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::projection::codegen::computation_descriptor::ComputationDescriptor;
-use crate::projection::codegen::computation_runtime::{ComputeContext, ComputeError, Computer};
 use crate::projection::codegen::ml::pipeline_descriptor::PipelineDescriptor;
 use crate::projection::codegen::ml::step_descriptor::StepDescriptor;
+use crate::projection::codegen::runtimes::computation::{ComputeContext, ComputeError, Computer};
 use crate::projection::eval::form::graph_procedure::GraphProcedureRegistry;
-use crate::projection::eval::form::pipeline_state::{
-    DatasetSplits, ExecutionPhase, PipelineState,
-};
+use crate::projection::eval::form::pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
 use crate::types::graph::Graph;
 use crate::types::properties::PropertyValues;
 

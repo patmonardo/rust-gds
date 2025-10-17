@@ -8,10 +8,10 @@
 
 use std::sync::Arc;
 
-use crate::projection::codegen::computation_runtime::ComputeError;
 use crate::projection::codegen::ml::step_descriptor::{
     FeatureStepDescriptor, NodePropertyStepDescriptor,
 };
+use crate::projection::codegen::runtimes::computation::ComputeError;
 use crate::projection::eval::form::pipeline_state::PipelineState;
 use crate::types::graph::Graph;
 use crate::types::properties::PropertyValues;

@@ -184,7 +184,6 @@ mod tests {
     use crate::projection::codegen::descriptors::storage::{BackendTechnology, StorageDescriptor};
     use crate::types::graph_store::DefaultGraphStore;
     use crate::types::random::RandomGraphConfig;
-    use crate::types::ValueType;
 
     /// Dummy StorageRuntime for testing
     struct DummyStorageRuntime {
@@ -248,8 +247,6 @@ mod tests {
 
     #[test]
     fn dummy_storage_runtime_lifecycle() {
-        use crate::projection::codegen::PropertyDescriptor;
-
         let config = RandomGraphConfig::default().with_seed(42);
         let graph_store = DefaultGraphStore::random(&config).expect("graph creation failed");
         let graph = graph_store.graph();
@@ -305,8 +302,6 @@ mod tests {
         let runtime = instantiate_storage_runtime_from_descriptor(99).expect("instantiate ok");
 
         // Verify it's a valid runtime by running lifecycle
-        use crate::projection::codegen::PropertyDescriptor;
-
         let config = RandomGraphConfig::default().with_seed(42);
         let graph_store = DefaultGraphStore::random(&config).expect("graph creation failed");
         let graph = graph_store.graph();

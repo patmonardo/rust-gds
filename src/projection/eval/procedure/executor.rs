@@ -31,8 +31,10 @@ use std::time::Instant;
 // Re-export from sibling modules and codegen
 use super::execution_context::ContextError;
 use super::validation_config::ValidationError;
-use super::{AlgorithmSpec, ComputationResult, ExecutionContext, ExecutionMode, LogLevel};
-use crate::projection::codegen::procedure::{AlgorithmError, ConfigError, ConsumerError};
+use super::{
+    AlgorithmError, AlgorithmSpec, ComputationResult, ConfigError, ConsumerError, ExecutionContext,
+    ExecutionMode, LogLevel,
+};
 
 /// Procedure Executor - GDSL Runtime for algorithm execution
 ///

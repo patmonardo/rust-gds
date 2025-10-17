@@ -15,11 +15,8 @@ use crate::types::prelude::GraphStore;
 use serde_json::Value as JsonValue;
 use std::time::Duration;
 
-// Import types from eval/procedure (execution runtime)
-// NOTE: AlgorithmSpec moved to codegen/procedure but still needs runtime types
-use crate::projection::eval::procedure::{
-    ComputationResult, ExecutionContext, ExecutionMode, ValidationConfiguration,
-};
+// Import types from the surrounding executor runtime module
+use super::{ComputationResult, ExecutionContext, ExecutionMode, ValidationConfiguration};
 
 /// Algorithm Specification - Contract for algorithm implementations
 ///

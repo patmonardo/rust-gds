@@ -10,20 +10,20 @@
 //!     ↓
 //! Descriptors (Identity/Science - WHAT things ARE)
 //!     ↓
-//! Runtime (Difference/Manifestation - HOW things EXECUTE)
+//! Runtimes (Difference/Manifestation - HOW things EXECUTE)
 //!     ↓
 //! Transforms (Maya/Projection - MAPPINGS between extremes)
 //!     ↓
-//! Procedure (THE CONTRACT - what algorithms implement)
+//! Procedure Contract (`projection::eval::procedure` - what algorithms implement)
 //! ```
 //!
 //! ## Organization
 //!
 //! - `macros/` - Code generation TOOLS (eval_macro, config, procedure macros)
 //! - `descriptors/` - Compile-time SCHEMAS (property, computation, storage, pipeline, ML)
-//! - `runtime/` - Execution CONTRACTS (Computer, ComputeStep, StorageRuntime, etc.)
-//! - `procedure/` - Algorithm CONTRACT (AlgorithmSpec trait)
+//! - `runtimes/` - Execution CONTRACTS (Computer, ComputeStep, StorageRuntime, etc.)
 //! - `transforms/` - Cross-cutting conversions (TypeProjector, TypeValidator, Functors)
+//! - `AlgorithmSpec` now lives under `projection::eval::procedure`
 //!
 //! ## Usage
 //!
@@ -35,10 +35,10 @@
 //! use rust_gds::projection::codegen::descriptors::*;
 //!
 //! // Get runtime contracts
-//! use rust_gds::projection::codegen::runtime::*;
+//! use rust_gds::projection::codegen::runtimes::*;
 //!
-//! // Get algorithm contract
-//! use rust_gds::projection::codegen::procedure::AlgorithmSpec;
+//! // Get algorithm contract (lives under the executor runtime)
+//! use rust_gds::projection::eval::procedure::AlgorithmSpec;
 //!
 //! // Get transforms
 //! use rust_gds::projection::codegen::transforms::*;
@@ -51,8 +51,7 @@
 #[macro_use]
 pub mod macros;
 pub mod descriptors;
-pub mod procedure; // AlgorithmSpec trait (THE CONTRACT)
-pub mod runtime;
+pub mod runtimes;
 pub mod transforms;
 
 // ============================================================================
@@ -71,15 +70,12 @@ pub use descriptors::{
 // ML Pipeline is THE pipeline (re-export for convenience)
 pub use descriptors::PipelineDescriptor;
 
-// Runtime
-pub use runtime::{
+// Runtimes
+pub use runtimes::{
     instantiate_computer_from_descriptor, register_computer_factory, AccessMode, ComputeContext,
     ComputeError, ComputeStep, Computer, ComputerFactory, Messages, StorageAccessor,
     StorageContext, StorageError, StorageRuntime, StorageRuntimeFactory, StorageValue,
 };
-
-// Procedure contract
-pub use procedure::AlgorithmSpec;
 
 // Transforms
 pub use transforms::{

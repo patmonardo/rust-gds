@@ -38,11 +38,13 @@
 
 pub mod computation;
 pub mod ml;
+pub mod procedure;
 pub mod property;
 pub mod storage;
 
 // Re-exports
 pub use computation::{ComputationDescriptor, ComputationPattern, ComputationSpecies};
+pub use procedure::{ProcedureCategory, ProcedureConfigFormat, ProcedureDescriptor, ProcedureMode};
 pub use property::{
     FieldDescriptor, PropertyDescriptor, PropertyId, StorageHint, StructDescriptor, StructId,
 };
