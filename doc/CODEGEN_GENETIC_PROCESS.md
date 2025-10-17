@@ -317,3 +317,35 @@ Implement the three modules:
    - Create new descriptors for next iteration
 
 Each module is a precise moment in the genetic process. Together they form the **Encyclopedia of our GDS Kernel**.
+
+---
+
+## The Recursive Structure: Transforms as Projections
+
+**KEY INSIGHT:** A Transform IS itself a Membership:Consequence projection, but at the derived (Inherence) level.
+
+This realizes the **Fichtean principle** (dyads generate dyads) and the **Hegelian dialectic** (Being:Nothing → Coming-to-be:Ceasing-to-be).
+
+See: `doc/TRANSFORMS_FICHTEAN_HEGELIAN.md` for complete analysis.
+
+### The Pattern:
+
+```
+Level 0 (Ground):
+  Descriptor (Being)
+    ↓ PROJECT ↓
+  Membership (Constraint) → Consequence (Manifestation)
+    ↓
+  Runtime (New Being)
+
+Level 1 (First Transform):
+  Runtime (Being)
+    ↓ PROJECT ↓
+  Inherence (Constraint) → Transform (Manifestation)
+    ↓
+  DerivedDescriptor (New Being for next iteration)
+
+(Pattern repeats recursively at each level)
+```
+
+This means the system **generates itself** through infinite recursive application of the same logical structure — not by enumeration, but by **internal necessity**.

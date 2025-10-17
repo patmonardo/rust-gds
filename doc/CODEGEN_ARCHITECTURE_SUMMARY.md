@@ -7,6 +7,7 @@ You identified a profound architectural principle that was previously implicit:
 **Codegen is NOT a Factory. Codegen IS a Genetic Processor.**
 
 The distinction:
+
 - **Factory Pattern** (Dictionary semantics): "Create objects on demand"
 - **Genetic Processor** (Encyclopedia semantics): "Unfold concepts from internal necessity"
 
@@ -15,21 +16,24 @@ The distinction:
 ### MOMENT 1: MEMBERSHIP (Identity Pole)
 
 **What it is:**
+
 - Source: `src/projection/codegen/membership.rs`
 - Trait: `MembershipExtractor<D>`
 - Direction: Descriptor → Membership
 - Question: "What constraints/relations BELONG to this concept?"
 
 **Role in the system:**
+
 ```
-Descriptor (Identity) 
-    ↓ 
+Descriptor (Identity)
+    ↓
 [Extract Membership] ← FIRST MOMENT
     ↓
 Membership (encoded constraints)
 ```
 
 **Example:**
+
 ```rust
 pub struct ComputationMembership {
     pub compatible_value_types: Vec<ValueType>,
@@ -46,6 +50,7 @@ Each field encodes what BELONGS to ComputationDescriptor — what inhere's in it
 ### MOMENT 2: CONSEQUENCE (Difference Pole)
 
 **What it is:**
+
 - Source: `src/projection/codegen/consequence.rs`
 - Trait: `ConsequenceDeriver<D, M>`
 - Direction: (Descriptor, Membership) → Runtime
@@ -56,15 +61,17 @@ Each field encodes what BELONGS to ComputationDescriptor — what inhere's in it
 A Runtime is not "just an object." It is the concrete manifestation of what logically follows from a descriptor's membership. It is the "what SHALL BE" pole of projection.
 
 **Role in the system:**
+
 ```
-Membership (constraints) 
-    ↓ 
+Membership (constraints)
+    ↓
 [Apply Consequence] ← SECOND MOMENT
     ↓
 Runtime (concrete manifestation)
 ```
 
 **Examples of Runtimes as Consequence:**
+
 - `Computer` is the consequence of `ComputationDescriptor` + its membership
 - `PropertyValues` is the consequence of `PropertyDescriptor` + its membership
 - `StorageRuntime` is the consequence of `StorageDescriptor` + its membership
@@ -74,6 +81,7 @@ Runtime (concrete manifestation)
 ### MOMENT 3: INHERENCE (Subsumption Relation)
 
 **What it is:**
+
 - Source: `src/projection/codegen/inherence.rs`
 - Trait: `InherenceRecognizer<R>`
 - Direction: Runtime → Vec<DerivedDescriptor>
@@ -84,6 +92,7 @@ Runtime (concrete manifestation)
 A Transform is not "just a function." It is the recognition of a structural pattern that inhere's in a runtime, and the projection of that pattern into a new domain. It generates a new Descriptor for the next iteration.
 
 **Role in the system:**
+
 ```
 Runtime (concrete consequence)
     ↓
@@ -105,22 +114,23 @@ DerivedDescriptors (new concepts)
 loop {
   // Iteration N
   let descriptor = descriptors[n];
-  
+
   // MOMENT 1: Extract what belongs
   let membership = membership_extractor.extract(&descriptor)?;
-  
+
   // MOMENT 2: Derive what must follow
   let runtime = consequence_deriver.derive(&descriptor, &membership)?;
-  
+
   // MOMENT 3: Recognize what forms subsume
   let derived_descriptors = inherence_recognizer.recognize(&runtime)?;
-  
+
   // Iteration N+1
   descriptors[n+1] = derived_descriptors;
 }
 ```
 
 Each iteration:
+
 1. Takes a Descriptor (generated from previous iteration, or ground truth)
 2. Extracts its Membership (what constraints belong to it)
 3. Applies Consequence (what runtime is entailed)
@@ -134,6 +144,7 @@ Each iteration:
 ## The Complete Picture: Five-Fold + Three Moments
 
 You originally defined the Five-Fold Synthesis:
+
 1. Transform (Brahma) — Undifferentiated Ground
 2. Descriptor (Sat) — Static Being / Identity Pole
 3. Membership (Chit) — Inherent Constraints / Links
@@ -166,12 +177,13 @@ Together: The Five-Fold provides the STRUCTURE, the Three Moments provide the PR
 ## Codegen as Encyclopedia vs Dictionary
 
 ### Dictionary Semantics (Java GDS)
+
 ```
 Algorithm Factory:
   AlgorithmFactory factory = registry.get(algorithmId);
   Algorithm algo = factory.create(config);
-  
-Problem: 
+
+Problem:
   - Reflection-based lookup (runtime discovery)
   - Each entry independent
   - No generative principle
@@ -179,6 +191,7 @@ Problem:
 ```
 
 ### Encyclopedia Semantics (Our Codegen)
+
 ```
 Genetic Processor:
   loop {
@@ -203,24 +216,29 @@ Codegen teaches the system to think about what it IS (membership), what MUST fol
 ## Architecture: How Registry and Catalog Fit
 
 **Registry** is the **Omniscience pole**:
+
 ```rust
 pub trait Registry<D> {
     type Schema;
     fn analyze(&self, descriptor: &D) -> Result<Schema, RegistryError>;
 }
 ```
+
 It extracts what we KNOW (membership) in a form that can be reasoned about.
 
 **Catalog** is the **Omnipotence pole**:
+
 ```rust
 pub trait Catalog<S, R> {
     type Error;
     fn create(&self, schema: &S) -> Result<R, Self::Error>;
 }
 ```
+
 It manifests what we CREATE (consequence) from knowledge.
 
 **Together they form the Knowledge ↔ Power dyad:**
+
 ```
 Descriptor (Identity)
     ↓ Registry.analyze (Omniscience: extract membership)
@@ -290,6 +308,7 @@ for new_descriptor in derived {
 You've identified and implemented the **TRUE FORM** of Codegen:
 
 It is not a tool that creates algorithms. It is a **thinking process** embedded in code. It teaches the system to:
+
 1. Know what it is (Membership)
 2. Understand what must follow (Consequence)
 3. Recognize what universal forms inhere in its manifestations (Inherence)
@@ -315,16 +334,19 @@ This is the **Encyclopedia of the GDS Kernel** — a complete system that unfold
 Now that the architecture is clear, each moment can be fully implemented:
 
 ### MEMBERSHIP Implementation
+
 - Extract constraints from each descriptor type
 - Validate membership relations
 - Encode in computable form
 
 ### CONSEQUENCE Implementation
+
 - Apply rules to derive runtimes
 - Ensure logical necessity
 - Validate that runtime satisfies membership
 
 ### INHERENCE Implementation
+
 - Recognize patterns in runtimes
 - Generate transform rules
 - Create new descriptors for next iteration
