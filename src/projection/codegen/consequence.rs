@@ -1,12 +1,26 @@
-//! CONSEQUENCE: The Second Division of Inherence
+//! CONSEQUENCE: The Second Moment of the Genetic Loop
 //!
-//! Logical entailment — what MUST follow from Descriptor + Membership?
+//! Consequence is the Difference pole — it answers "What MUST follow from membership?"
 //!
-//! Given a ComputationDescriptor with specific membership constraints,
-//! what runtime strategy is logically determined?
+//! Given a Descriptor and its extracted Membership (constraints, relations),
+//! Consequence determines what runtime strategy is logically entailed.
 //!
-//! This module encodes the rules by which descriptors entail runtimes.
-//! No ambiguity, no heuristics—just pure logical necessity.
+//! This is deterministic: same membership → same consequence.
+//! No heuristics, no runtime discovery — just pure logical necessity.
+//!
+//! RUNTIMES ARE MOMENTS OF CONSEQUENCE:
+//! A Runtime is the concrete manifestation of what logically follows
+//! from a descriptor's membership. It is the "what SHALL BE" of projection.
+//!
+//! This is the SECOND STEP in the genetic loop:
+//! ```
+//! Descriptor → Membership → [apply Consequence] → Runtime → Inherence → [next iteration]
+//! ```
+//!
+//! See also:
+//! - membership.rs (first moment)
+//! - inherence.rs (third moment)
+//! - CODEGEN_GENETIC_PROCESS.md (complete architecture)
 
 use std::fmt;
 
@@ -32,10 +46,28 @@ impl fmt::Display for ConsequenceError {
 
 impl std::error::Error for ConsequenceError {}
 
-/// CONSEQUENCE RULE: Logical Entailment
+/// CONSEQUENCE TRAIT: Derive What Must Follow
 ///
-/// Given a descriptor's membership, determine what runtime is entailed.
-/// This is deterministic: same membership → same consequence.
+/// Given a Descriptor and its Membership, derive what Runtime is logically entailed.
+/// This is the manifestation moment: abstract constraints → concrete being.
+///
+/// D = Descriptor type (what we examine)
+/// M = Membership type (what we have extracted)
+/// R = Runtime type (what we manifest)
+pub trait ConsequenceDeriver<D, M>: Send + Sync + fmt::Debug
+where
+    D: Send + Sync,
+    M: Send + Sync,
+{
+    type Runtime: Send + Sync + fmt::Debug;
+
+    /// Derive what runtime is logically entailed by descriptor + membership.
+    /// This is deterministic: same membership → same runtime.
+    fn derive(&self, descriptor: &D, membership: &M) -> Result<Self::Runtime, ConsequenceError>;
+}
+
+/// CONSEQUENCE RULE: Placeholder for future implementation
+/// This will be specialized per descriptor type (Computation, Storage, etc.)
 pub struct ConsequenceRule;
 
 impl ConsequenceRule {

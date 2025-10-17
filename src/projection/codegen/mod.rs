@@ -93,6 +93,8 @@ pub mod macros;
 pub mod catalog;
 pub mod consequence;
 pub mod descriptors;
+pub mod inherence;
+pub mod membership;
 pub mod registry;
 pub mod runtimes;
 pub mod transforms;
