@@ -59,7 +59,7 @@ impl ConsoleLog {
     pub fn new() -> Self {
         Self {
             debug_enabled: std::env::var("RUST_LOG").is_ok()
-                || std::env::var("DEBUG").map_or(false, |v| v == "true"),
+                || std::env::var("DEBUG").is_ok_and(|v| v == "true"),
         }
     }
 

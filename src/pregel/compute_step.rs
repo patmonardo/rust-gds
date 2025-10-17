@@ -238,10 +238,10 @@ impl<C: PregelRuntimeConfig + Clone, I: MessageIterator> ForkJoinComputeStep<C, 
     fn split_batch(&self) -> (Partition, Partition) {
         let start_node = self.node_batch.start_node();
         let batch_size = self.node_batch.node_count();
-        let is_even = batch_size % 2 == 0;
+        let is_even = batch_size.is_multiple_of(2);
 
         // Calculate pivot point
-        let pivot = if batch_size % 2 == 0 {
+        let pivot = if batch_size.is_multiple_of(2) {
             batch_size / 2
         } else {
             (batch_size / 2) + 1

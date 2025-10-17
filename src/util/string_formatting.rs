@@ -46,7 +46,7 @@ pub fn format_number(number: i64) -> String {
     let chars: Vec<char> = s.chars().collect();
 
     for (i, ch) in chars.iter().enumerate() {
-        if i > 0 && (chars.len() - i) % 3 == 0 {
+        if i > 0 && (chars.len() - i).is_multiple_of(3) {
             result.push('_');
         }
         result.push(*ch);
@@ -71,7 +71,7 @@ pub fn to_upper_case_with_locale(s: &str) -> String {
 
 /// Check if a string is empty or whitespace-only.
 pub fn is_empty(s: Option<&str>) -> bool {
-    s.map_or(true, |s| s.trim().is_empty())
+    s.is_none_or(|s| s.trim().is_empty())
 }
 
 #[cfg(test)]

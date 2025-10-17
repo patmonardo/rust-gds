@@ -183,7 +183,7 @@ impl ParallelDoublePageCreator {
 
         let page_size = self.allocator_factory.page_size();
         let num_pages = total_size.div_ceil(page_size);
-        let last_page_size = if total_size % page_size == 0 {
+        let last_page_size = if total_size.is_multiple_of(page_size) {
             page_size
         } else {
             total_size % page_size

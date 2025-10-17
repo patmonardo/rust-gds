@@ -127,8 +127,10 @@ pub enum ProcedureMode {
 
 /// Shape of the configuration payload accepted by the procedure.
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Default)]
 pub enum ProcedureConfigFormat {
     /// Classic `config { }` map as seen in Neo4j GDS 1.x/2.x.
+    #[default]
     ConfigObject,
     /// Array-based positional params (rare, mostly alpha procedures).
     Positional,
@@ -136,11 +138,6 @@ pub enum ProcedureConfigFormat {
     Struct,
 }
 
-impl Default for ProcedureConfigFormat {
-    fn default() -> Self {
-        ProcedureConfigFormat::ConfigObject
-    }
-}
 
 /// How the procedure result payload is shaped when surfaced to clients.
 #[derive(Clone, Debug, Serialize, Deserialize)]

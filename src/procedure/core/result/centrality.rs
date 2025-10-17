@@ -67,7 +67,7 @@ impl CentralityStats {
 
         self.histogram
             .as_ref()
-            .map(|h| centrality_summary(h))
+            .map(centrality_summary)
             .unwrap_or_default()
     }
 }
@@ -125,7 +125,7 @@ where
         for node_id in 0..node_count {
             let value = centrality_fn(node_id);
             let scaled_value = (value * SCALE_FACTOR) as u64;
-            if let Err(_) = histogram.record(scaled_value) {
+            if histogram.record(scaled_value).is_err() {
                 return Err("Value out of bounds for histogram".to_string());
             }
         }
@@ -133,7 +133,7 @@ where
         Ok(histogram)
     } else {
         // Parallel path - partition work across threads
-        let chunk_size = (node_count + concurrency as u64 - 1) / concurrency as u64;
+        let chunk_size = node_count.div_ceil(concurrency as u64);
 
         let histograms: Result<Vec<_>, _> = (0..concurrency)
             .into_par_iter()
@@ -151,7 +151,7 @@ where
                 for node_id in start..end {
                     let value = centrality_fn(node_id);
                     let scaled_value = (value * SCALE_FACTOR) as u64;
-                    if let Err(_) = local_histogram.record(scaled_value) {
+                    if local_histogram.record(scaled_value).is_err() {
                         out_of_bounds.store(true, Ordering::Relaxed);
                         return Err("Value out of bounds for histogram".to_string());
                     }

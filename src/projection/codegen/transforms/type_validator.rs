@@ -318,8 +318,8 @@ impl TypeValidator {
         desc2: &PropertyDescriptor,
     ) -> Result<(), ValidationError> {
         // Same ID → must be identical
-        if desc1.id == desc2.id {
-            if desc1.name != desc2.name || desc1.value_type != desc2.value_type {
+        if desc1.id == desc2.id
+            && (desc1.name != desc2.name || desc1.value_type != desc2.value_type) {
                 return Err(ValidationError::IncompatibleDescriptors {
                     descriptor1: format!(
                         "PropertyDescriptor(id={}, name={})",
@@ -332,7 +332,6 @@ impl TypeValidator {
                     reason: "Same ID but different name or value_type".to_string(),
                 });
             }
-        }
 
         // Different IDs → OK (can coexist)
         Ok(())

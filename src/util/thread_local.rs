@@ -152,11 +152,7 @@ impl<T: AutoCloseable + Send + 'static> AutoCloseableThreadLocal<T> {
     /// Implements `Supplier<T>` pattern from Java.
     pub fn get(&self) -> Option<T> {
         let tl = self.thread_local.lock().unwrap();
-        if let Some(ref factory) = *tl {
-            Some(factory())
-        } else {
-            None
-        }
+        (*tl).as_ref().map(|factory| factory())
     }
 
     /// Apply a function to all created instances across all threads.

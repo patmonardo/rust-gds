@@ -453,6 +453,7 @@ impl Scaler for LogScaler {
 /// None scaler - pass-through (no transformation)
 ///
 /// **Translation**: `NoneScaler.java`
+#[derive(Default)]
 pub struct NoneScaler {
     statistics: ScalerStatistics,
 }
@@ -465,13 +466,6 @@ impl NoneScaler {
     }
 }
 
-impl Default for NoneScaler {
-    fn default() -> Self {
-        Self {
-            statistics: ScalerStatistics::new(),
-        }
-    }
-}
 
 impl Scaler for NoneScaler {
     fn scale_property(&self, node_id: u64, property_fn: &dyn Fn(u64) -> f64) -> f64 {
