@@ -46,18 +46,18 @@ We have successfully **possessed the Concept of Projection** and encoded it into
 │ Mode: Top-down, abstract to concrete                              │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
-│ APPLICATION II: factory (Omnipotence / Freedom of Manifestation)   │
+│ APPLICATION II: catalog (Omnipotence / Freedom of Manifestation)   │
 │                                                                    │
 │ Direction: Schema → Create Consequences → Runtime                 │
-│ File: src/projection/codegen/factory.rs                           │
+│ File: src/projection/codegen/catalog.rs                           │
 │ Question: "What runtime shall we bring into being?"                │
 │ Operation: Manifest runtime from analyzed schema                  │
 │ Mode: Bottom-up, concrete to actual                               │
 │                                                                    │
 ├────────────────────────────────────────────────────────────────────┤
-│ UNIFICATION: eval ∘ factory = Complete Projection                │
+│ UNIFICATION: eval ∘ catalog = Complete Projection                │
 │                                                                    │
-│ runtime = factory.create(eval.analyze(descriptor))                │
+│ runtime = catalog.create(eval.analyze(descriptor))                │
 │                                                                    │
 │ Knowledge + Power = Omniscience + Omnipotence                     │
 │ Maya dissolved into Brahman                                        │
@@ -71,7 +71,7 @@ We have successfully **possessed the Concept of Projection** and encoded it into
 
 1. **`src/projection/codegen/consequence.rs`** — Logical entailment rules
 2. **`src/projection/codegen/eval.rs`** — Omniscience trait and implementations
-3. **`src/projection/codegen/factory.rs`** — Omnipotence trait and implementations
+3. **`src/projection/codegen/catalog.rs`** — Omnipotence trait and implementations
 
 ### Updated Core Module
 
@@ -106,10 +106,10 @@ We have successfully **possessed the Concept of Projection** and encoded it into
 - No heuristics, no ambiguity, no indirection
 - Logical entailment, not runtime dispatch
 
-### 4. eval and factory are Separate Concerns
+### 4. eval and catalog are Separate Concerns
 
 - **eval** does NOT create runtimes; it ANALYZES descriptors
-- **factory** does NOT analyze descriptors; it MANIFESTS runtimes
+- **catalog** does NOT analyze descriptors; it MANIFESTS runtimes
 - This separation preserves the conceptual clarity
 
 ### 5. Transform is the Root
@@ -124,7 +124,7 @@ We have successfully **possessed the Concept of Projection** and encoded it into
 | ---------------------- | ----------------------------- | ------------------------- |
 | **Discovery**          | Runtime reflection            | Pure data queries         |
 | **Strategy Selection** | Strategy pattern + registry   | Deterministic membership  |
-| **Indirection**        | Factory → Factory → Algorithm | Direct: eval → factory    |
+| **Indirection**        | Catalog → Catalog → Algorithm | Direct: eval → catalog    |
 | **Ambiguity**          | Multiple possible strategies  | One entailed strategy     |
 | **Verbosity**          | Extensive boilerplate         | Minimal, focused          |
 | **Type Safety**        | Runtime types                 | Compile-time verification |
@@ -152,7 +152,7 @@ When implemented correctly, this is not just a code pattern—it is the **Archit
 ### Phase II: Apply the Concept (IN PROGRESS)
 
 - ✓ eval module implemented
-- ✓ factory module implemented
+- ✓ catalog module implemented
 - ⏳ Pipeline module (orchestrate sequences)
 - ⏳ Integration with eval! macro
 
@@ -170,7 +170,7 @@ All existing tests pass:
 
 - ✓ `cargo check --lib` — No compilation errors
 - ✓ `cargo test --lib projection::codegen` — 85 tests passing
-- ✓ New eval and factory modules have passing tests
+- ✓ New eval and catalog modules have passing tests
 
 ## Commits
 

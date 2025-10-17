@@ -1,4 +1,4 @@
-//! EVAL: The First Recursive Descent of Projection (into Computation)
+//! REGISTRY: The First Recursive Descent of Projection (into Computation)
 //!
 //! This module is a RECURSIVE DESCENT of the Five-Fold Synthesis,
 //! applied specifically to the COMPUTATION domain.
@@ -14,28 +14,28 @@
 //! Direction: ComputationDescriptor → Analyze → ComputationSchema
 //! Question: "What can we KNOW about this computation?"
 //!
-//! eval is the KNOWLEDGE mode: given a Descriptor, what can we deduce?
+//! Registry is the KNOWLEDGE pole: given a Descriptor, what can we deduce?
 //! What are its inherent constraints? What consequences follow?
 //!
-//! eval overcomes the illusion of Maya by revealing the unity beneath multiplicity:
+//! Registry overcomes the illusion of Maya by revealing the unity beneath multiplicity:
 //! Many descriptors, ONE underlying principle of constraints and relations.
 //!
-//! PRINCIPLE: Eval is not factory. Eval does NOT create runtimes.
-//! Eval ANALYZES descriptors and extracts their inherent schema.
-//! Factory will use this schema to create runtimes.
+//! PRINCIPLE: Registry is not catalog. Registry does NOT create runtimes.
+//! Registry ANALYZES descriptors and extracts their inherent schema.
+//! Catalog will use this schema to create runtimes.
 //!
-//! See also: ../factory/mod.rs (second recursive descent)
+//! See also: ../catalog/mod.rs (second recursive descent)
 
 use std::fmt;
 
-/// Error type for eval failures
+/// Error type for registry failures
 #[derive(Debug)]
-pub struct EvalError {
+pub struct RegistryError {
     message: String,
     source: Option<Box<dyn std::error::Error + Send + Sync>>,
 }
 
-impl EvalError {
+impl RegistryError {
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
@@ -49,13 +49,13 @@ impl EvalError {
     }
 }
 
-impl fmt::Display for EvalError {
+impl fmt::Display for RegistryError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Eval error: {}", self.message)
+        write!(f, "Registry error: {}", self.message)
     }
 }
 
-impl std::error::Error for EvalError {
+impl std::error::Error for RegistryError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.source
             .as_ref()
@@ -63,7 +63,7 @@ impl std::error::Error for EvalError {
     }
 }
 
-/// EVAL TRAIT: Omniscience
+/// REGISTRY TRAIT: Omniscience
 ///
 /// Given a Descriptor, analyze its inherent structure (membership, constraints).
 /// Extract a Schema that represents what we know about this descriptor.
@@ -72,7 +72,7 @@ impl std::error::Error for EvalError {
 /// S = Schema type (what we know)
 ///
 /// The schema is pure information—no runtime behavior yet.
-pub trait Eval<D>: Send + Sync + fmt::Debug
+pub trait Registry<D>: Send + Sync + fmt::Debug
 where
     D: Send + Sync,
 {
@@ -80,10 +80,10 @@ where
 
     /// Analyze the descriptor: extract its inherent schema.
     /// This is top-down knowledge: from abstract to concrete.
-    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, EvalError>;
+    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, RegistryError>;
 }
 
-/// GENERIC EVAL: Function-based analysis
+/// GENERIC REGISTRY: Function-based analysis
 /// Captures the simplest case: Descriptor → Schema is a pure function.
 pub struct FunctionEval<D, S, F>
 where
@@ -120,7 +120,7 @@ where
     }
 }
 
-impl<D, S, F> Eval<D> for FunctionEval<D, S, F>
+impl<D, S, F> Registry<D> for FunctionEval<D, S, F>
 where
     D: Send + Sync + fmt::Debug,
     S: Send + Sync + fmt::Debug,
@@ -128,8 +128,9 @@ where
 {
     type Schema = S;
 
-    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, EvalError> {
-        (self.analyze_fn)(descriptor).map_err(|e| EvalError::new("Analysis failed").with_source(e))
+    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, RegistryError> {
+        (self.analyze_fn)(descriptor)
+            .map_err(|e| RegistryError::new("Analysis failed").with_source(e))
     }
 }
 
@@ -150,8 +151,8 @@ mod tests {
     }
 
     #[test]
-    fn eval_analyzes_descriptor_to_schema() {
-        let eval = FunctionEval::new(|desc: &TestDescriptor| {
+    fn registry_analyzes_descriptor_to_schema() {
+        let registry = FunctionEval::new(|desc: &TestDescriptor| {
             Ok(TestSchema {
                 analyzed_name: desc.name.clone(),
                 is_complex: desc.complexity > 5,
@@ -163,14 +164,14 @@ mod tests {
             complexity: 10,
         };
 
-        let schema = eval.analyze(&desc).expect("analyze succeeds");
+        let schema = registry.analyze(&desc).expect("analyze succeeds");
         assert_eq!(schema.analyzed_name, "test");
         assert!(schema.is_complex);
     }
 
     #[test]
-    fn eval_error_propagates() {
-        let eval: FunctionEval<TestDescriptor, TestSchema, _> =
+    fn registry_error_propagates() {
+        let registry: FunctionEval<TestDescriptor, TestSchema, _> =
             FunctionEval::new(|_desc: &TestDescriptor| Err("analysis failed".into()));
 
         let desc = TestDescriptor {
@@ -178,7 +179,7 @@ mod tests {
             complexity: 10,
         };
 
-        let result = eval.analyze(&desc);
+        let result = registry.analyze(&desc);
         assert!(result.is_err());
     }
 }

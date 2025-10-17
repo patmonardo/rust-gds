@@ -1,4 +1,4 @@
-# PROJECTION RECURSIVE DESCENT: eval and factory as Derived Concepts
+# PROJECTION RECURSIVE DESCENT: eval and catalog as Derived Concepts
 
 ## The Idea: Projection Inheres in Its Own Derivatives
 
@@ -21,7 +21,7 @@ PROJECTION (The Absolute Idea)
 │     ├─ Compute-Schema: What we KNOW about computation
 │     └─ Compute-Consequence: What runtime follows from computation
 │
-└─ SECOND RECURSIVE DESCENT: factory (Storage Side)
+└─ SECOND RECURSIVE DESCENT: catalog (Storage Side)
    └─ Projection PROJECTED INTO Storage Domain
       ├─ Storage-Descriptor: What storage IS
       ├─ Storage-Membership: What constraints belong to it
@@ -57,7 +57,7 @@ Transform<ComputationDescriptor, ComputationSchema>
 └─ produces computation schema (not runtime)
 ```
 
-### factory Specialization (Storage Side)
+### catalog Specialization (Storage Side)
 
 ```
 factory = Projection PROJECTED INTO Storage
@@ -78,7 +78,7 @@ Transform<StorageSchema, StorageRuntime>
 └───────────────┬─────────────────────────────────┬───────────────┘
                 │                                 │
          ┌──────▼──────┐                    ┌─────▼─────┐
-         │ eval (Computation)               │ factory   │
+         │ eval (Computation)               │ catalog   │
          │ Knowledge projection             │ (Storage) │
          │ Descriptor → Schema              │ Power pro │
          │ "What we KNOW"                   │ jection   │
@@ -124,7 +124,7 @@ trait ComputationTransform<D, S> {
 // This IS a Transform, specialized to computation domain
 ```
 
-### Level 1: factory (Storage Projection)
+### Level 1: catalog (Storage Projection)
 
 ```rust
 trait StorageTransform<S, R> {
@@ -146,11 +146,11 @@ eval inherits from Projection:
 └─ eval has its own Consequence (what schema entails)
 
 factory inherits from Projection:
-├─ factory has its own Descriptor (StorageSchema as input descriptor)
-├─ factory has its own Membership (StorageConstraints)
-├─ factory has its own Transform (create: Schema → Runtime)
-├─ factory has its own Runtime (StorageRuntime is the actual runtime)
-└─ factory has its own Consequence (what storage constraints entail)
+├─ catalog has its own Descriptor (StorageSchema as input descriptor)
+├─ catalog has its own Membership (StorageConstraints)
+├─ catalog has its own Transform (create: Schema → Runtime)
+├─ catalog has its own Runtime (StorageRuntime is the actual runtime)
+└─ catalog has its own Consequence (what storage constraints entail)
 ```
 
 ## Implementation: Where the Recursive Descent Lives
@@ -161,8 +161,8 @@ factory inherits from Projection:
 src/projection/codegen/
 ├── mod.rs                           # Projection (Ground)
 ├── consequence.rs                   # Consequence (Ground)
-├── eval.rs                          # eval (First Descent - Computation Side)
-├── factory.rs                       # factory (Second Descent - Storage Side)
+├── registry.rs                      # registry (First Descent - Computation Side)
+├── catalog.rs                       # catalog (Second Descent - Storage Side)
 └── ...
 ```
 
@@ -183,8 +183,8 @@ src/projection/
 │   ├── schema.rs                    # ComputationSchema (what we know)
 │   └── consequence.rs               # ComputationConsequence rules
 │
-└── factory/                         # SECOND RECURSIVE DESCENT
-    ├── mod.rs                       # factory as Projection into Storage
+└── catalog/                         # SECOND RECURSIVE DESCENT
+    ├── mod.rs                       # catalog as Projection into Storage
     ├── descriptors.rs               # StorageSchema as input descriptor
     ├── membership.rs                # StorageConstraints specifics
     ├── transform.rs                 # StorageTransform (create phase)
@@ -204,7 +204,7 @@ projection/
 │   ├── specializes: ComputationDescriptor → ComputationSchema
 │   └── operation: ANALYZE (what we know about computation)
 │
-└── factory/         ← Second Recursive Descent: Projection into Storage
+└── catalog/         ← Second Recursive Descent: Projection into Storage
     ├── inherits Five-Fold from codegen/
     ├── specializes: StorageSchema → StorageRuntime
     └── operation: CREATE (what we bring into storage being)
@@ -246,7 +246,7 @@ Each folder should have documentation explaining its recursive descent:
 ### src/projection/factory/mod.rs
 
 ```rust
-//! factory: Projection Recursively Descended into Storage
+//! catalog: Projection Recursively Descended into Storage
 //!
 //! This module is the SECOND RECURSIVE DESCENT of Projection,
 //! applied to the Storage domain.
@@ -291,12 +291,12 @@ factory = Projection.project(Storage)
 └─ StorageConsequence
 
 UNIFICATION
-Pipeline = eval ∘ factory = Complete Projection Manifest
+Pipeline = eval ∘ catalog = Complete Projection Manifest
 ```
 
 ## Why This Structure Matters
 
-1. **Conceptual Clarity:** eval and factory are NOT separate systems. They are the Projection concept _applied_ to specific domains.
+1. **Conceptual Clarity:** eval and catalog are NOT separate systems. They are the Projection concept _applied_ to specific domains.
 
 2. **Inheritance of Pattern:** Each descent inherits the Five-Fold from the ground, ensuring consistency.
 
@@ -304,7 +304,7 @@ Pipeline = eval ∘ factory = Complete Projection Manifest
 
 4. **No Duplication:** The Five-Fold pattern appears once at the ground, then is specialized as needed.
 
-5. **Omniscience + Omnipotence Unified:** eval is the knowledge side, factory is the power side, both derived from the same Projection principle.
+5. **Omniscience + Omnipotence Unified:** eval is the knowledge side, catalog is the power side, both derived from the same Projection principle.
 
 ## The Next Phase of Implementation
 
@@ -314,6 +314,6 @@ Once this structure is clear, we can:
 2. **Update documentation** to emphasize inheritance from Projection
 3. **Add module-level docs** explaining each descent
 4. **Create concrete examples** showing recursion in action
-5. **Build Pipeline** as the composition of eval ∘ factory
+5. **Build Pipeline** as the composition of eval ∘ catalog
 
 This is not a redesign—it's a **clarification of what was always there**.

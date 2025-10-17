@@ -110,15 +110,15 @@ impl ConsequenceRule {
 
 ---
 
-## The Two-Fold Application: eval + factory
+## The Two-Fold Application: registry + catalog
 
 Once we **possess the Concept of Projection** (the Five-Fold Synthesis), it can be **applied in two ways**:
 
-### Application I: eval (Analysis / Knowledge)
+### Application I: registry (Analysis / Knowledge)
 
 **Direction:** Descriptor → Analysis → Schema
 
-The `eval` system examines a descriptor and asks:
+The `registry` system (which embodies the analysis/eval principle) examines a descriptor and asks:
 
 - "What are its inherent constraints (membership)?"
 - "What consequences follow?"
@@ -127,23 +127,23 @@ The `eval` system examines a descriptor and asks:
 This is **top-down knowledge**: from abstract to concrete, from unity to multiplicity.
 
 ```rust
-/// eval: Given a ComputationDescriptor, what can we deduce about its runtime?
-pub trait Eval<D>: Send + Sync {
+/// Registry: Given a ComputationDescriptor, what can we deduce about its runtime?
+pub trait Registry<D>: Send + Sync {
     type Schema: Send + Sync;
 
-    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, EvalError>;
+    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, RegistryError>;
 }
 ```
 
-**Cosmological meaning:** eval is **Knowledge of Maya**—seeing through apparent multiplicity to the unity beneath.
+**Cosmological meaning:** registry embodies **Knowledge of Maya**—seeing through apparent multiplicity to the unity beneath.
 
 ---
 
-### Application II: factory (Synthesis / Generation)
+### Application II: catalog (Synthesis / Generation)
 
 **Direction:** Schema → Synthesis → Runtime
 
-The `factory` system takes the analyzed schema and asks:
+The `catalog` system takes the analyzed schema and asks:
 
 - "What concrete runtime must be instantiated?"
 - "How do we bind descriptor membership to actual behavior?"
@@ -152,15 +152,15 @@ The `factory` system takes the analyzed schema and asks:
 This is **bottom-up manifestation**: from concrete schema to actual execution.
 
 ```rust
-/// factory: Given the analyzed schema, generate the runtime
-pub trait Factory<S, R>: Send + Sync {
+/// catalog: Given the analyzed schema, generate the runtime
+pub trait Catalog<S, R>: Send + Sync {
     type Error: Error + Send + Sync + 'static;
 
     fn create(&self, schema: &S) -> Result<R, Self::Error>;
 }
 ```
 
-**Cosmological meaning:** factory is **Omnipotence**—the power to manifest any runtime from any schema.
+**Cosmological meaning:** catalog is **Omnipotence**—the power to manifest any runtime from any schema.
 
 ---
 
@@ -182,16 +182,16 @@ pub trait Factory<S, R>: Send + Sync {
 │                                                                    │
 │ TWO-FOLD APPLICATION (Usage of the Concept)                      │
 │ ┌──────────────────────────────────────────────────────────────┐ │
-│ │ Application I: eval (Omniscience — Knowledge of Maya)       │ │
+│ │ Application I: registry (Omniscience — Knowledge of Maya)    │ │
 │ │   Descriptor → Analyze Membership → Schema                  │ │
 │ │   "What can we know about this descriptor?"                 │ │
 │ │                                                              │ │
-│ │ Application II: factory (Omnipotence — Freedom of Manifest) │ │
+│ │ Application II: catalog (Omnipotence — Freedom of Manifest) │ │
 │ │   Schema → Create Consequences → Runtime                    │ │
 │ │   "What runtime shall we bring into being?"                 │ │
 │ └──────────────────────────────────────────────────────────────┘ │
 │                                                                    │
-│ UNIFICATION: eval ∘ factory = Projection Complete                │
+│ UNIFICATION: registry ∘ catalog = Projection Complete            │
 │              Knowledge united with Power                           │
 │              Maya dissolved into Brahman                          │
 └────────────────────────────────────────────────────────────────────┘
@@ -199,19 +199,19 @@ pub trait Factory<S, R>: Send + Sync {
 
 ---
 
-## Naming: Why "eval" and "factory" Emerge Naturally
+## Naming: Why "registry" and "catalog" Emerge Naturally
 
 Once we possess the Concept of Projection, better names emerge:
 
-| Old Name | New Name                       | Role                        | Cosmological      |
+| Module   | Purpose                        | Role                        | Cosmological      |
 | -------- | ------------------------------ | --------------------------- | ----------------- |
-| factory  | **Provider** or **Manifestor** | Creates runtime from schema | Power (Shakti)    |
-| eval     | **Analyzer** or **Omniscient** | Reads descriptor membership | Knowledge (Jnana) |
+| catalog  | **Provider** or **Manifestor** | Creates runtime from schema | Power (Shakti)    |
+| registry | **Analyzer** or **Omniscient** | Reads descriptor membership | Knowledge (Jnana) |
 
 But really, they are:
 
-- **eval** = the **Darsana** (Philosophy) — seeing-as, the knowledge-mode
-- **factory** = the **Kriya** (Action) — doing, the manifestation-mode
+- **registry** = the **Darsana** (Philosophy) — seeing-as, the knowledge-mode (catalogs what we KNOW)
+- **catalog** = the **Kriya** (Action) — doing, the manifestation-mode (manifests what we CREATE)
 
 Together: **Darsana-Kriya Yoga** — Knowledge unified with Action.
 
@@ -222,7 +222,7 @@ Together: **Darsana-Kriya Yoga** — Knowledge unified with Action.
 1. **No Reflection:** Descriptors are pure data; membership encodes all needed constraints.
 2. **No Indirection:** Consequence rules are deterministic, not heuristic.
 3. **No Strategy Pattern:** The strategy IS the membership; no runtime lookup needed.
-4. **Pure Projection:** eval analyzes, factory manifests. No ceremony, just two clean operations.
+4. **Pure Projection:** registry analyzes, catalog manifests. No ceremony, just two clean operations.
 
 ---
 
@@ -235,8 +235,8 @@ The implementation will follow this order:
 3. **Membership modules** (each descriptor has inherence)
 4. **Runtime modules** (traits for manifestation)
 5. **Consequence module** (validation and strategy determination)
-6. **Eval module** (omniscience: analyze descriptors)
-7. **Factory module** (omnipotence: manifest runtimes)
+6. **Registry module** (omniscience: analyze descriptors)
+7. **Catalog module** (omnipotence: manifest runtimes)
 8. **Pipeline module** (orchestrate Property → Computation → Storage)
 
 ---

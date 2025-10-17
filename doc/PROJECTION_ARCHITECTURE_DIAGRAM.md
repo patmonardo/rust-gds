@@ -86,7 +86,7 @@ src/projection/codegen/eval/
 ├─ consequence.rs
 │  └─ ComputationConsequence rules
 │
-└─ trait Eval<D>
+└─ trait Registry<D>
    fn analyze(&self, descriptor: &D) → Result<Schema, Error>
 ```
 
@@ -170,7 +170,7 @@ Input: ComputationDescriptor
       ├─ Apply consequence rules
       └─ Produce: ComputationSchema
           ↓
-          └─ factory.create(schema)
+          └─ catalog.create(schema)
              ├─ Apply storage constraints
              ├─ Determine what we CREATE
              ├─ Apply factory consequence rules
@@ -178,7 +178,7 @@ Input: ComputationDescriptor
 
 Output: StorageRuntime (concrete, executable)
 
-Formula: runtime = factory.create(eval.analyze(descriptor))
+Formula: runtime = catalog.create(eval.analyze(descriptor))
 ```
 
 ---
@@ -224,8 +224,8 @@ src/projection/
 ├── codegen/
 │   ├── mod.rs                  # GROUND: Five-Fold Concept
 │   ├── consequence.rs          # ConsequenceRule
-│   ├── eval.rs                 # Eval trait (for codegen level)
-│   ├── factory.rs              # Factory trait (for codegen level)
+│   ├── registry.rs                 # Registry trait (for codegen level)
+│   ├── catalog.rs              # Catalog trait (for codegen level)
 │   ├── descriptors/
 │   │   ├── computation.rs
 │   │   ├── property.rs

@@ -146,7 +146,7 @@ impl ConsequenceRule {
 
 Once we **POSSESS the Five-Fold Concept**, it can be **APPLIED in two ways**:
 
-### Application I: eval (Omniscience / Knowledge of Maya)
+### Application I: registry (Omniscience / Knowledge of Maya)
 
 **Direction:** Descriptor → Analysis → Schema
 
@@ -155,10 +155,10 @@ Once we **POSSESS the Five-Fold Concept**, it can be **APPLIED in two ways**:
 **The Operation:**
 
 ```rust
-pub trait Eval<D>: Send + Sync + fmt::Debug {
+pub trait Registry<D>: Send + Sync + fmt::Debug {
     type Schema: Send + Sync + fmt::Debug;
 
-    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, EvalError>;
+    fn analyze(&self, descriptor: &D) -> Result<Self::Schema, RegistryError>;
 }
 ```
 
@@ -171,20 +171,24 @@ pub trait Eval<D>: Send + Sync + fmt::Debug {
 
 **Mode:** Top-down, abstract to concrete
 
-**Cosmological meaning:** eval is **Knowledge of Maya** — seeing through apparent multiplicity (many descriptors, many variations) to the unity beneath (one principle of constraints and relations).
+**Cosmological meaning:** registry embodies **Knowledge of Maya** — seeing through apparent multiplicity (many descriptors, many variations) to the unity beneath (one principle of constraints and relations).
 
-**File:** `src/projection/codegen/eval.rs`
+**File:** `src/projection/codegen/registry.rs`
 
 **Example Usage:**
 
 ```rust
-let schema = eval_analyzer.analyze(&computation_descriptor)?;
+let schema = registry_analyzer.analyze(&computation_descriptor)?;
 // schema now contains everything we know about this descriptor's membership
 ```
 
 ---
 
-### Application II: factory (Omnipotence / Freedom of Manifestation)
+````
+
+---
+
+### Application II: catalog (Omnipotence / Freedom of Manifestation)
 
 **Direction:** Schema → Determine Consequences → Create Runtime
 
@@ -193,7 +197,7 @@ let schema = eval_analyzer.analyze(&computation_descriptor)?;
 **The Operation:**
 
 ```rust
-pub trait Factory<S, R>: Send + Sync + fmt::Debug {
+pub trait Catalog<S, R>: Send + Sync + fmt::Debug {
     type Error: Error + Send + Sync + 'static;
 
     fn create(&self, schema: &S) -> Result<R, Self::Error>;
@@ -209,20 +213,20 @@ pub trait Factory<S, R>: Send + Sync + fmt::Debug {
 
 **Mode:** Bottom-up, concrete to actual
 
-**Cosmological meaning:** factory is **Omnipotence** — the power to manifest any runtime from any schema. It is the freedom that actualizes the knowledge into being.
+**Cosmological meaning:** catalog is **Omnipotence** — the power to manifest any runtime from any schema. It is the freedom that actualizes the knowledge into being.
 
-**File:** `src/projection/codegen/factory.rs`
+**File:** `src/projection/codegen/catalog.rs`
 
 **Example Usage:**
 
 ```rust
-let runtime = runtime_factory.create(&schema)?;
+let runtime = runtime_catalog.create(&schema)?;
 // runtime is now the concrete manifestation of the descriptor's being
 ```
 
 ---
 
-## The Unification: eval ∘ factory = Complete Projection
+## The Unification: registry ∘ catalog = Complete Projection
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -230,13 +234,13 @@ let runtime = runtime_factory.create(&schema)?;
 │ ├─ Identity: name, id, species, pattern                        │
 │ └─ Membership: constraints linking to Property, Storage, etc.  │
 └──────────┬──────────────────────────────────────────────────────┘
-           │ eval (Omniscience)
+           │ registry (Omniscience)
            ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ SCHEMA (What we KNOW)                                          │
 │ Pure information extracted from descriptor's membership        │
 └──────────┬──────────────────────────────────────────────────────┘
-           │ factory (Omnipotence)
+           │ catalog (Omnipotence)
            ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │ RUNTIME (What SHALL BE)                                        │
@@ -248,13 +252,13 @@ let runtime = runtime_factory.create(&schema)?;
 **The formula:**
 
 ```
-runtime = factory.create(eval.analyze(descriptor))
+runtime = catalog.create(registry.analyze(descriptor))
 ```
 
 **Meaning:** The runtime IS the descriptor's manifestation in time, mediated by:
 
-1. eval (our knowledge of its being)
-2. factory (our power to actualize that knowledge)
+1. registry (our knowledge of its being)
+2. catalog (our power to actualize that knowledge)
 
 ---
 
@@ -264,17 +268,17 @@ runtime = factory.create(eval.analyze(descriptor))
 
 ```java
 // Runtime reflection, strategy lookups, indirection
-AlgorithmFactory factory = registry.get(algorithmId);
-Algorithm algo = factory.create(config);
-// "What factory?" depends on runtime dispatch
+AlgorithmCatalog catalog = registry.get(algorithmId);
+Algorithm algo = catalog.create(config);
+// "What catalog?" depends on runtime dispatch
 ```
 
 ### Rust-GDS Pattern (Pure)
 
 ```rust
 // No reflection, no runtime discovery
-let schema = eval_analyzer.analyze(&descriptor)?;
-let runtime = runtime_factory.create(&schema)?;
+let schema = registry_analyzer.analyze(&descriptor)?;
+let runtime = runtime_catalog.create(&schema)?;
 // Runtime is deterministic from descriptor
 ```
 
@@ -283,7 +287,7 @@ let runtime = runtime_factory.create(&schema)?;
 1. **No reflection:** Descriptors are pure data; all constraints are encoded.
 2. **No indirection:** Consequence rules are deterministic, not heuristic.
 3. **No strategy pattern:** The strategy IS the membership; no runtime lookup.
-4. **Pure projection:** eval analyzes, factory manifests. Clean, simple operations.
+4. **Pure projection:** registry analyzes, catalog manifests. Clean, simple operations.
 5. **Compile-time verification:** Descriptors and membership are constants, verifiable at build time.
 
 ---
@@ -300,15 +304,15 @@ let runtime = runtime_factory.create(&schema)?;
 
 ### Phase II: Apply the Concept (IN PROGRESS)
 
-- ✓ Eval module (omniscience: Descriptor → Schema)
-- ✓ Factory module (omnipotence: Schema → Runtime)
+- ✓ Registry module (omniscience: Descriptor → Schema)
+- ✓ Catalog module (omnipotence: Schema → Runtime)
 - ⏳ Pipeline module (orchestrate Property → Computation → Storage)
 - ⏳ Complete integration with existing macros
 
 ### Phase III: Realize the System (PLANNED)
 
-- ⏳ Macro integration (eval! generates descriptors+runtimes)
-- ⏳ Registry implementation (runtime descriptor lookup)
+- ⏳ Macro integration (registry! generates descriptors+runtimes)
+- ⏳ Catalog implementation (runtime descriptor lookup)
 - ⏳ Codegen optimization (compile-time strategy determination)
 
 ---
@@ -322,10 +326,11 @@ let runtime = runtime_factory.create(&schema)?;
 | `src/projection/codegen/descriptors/`     | Descriptor types          | Identity pole           |
 | `src/projection/codegen/runtimes/`        | Runtime traits            | Difference pole         |
 | `src/projection/codegen/consequence.rs`   | Consequence rules         | Logical entailment      |
-| `src/projection/codegen/eval.rs`          | Eval trait & impls        | Omniscience application |
-| `src/projection/codegen/factory.rs`       | Factory trait & impls     | Omnipotence application |
+| `src/projection/codegen/registry.rs`      | Registry trait & impls    | Omniscience application |
+| `src/projection/codegen/catalog.rs`       | Catalog trait & impls     | Omnipotence application |
 | `doc/PROJECTION_FIVE_FOLD_SYNTHESIS.md`   | Philosophical grounding   | Why this matters        |
 | `doc/PROJECTION_ARCHITECTURE_COMPLETE.md` | This file                 | How it all fits         |
+```
 
 ---
 
@@ -354,3 +359,4 @@ The stakes are high. 🙏
 5. **Document remaining phases** — Complete the Genetic Method through realization
 
 Each step emerges naturally from the Five-Fold Concept.
+````

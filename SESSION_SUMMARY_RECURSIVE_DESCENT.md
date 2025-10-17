@@ -4,7 +4,7 @@
 
 We have discovered the **recursive nature of Projection itself**.
 
-**eval and factory are NOT separate systems.** They are **recursive descents of the Projection concept**, applied to specific domains (Computation and Storage).
+**eval and catalog are NOT separate systems.** They are **recursive descents of the Projection concept**, applied to specific domains (Computation and Storage).
 
 This fundamentally changes how we understand the architecture.
 
@@ -17,7 +17,7 @@ This fundamentally changes how we understand the architecture.
 ```
 Projection (one concept)
 ├─ eval (knowledge application)
-└─ factory (power application)
+└─ catalog (power application)
 ```
 
 ### After (The Real Structure)
@@ -30,12 +30,12 @@ PROJECTION (The Absolute Ground)
 │  └─ Inherits Five-Fold, specializes to computation
 │     Transform: ComputationDescriptor → ComputationSchema
 │
-└─ factory = Projection.project(Storage Domain)
+└─ catalog = Projection.project(Storage Domain)
    └─ Inherits Five-Fold, specializes to storage
       Transform: StorageSchema → StorageRuntime
 ```
 
-**The key insight:** eval and factory don't just use the Projection concept—they ARE recursive instantiations of it.
+**The key insight:** eval and catalog don't just use the Projection concept—they ARE recursive instantiations of it.
 
 ---
 
@@ -43,7 +43,7 @@ PROJECTION (The Absolute Ground)
 
 Each level follows the same Five-Fold Structure:
 
-| Component          | Ground (codegen/)  | eval (Computation)     | factory (Storage)  |
+| Component          | Ground (codegen/)  | eval (Computation)     | catalog (Storage)  |
 | ------------------ | ------------------ | ---------------------- | ------------------ |
 | **1. Transform**   | Generic Transform  | ComputationTransform   | StorageTransform   |
 | **2. Descriptor**  | Generic Descriptor | ComputationDescriptor  | StorageSchema      |
@@ -59,7 +59,7 @@ Each level is a complete instantiation of the Five-Fold, specialized to its doma
 
 ### 1. Conceptual Clarity
 
-eval and factory are not ad-hoc solutions. They are **systematic recursive descents** of a universal principle.
+eval and catalog are not ad-hoc solutions. They are **systematic recursive descents** of a universal principle.
 
 ### 2. Pattern Reusability
 
@@ -80,7 +80,7 @@ Further descents are natural:
 ```
 Projection
 ├─ Level 1: eval (Computation)
-├─ Level 2: factory (Storage)
+├─ Level 2: catalog (Storage)
 ├─ Level 3: ??? (Graph domain, projected)
 └─ Level 4: ??? (Node domain, projected)
 ```
@@ -91,7 +91,7 @@ Each level's output is the next level's input:
 
 ```
 eval(ComputationDescriptor) → ComputationSchema
-factory(ComputationSchema) → StorageRuntime
+catalog(ComputationSchema) → StorageRuntime
 ```
 
 Clean composition with no impedance mismatch.
@@ -105,13 +105,13 @@ Clean composition with no impedance mismatch.
 1. **`doc/PROJECTION_RECURSIVE_DESCENT.md`**
 
    - Complete analysis of recursive descent structure
-   - How eval and factory inherit from Projection
+   - How eval and catalog inherit from Projection
    - Why recursion is fundamental
 
 2. **`doc/PROJECTION_ARCHITECTURE_DIAGRAM.md`**
 
    - Visual overview of complete system
-   - Level 0 (Ground), Level 1 (eval), Level 2 (factory)
+   - Level 0 (Ground), Level 1 (eval), Level 2 (catalog)
    - Filesystem organization
    - Inheritance chain
 
@@ -124,7 +124,7 @@ Clean composition with no impedance mismatch.
 
    - Now clearly identifies as Ground Concept
    - Explains recursive descent structure
-   - Mentions eval and factory as descended modules
+   - Mentions eval and catalog as descended modules
 
 2. **`src/projection/codegen/eval.rs`**
 
@@ -132,7 +132,7 @@ Clean composition with no impedance mismatch.
    - Explains inheritance from Five-Fold
    - Shows computation-domain specialization
 
-3. **`src/projection/codegen/factory.rs`**
+3. **`src/projection/codegen/catalog.rs`**
    - Now clearly identifies as Second Recursive Descent
    - Explains inheritance from Five-Fold
    - Shows storage-domain specialization
@@ -154,7 +154,7 @@ Clean composition with no impedance mismatch.
 └─────────────┬──────────────────────┬────────────────────┘
               │                      │
        ┌──────▼────────┐      ┌─────▼──────────┐
-       │ eval: Level 1 │      │ factory: Lv 2  │
+       │ eval: Level 1 │      │ catalog: Lv 2  │
        │ (Computation) │      │ (Storage)      │
        │ Specializes   │      │ Specializes    │
        │ Five-Fold to  │      │ Five-Fold to   │
@@ -179,16 +179,16 @@ Clean composition with no impedance mismatch.
 
 - ✓ Ground (Five-Fold) defined in codegen/
 - ✓ eval (first descent) implemented
-- ✓ factory (second descent) implemented
+- ✓ catalog (second descent) implemented
 - ✓ Recursive descent structure documented
 
 ### Phase II: Apply the Concept (IN PROGRESS)
 
 - ✓ eval module has trait + implementations
-- ✓ factory module has trait + implementations
+- ✓ catalog module has trait + implementations
 - ⏳ Extend eval with full Computation schema extraction
-- ⏳ Extend factory with full Storage runtime creation
-- ⏳ Build Pipeline (orchestrate eval ∘ factory)
+- ⏳ Extend catalog with full Storage runtime creation
+- ⏳ Build Pipeline (orchestrate eval ∘ catalog)
 
 ### Phase III: Realize with Descents (PLANNED)
 
@@ -207,7 +207,7 @@ The recursive structure was always there. We didn't create it—we **discovered*
 
 ### Insight 2: Each Level is Complete
 
-eval is not "incomplete factory." eval is a complete Five-Fold instantiation specialized to Computation. Similarly for factory and Storage.
+eval is not "incomplete catalog." eval is a complete Five-Fold instantiation specialized to Computation. Similarly for catalog and Storage.
 
 ### Insight 3: Domains are Arbitrary
 
@@ -215,7 +215,7 @@ We could project into ANY domain and follow the same pattern. Projection is univ
 
 ### Insight 4: Composition is Natural
 
-eval → factory composition flows naturally from the structure. No special coordination needed—just follow the principle.
+eval → catalog composition flows naturally from the structure. No special coordination needed—just follow the principle.
 
 ### Insight 5: This Scales Infinitely
 
@@ -231,7 +231,7 @@ Hundreds of domains could be handled by recursive descent. The pattern never nee
 Projection manifests as:
 - Ground level: Abstract Five-Fold (Transform, Descriptor, Membership, Runtime, Consequence)
 - Level 1: Five-Fold projected to Computation → eval
-- Level 2: Five-Fold projected to Storage → factory
+- Level 2: Five-Fold projected to Storage → catalog
 - Level 3+: Five-Fold projected to other domains → (future descents)
 ```
 
@@ -243,7 +243,7 @@ Projection manifests as:
 
 ### 1. Java Ceremony Completely Overcome
 
-No factory hierarchies, no strategy patterns, no indirection. Just recursive descent of pure principle.
+No catalog hierarchies, no strategy patterns, no indirection. Just recursive descent of pure principle.
 
 ### 2. Infinite Extensibility
 
@@ -272,7 +272,7 @@ Once you understand one level, you understand all levels. The pattern is self-ex
    - Test suite
    - Examples
 
-3. **Complete Level 2 (factory)**
+3. **Complete Level 2 (catalog)**
 
    - Full StorageRuntime creation
    - Test suite
@@ -280,7 +280,7 @@ Once you understand one level, you understand all levels. The pattern is self-ex
 
 4. **Build Pipeline**
 
-   - Compose eval ∘ factory
+   - Compose eval ∘ catalog
    - End-to-end integration
    - Performance verification
 
@@ -312,7 +312,7 @@ e585694 docs: PROJECTION_ARCHITECTURE_DIAGRAM
 
 We are not building a system. We are **discovering the Architecture of Being Itself**.
 
-The Five-Fold Synthesis is not invented—it emerges from the problem's inherent structure. eval and factory are not separate mechanisms—they are how the Projection concept naturally descends into specific domains.
+The Five-Fold Synthesis is not invented—it emerges from the problem's inherent structure. eval and catalog are not separate mechanisms—they are how the Projection concept naturally descends into specific domains.
 
 This is the power of the Genetic Method: faithful attention to the problem reveals its own solution, already latent in its structure.
 
@@ -339,4 +339,4 @@ This is the promise of Projection.
 - `PROJECTION_QUICK_REFERENCE.md` — Quick lookup
 - `src/projection/codegen/mod.rs` — Ground code
 - `src/projection/codegen/eval.rs` — First descent code
-- `src/projection/codegen/factory.rs` — Second descent code
+- `src/projection/codegen/catalog.rs` — Second descent code

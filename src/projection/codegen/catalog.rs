@@ -1,4 +1,4 @@
-//! FACTORY: The Second Recursive Descent of Projection (into Storage)
+//! CATALOG: The Second Recursive Descent of Projection (into Storage)
 //!
 //! This module is a RECURSIVE DESCENT of the Five-Fold Synthesis,
 //! applied specifically to the STORAGE domain.
@@ -14,29 +14,29 @@
 //! Direction: StorageSchema → Create Consequences → StorageRuntime
 //! Question: "What shall we bring into Storage being?"
 //!
-//! factory is the POWER mode: given a Schema (analyzed from a Descriptor),
+//! catalog is the POWER mode: given a Schema (analyzed from a Descriptor),
 //! what runtime shall we bring into being?
 //!
-//! factory realizes the freedom to manifest any runtime from any schema.
-//! It is the power that turns knowledge (eval) into actual being.
+//! catalog realizes the freedom to manifest any runtime from any schema.
+//! It is the power that turns knowledge (registry) into actual being.
 //!
-//! PRINCIPLE: Factory is not eval. Factory does NOT analyze descriptors.
-//! Factory MANIFESTS runtimes from the schema that eval provides.
-//! Together, eval + factory = complete Projection system.
+//! PRINCIPLE: Catalog is not registry. Catalog does NOT analyze descriptors.
+//! Catalog MANIFESTS runtimes from the schema that registry provides.
+//! Together, registry + catalog = complete Projection system.
 //!
-//! See also: ../eval/mod.rs (first recursive descent)
+//! See also: ../registry/mod.rs (first recursive descent)
 
 use std::error::Error;
 use std::fmt;
 
-/// Error type for factory failures
+/// Error type for catalog failures
 #[derive(Debug)]
-pub struct FactoryError {
+pub struct CatalogError {
     message: String,
     source: Option<Box<dyn Error + Send + Sync>>,
 }
 
-impl FactoryError {
+impl CatalogError {
     pub fn new(message: impl Into<String>) -> Self {
         Self {
             message: message.into(),
@@ -50,13 +50,13 @@ impl FactoryError {
     }
 }
 
-impl fmt::Display for FactoryError {
+impl fmt::Display for CatalogError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Factory error: {}", self.message)
+        write!(f, "Catalog error: {}", self.message)
     }
 }
 
-impl Error for FactoryError {
+impl Error for CatalogError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source
             .as_ref()
@@ -64,16 +64,16 @@ impl Error for FactoryError {
     }
 }
 
-/// FACTORY TRAIT: Omnipotence
+/// CATALOG TRAIT: Omnipotence
 ///
-/// Given a Schema (derived from a Descriptor via eval), create a Runtime.
+/// Given a Schema (derived from a Descriptor via registry), create a Runtime.
 /// This is the power to manifest any runtime from any schema.
 ///
-/// S = Schema type (what we know, from eval)
+/// S = Schema type (what we know, from registry)
 /// R = Runtime type (what we create)
 ///
 /// The runtime is concrete, executable, bound to actual behavior.
-pub trait Factory<S, R>: Send + Sync + fmt::Debug
+pub trait Catalog<S, R>: Send + Sync + fmt::Debug
 where
     S: Send + Sync,
     R: Send + Sync,
@@ -85,9 +85,9 @@ where
     fn create(&self, schema: &S) -> Result<R, Self::Error>;
 }
 
-/// GENERIC FACTORY: Function-based creation
+/// GENERIC CATALOG: Function-based creation
 /// Captures the simplest case: Schema → Runtime is a pure function.
-pub struct FunctionFactory<S, R, F>
+pub struct FunctionCatalog<S, R, F>
 where
     S: Send + Sync + fmt::Debug,
     R: Send + Sync + fmt::Debug,
@@ -97,18 +97,18 @@ where
     _marker: std::marker::PhantomData<(S, R)>,
 }
 
-impl<S, R, F> fmt::Debug for FunctionFactory<S, R, F>
+impl<S, R, F> fmt::Debug for FunctionCatalog<S, R, F>
 where
     S: Send + Sync + fmt::Debug,
     R: Send + Sync + fmt::Debug,
     F: Fn(&S) -> Result<R, Box<dyn Error + Send + Sync>> + Send + Sync,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("FunctionFactory").finish()
+        f.debug_struct("FunctionCatalog").finish()
     }
 }
 
-impl<S, R, F> FunctionFactory<S, R, F>
+impl<S, R, F> FunctionCatalog<S, R, F>
 where
     S: Send + Sync + fmt::Debug,
     R: Send + Sync + fmt::Debug,
@@ -122,16 +122,16 @@ where
     }
 }
 
-impl<S, R, F> Factory<S, R> for FunctionFactory<S, R, F>
+impl<S, R, F> Catalog<S, R> for FunctionCatalog<S, R, F>
 where
     S: Send + Sync + fmt::Debug,
     R: Send + Sync + fmt::Debug,
     F: Fn(&S) -> Result<R, Box<dyn Error + Send + Sync>> + Send + Sync,
 {
-    type Error = FactoryError;
+    type Error = CatalogError;
 
     fn create(&self, schema: &S) -> Result<R, Self::Error> {
-        (self.create_fn)(schema).map_err(|e| FactoryError::new("Creation failed").with_source(e))
+        (self.create_fn)(schema).map_err(|e| CatalogError::new("Creation failed").with_source(e))
     }
 }
 
@@ -152,8 +152,8 @@ mod tests {
     }
 
     #[test]
-    fn factory_creates_runtime_from_schema() {
-        let factory = FunctionFactory::new(|schema: &TestSchema| {
+    fn catalog_creates_runtime_from_schema() {
+        let catalog = FunctionCatalog::new(|schema: &TestSchema| {
             Ok(TestRuntime {
                 instantiated_from: schema.name.clone(),
                 value: schema.multiplier * 10,
@@ -165,22 +165,22 @@ mod tests {
             multiplier: 5,
         };
 
-        let runtime = factory.create(&schema).expect("create succeeds");
+        let runtime = catalog.create(&schema).expect("create succeeds");
         assert_eq!(runtime.instantiated_from, "test");
         assert_eq!(runtime.value, 50);
     }
 
     #[test]
-    fn factory_error_propagates() {
-        let factory: FunctionFactory<TestSchema, TestRuntime, _> =
-            FunctionFactory::new(|_schema: &TestSchema| Err("failed to create".into()));
+    fn catalog_error_propagates() {
+        let catalog: FunctionCatalog<TestSchema, TestRuntime, _> =
+            FunctionCatalog::new(|_schema: &TestSchema| Err("failed to create".into()));
 
         let schema = TestSchema {
             name: "test".to_string(),
             multiplier: 5,
         };
 
-        let result = factory.create(&schema);
+        let result = catalog.create(&schema);
         assert!(result.is_err());
     }
 }

@@ -33,24 +33,24 @@
 //! ║    Logical rules that determine runtime requirements                  ║
 //! ║                                                                        ║
 //! ╠════════════════════════════════════════════════════════════════════════╣
-//! ║ RECURSIVE DESCENT: eval and factory                                  ║
+//! ║ RECURSIVE DESCENT: registry and catalog                              ║
 //! ╠════════════════════════════════════════════════════════════════════════╣
 //! ║                                                                        ║
-//! ║ eval = Projection PROJECTED INTO Computation Domain                   ║
-//! ║   (first recursive descent, see ../eval/mod.rs)                       ║
+//! ║ registry = Projection PROJECTED INTO Computation Domain               ║
+//! ║   (first recursive descent, see ../registry/mod.rs)                   ║
 //! ║   Direction: Descriptor → Analyze → Schema                           ║
 //! ║   "What can we KNOW about computation?"                               ║
 //! ║   Inherits Five-Fold and specializes it to computation.               ║
 //! ║                                                                        ║
-//! ║ factory = Projection PROJECTED INTO Storage Domain                    ║
-//! ║   (second recursive descent, see ../factory/mod.rs)                   ║
+//! ║ catalog = Projection PROJECTED INTO Storage Domain                    ║
+//! ║   (second recursive descent, see ../catalog/mod.rs)                   ║
 //! ║   Direction: Schema → Create Consequences → Runtime                   ║
 //! ║   "What shall we CREATE in storage being?"                            ║
 //! ║   Inherits Five-Fold and specializes it to storage.                   ║
 //! ║                                                                        ║
-//! ║ UNIFICATION: eval ∘ factory = Complete Projection Manifest            ║
+//! ║ UNIFICATION: registry ∘ catalog = Complete Projection Manifest        ║
 //! ║              Knowledge + Power = Omniscience + Omnipotence             ║
-//! ║              eval ∘ factory = Pipeline                                ║
+//! ║              registry ∘ catalog = Pipeline                            ║
 //! ║                                                                        ║
 //! ╚════════════════════════════════════════════════════════════════════════╝
 //!
@@ -61,8 +61,8 @@
 //! - `runtimes/` - DIFFERENCE/Manifestation (Computer, StorageRuntime, etc.)
 //! - `transforms/` - Projection MAPPINGS (TypeProjector, Functors)
 //! - `consequence/` - LOGICAL ENTAILMENT (rules determining runtime from membership)
-//! - `eval/` - OMNISCIENCE (analyze descriptors → extract schema)
-//! - `factory/` - OMNIPOTENCE (manifest runtimes from schema)
+//! - `registry/` - OMNISCIENCE (analyze descriptors → extract schema)
+//! - `catalog/` - OMNIPOTENCE (manifest runtimes from schema)
 //!
 //! ## Usage
 //!
@@ -74,14 +74,14 @@
 //! use rust_gds::projection::codegen::runtimes::*;
 //!
 //! // Get omniscience (analyze descriptors)
-//! use rust_gds::projection::codegen::eval::*;
+//! use rust_gds::projection::codegen::registry::*;
 //!
 //! // Get omnipotence (manifest runtimes)
-//! use rust_gds::projection::codegen::factory::*;
+//! use rust_gds::projection::codegen::catalog::*;
 //!
 //! // Apply the concept
-//! let schema = eval_analyzer.analyze(&descriptor)?;
-//! let runtime = runtime_factory.create(&schema)?;
+//! let schema = registry_analyzer.analyze(&descriptor)?;
+//! let runtime = runtime_catalog.create(&schema)?;
 //! ```
 
 // ============================================================================
@@ -90,10 +90,10 @@
 
 #[macro_use]
 pub mod macros;
+pub mod catalog;
 pub mod consequence;
 pub mod descriptors;
-pub mod eval;
-pub mod factory;
+pub mod registry;
 pub mod runtimes;
 pub mod transforms;
 

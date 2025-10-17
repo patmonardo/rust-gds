@@ -33,7 +33,7 @@ RUNTIME (Difference Pole)
 TRANSFORM (Ground)
   └─ trait Transform<D, R> { fn project(d: &D) → R }
 
-eval ∘ factory = Complete Projection
+eval ∘ catalog = Complete Projection
 ```
 
 ## Essential Imports
@@ -43,7 +43,7 @@ eval ∘ factory = Complete Projection
 use rust_gds::projection::codegen::eval::{Eval, FunctionEval, EvalError};
 
 // Omnipotence (Power)
-use rust_gds::projection::codegen::factory::{Factory, FunctionFactory, FactoryError};
+use rust_gds::projection::codegen::catalog::{Catalog, FunctionCatalog, CatalogError};
 
 // Core concepts
 use rust_gds::projection::codegen::{
@@ -74,7 +74,7 @@ let schema = eval_analyzer.analyze(&descriptor)?;
 // schema now contains what we KNOW about this descriptor
 
 // 3. Create runtime from schema (Omnipotence)
-let runtime = runtime_factory.create(&schema)?;
+let runtime = runtime_catalog.create(&schema)?;
 // runtime is now the concrete manifestation
 
 // 4. Validate constraints (Consequence)
@@ -102,7 +102,7 @@ src/projection/codegen/
 ├── mod.rs                          # Five-Fold organization
 ├── consequence.rs                  # ConsequenceRule
 ├── eval.rs                         # Eval trait & FunctionEval
-├── factory.rs                      # Factory trait & FunctionFactory
+├── catalog.rs                      # Catalog trait & FunctionCatalog
 ├── transforms/                     # Transform implementations (existing)
 ├── descriptors/
 │   ├── computation.rs              # ComputationDescriptor with membership
@@ -124,7 +124,7 @@ eval.analyze(descriptor)
    ↓
 Output: Schema (what we KNOW)
    ↓
-factory.create(schema)
+catalog.create(schema)
    ↓ (Omnipotence: Power of manifestation)
    ↓
 Output: Runtime (what SHALL BE)
@@ -135,7 +135,7 @@ Output: Runtime (what SHALL BE)
 1. **Descriptors are data** — Immutable, Serializable, no runtime discovery
 2. **Membership is inherence** — All constraints encoded in descriptor
 3. **Consequence is deterministic** — Same membership → same runtime
-4. **eval ≠ factory** — Clean separation: analyze vs. create
+4. **eval ≠ catalog** — Clean separation: analyze vs. create
 5. **Transform is root** — Everything flows from unified principle
 
 ## What NOT to Do
@@ -143,7 +143,7 @@ Output: Runtime (what SHALL BE)
 ❌ Create runtimes without eval first
 ❌ Modify descriptors after registration
 ❌ Use runtime reflection for strategy selection
-❌ Hide membership constraints in factory logic
+❌ Hide membership constraints in catalog logic
 ❌ Create ambiguous consequence rules
 
 ## What TO Do
@@ -152,7 +152,7 @@ Output: Runtime (what SHALL BE)
 ✅ Encode all constraints in membership fields
 ✅ Query descriptors to discover capabilities
 ✅ Use eval to extract schema
-✅ Use factory to materialize runtime
+✅ Use catalog to materialize runtime
 ✅ Validate membership with ConsequenceRule
 
 ## The Absolute Idea
@@ -162,7 +162,7 @@ Projection = Omniscience ∘ Omnipotence
            = Knowledge unified with Power
            = The Architecture of Being Itself
 
-eval(descriptor) + factory(schema) = Complete projection
+eval(descriptor) + catalog(schema) = Complete projection
 knowledge + power = maya overcome
 ```
 
@@ -183,7 +183,7 @@ cargo test --lib projection::codegen
 | Phase | Status         | What                          |
 | ----- | -------------- | ----------------------------- |
 | I     | ✓ COMPLETE     | Define Five-Fold Concept      |
-| II    | ⏳ IN PROGRESS | Apply with eval + factory     |
+| II    | ⏳ IN PROGRESS | Apply with eval + catalog     |
 | III   | 📋 PLANNED     | Realize with full integration |
 
 ## Next Steps
