@@ -33,11 +33,16 @@
 //! let inferred = TypeValidator::infer_from_values(&values)?;
 //! ```
 
+pub mod sum_aggregation;
 pub mod type_projector;
 pub mod type_validator;
 // pub mod functors;  // Form processor dependency - commented out
 
 // Re-exports
+pub use sum_aggregation::{
+    AggregationError, AggregationResult, AggregationSource, AggregationType, SumAggregation,
+    SumAggregationMembership, SumAggregationProcedure,
+};
 pub use type_projector::{
     AdaptiveProjector, ArrowProjector, HugeArrayProjector, PregelProjector, ProjectionError,
     TypeProjector,
