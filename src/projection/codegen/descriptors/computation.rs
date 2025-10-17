@@ -1,8 +1,20 @@
-//! Computation Descriptor registry
+//! Computation Descriptor registry — The Five-Fold Synthesis in Action
 //!
-//! ComputationDescriptor is the canonical schema for a computation species
-//! (e.g., BSP/Pregel). Macro-generated code will register descriptors here and
-//! the eval! system will use these to project Computers and ComputeSteps.
+//! ComputationDescriptor exemplifies the Five-Fold Synthesis of Projection:
+//!
+//! 1. TRANSFORM (Ground): ComputationDescriptor ≡ Computer (via Transform<D, R>)
+//! 2. DESCRIPTOR (Identity): ComputationDescriptor { id, name, species, pattern }
+//! 3. MEMBERSHIP (Inherence): ComputationMembership { constraints linking Property & Storage }
+//! 4. RUNTIME (Difference): Computer trait { init/step/finalize }
+//! 5. CONSEQUENCE (Entailment): ConsequenceRule determines runtime strategy from membership
+//!
+//! Once we POSSESS this Five-Fold Concept, it can be APPLIED in two ways:
+//! - eval: Analyze the descriptor → extract knowledge of its constraints
+//! - factory: Generate the runtime → manifest omnipotence
+//!
+//! This module shows: Descriptor IS Runtime through Transform.
+//! No factories hidden in trait objects, no reflection, no indirection.
+//! Pure concept → pure manifestation.
 
 use std::collections::HashMap;
 

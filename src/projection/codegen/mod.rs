@@ -1,47 +1,78 @@
-//! Code Generation - The Projection System
+//! PROJECTION CODEGEN: The Five-Fold Synthesis of Projection
 //!
-//! This module contains the complete code generation infrastructure for rust-gds,
-//! organized into five distinct concerns following the **Five-Fold Brahmachakra** pattern.
+//! This module is the FIRST APPEARANCE of @reality in rust-gds.
+//! It demonstrates the Genetic Method: how one concept unfolds from pure thought
+//! into determinate being through its own internal necessity.
 //!
-//! ## The Five-Fold Brahmachakra
+//! ╔════════════════════════════════════════════════════════════════════════╗
+//! ║ THE FIVE-FOLD SYNTHESIS OF PROJECTION                                 ║
+//! ╠════════════════════════════════════════════════════════════════════════╣
+//! ║                                                                        ║
+//! ║ 1. TRANSFORM (Absolute Ground / Brahma Principle)                     ║
+//! ║    The undifferentiated unity from which all determination flows       ║
+//! ║    Descriptor ≡ Runtime through Transform                             ║
+//! ║                                                                        ║
+//! ║ 2. DESCRIPTOR (Identity Pole / Sat / Static Being)                    ║
+//! ║    What the concept IS in-itself (timeless, unchanging)               ║
+//! ║    - ComputationDescriptor, PropertyDescriptor, StorageDescriptor      ║
+//! ║                                                                        ║
+//! ║ 3. MEMBERSHIP (First Division / Chit / Inherence)                     ║
+//! ║    What is inherent in each descriptor's being?                       ║
+//! ║    Constraints linking each extreme to all others                     ║
+//! ║                                                                        ║
+//! ║ 4. RUNTIME (Difference Pole / Ananda / Dynamic Manifestation)         ║
+//! ║    How the descriptor manifests in time, in execution                 ║
+//! ║    - Computer, PropertyValues, StorageRuntime, ProcedureFacade        ║
+//! ║                                                                        ║
+//! ║ 5. CONSEQUENCE (Second Division / Sat-Chit-Ananda / Entailment)       ║
+//! ║    What MUST follow from Descriptor + Membership?                     ║
+//! ║    Logical rules that determine runtime requirements                  ║
+//! ║                                                                        ║
+//! ╠════════════════════════════════════════════════════════════════════════╣
+//! ║ THE TWO-FOLD APPLICATION: eval + factory                             ║
+//! ╠════════════════════════════════════════════════════════════════════════╣
+//! ║                                                                        ║
+//! ║ Application I: eval (Omniscience / Knowledge of Maya)                 ║
+//! ║   Direction: Descriptor → Analyze → Schema                           ║
+//! ║   "What can we know about this descriptor?"                           ║
+//! ║                                                                        ║
+//! ║ Application II: factory (Omnipotence / Freedom of Manifestation)      ║
+//! ║   Direction: Schema → Create Consequences → Runtime                   ║
+//! ║   "What runtime shall we bring into being?"                           ║
+//! ║                                                                        ║
+//! ║ UNIFICATION: eval ∘ factory = Complete Projection                    ║
+//! ║              Knowledge + Power = Omniscience + Omnipotence             ║
+//! ║                                                                        ║
+//! ╚════════════════════════════════════════════════════════════════════════╝
 //!
-//! ```text
-//! Macros (Tools that PROJECT)
-//!     ↓
-//! Descriptors (Identity/Science - WHAT things ARE)
-//!     ↓
-//! Runtimes (Difference/Manifestation - HOW things EXECUTE)
-//!     ↓
-//! Transforms (Maya/Projection - MAPPINGS between extremes)
-//!     ↓
-//! Procedure Contract (`projection::eval::procedure` - what algorithms implement)
-//! ```
+//! ## Organization (The Five-Fold in Code)
 //!
-//! ## Organization
-//!
-//! - `macros/` - Code generation TOOLS (eval_macro, config, procedure macros)
-//! - `descriptors/` - Compile-time SCHEMAS (property, computation, storage, pipeline, ML)
-//! - `runtimes/` - Execution CONTRACTS (Computer, ComputeStep, StorageRuntime, etc.)
-//! - `transforms/` - Cross-cutting conversions (TypeProjector, TypeValidator, Functors)
-//! - `AlgorithmSpec` now lives under `projection::eval::procedure`
+//! - `macros/` - Tools that PROJECT (eval_macro, config, procedure macros)
+//! - `descriptors/` - IDENTITY/Science (property, computation, storage, pipeline)
+//! - `runtimes/` - DIFFERENCE/Manifestation (Computer, StorageRuntime, etc.)
+//! - `transforms/` - Projection MAPPINGS (TypeProjector, Functors)
+//! - `consequence/` - LOGICAL ENTAILMENT (rules determining runtime from membership)
+//! - `eval/` - OMNISCIENCE (analyze descriptors → extract schema)
+//! - `factory/` - OMNIPOTENCE (manifest runtimes from schema)
 //!
 //! ## Usage
 //!
 //! ```rust,ignore
-//! // Get macros
-//! use rust_gds::projection::codegen::macros::*;
-//!
 //! // Get descriptors
 //! use rust_gds::projection::codegen::descriptors::*;
 //!
 //! // Get runtime contracts
 //! use rust_gds::projection::codegen::runtimes::*;
 //!
-//! // Get algorithm contract (lives under the executor runtime)
-//! use rust_gds::projection::eval::procedure::AlgorithmSpec;
+//! // Get omniscience (analyze descriptors)
+//! use rust_gds::projection::codegen::eval::*;
 //!
-//! // Get transforms
-//! use rust_gds::projection::codegen::transforms::*;
+//! // Get omnipotence (manifest runtimes)
+//! use rust_gds::projection::codegen::factory::*;
+//!
+//! // Apply the concept
+//! let schema = eval_analyzer.analyze(&descriptor)?;
+//! let runtime = runtime_factory.create(&schema)?;
 //! ```
 
 // ============================================================================
@@ -50,7 +81,10 @@
 
 #[macro_use]
 pub mod macros;
+pub mod consequence;
 pub mod descriptors;
+pub mod eval;
+pub mod factory;
 pub mod runtimes;
 pub mod transforms;
 
