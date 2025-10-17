@@ -3,9 +3,11 @@
 ## Three Layers of Philosophical Understanding
 
 ### Layer 1: The Five-Fold Synthesis (Vedantic)
+
 **Source:** `doc/PROJECTION_FIVE_FOLD_SYNTHESIS.md`
 
 The ground structure of Projection itself:
+
 - **Transform** (Brahma) — The principle of projection
 - **Descriptor** (Sat) — Being/Identity
 - **Membership** (Chit) — Constraint/Relation
@@ -17,12 +19,14 @@ This layer establishes the STRUCTURE of projection.
 ---
 
 ### Layer 2: The Genetic Process (Aristotelian)
+
 **Source:** `doc/CODEGEN_GENETIC_PROCESS.md`
 
 The dynamic unfolding of concepts through three moments:
+
 ```
 loop {
-  Membership (what belongs) 
+  Membership (what belongs)
     → Consequence (what follows)
     → Inherence (what forms subsume)
 }
@@ -31,22 +35,26 @@ loop {
 This layer establishes the PROCESS of generation — how the Five-Fold unfolds dynamically.
 
 **Key moments:**
+
 - **Membership:** Identity pole — what constraints inhere
 - **Consequence:** Manifestation pole — what must logically follow
 - **Inherence:** Recognition of forms in the manifestation
 
 **Key insight:**
+
 - Runtimes ARE moments of Consequence (not objects to create)
 - Transforms ARE moments of Inherence (not functions to apply)
 
 ---
 
 ### Layer 3: The Recursive Projection (German Idealist)
+
 **Source:** `doc/TRANSFORMS_FICHTEAN_HEGELIAN.md`
 
 The infinite recursive structure through Fichtean and Hegelian philosophy:
 
 #### Fichtean Method
+
 - Dyads generate dyads without external force
 - Each synthesis becomes the new thesis
 - Self-determination through recursive negation
@@ -58,6 +66,7 @@ Level N: [Pattern repeats infinitely]
 ```
 
 #### Hegelian Dialectic
+
 - Being : Nothing → Coming-to-be : Ceasing-to-be → Becoming
 - Negation determines possibility
 - Each contradiction resolved at higher level of specificity
@@ -80,7 +89,7 @@ This layer establishes the INFINITE RECURSION of generation — how the process 
 ```
 FIVE-FOLD SYNTHESIS
 
-Transform (principle) 
+Transform (principle)
   ↕
 Descriptor (Being) ← → Membership (Constraint)
   ↓ PROJECTION ↓
@@ -105,6 +114,7 @@ Iteration 0:
 ```
 
 **Semantics:**
+
 - Membership: Identity pole — "What belongs to this concept?"
 - Consequence: Manifestation pole — "What must follow?"
 - Inherence: Recognition pole — "What forms subsume this?"
@@ -138,16 +148,17 @@ LEVEL N:
 ```
 
 **Key Recognition:**
+
 ```
 Transform IS a Membership:Consequence projection
   applied to Runtime (the previous level's manifestation)
-  
+
 Instead of:
   Descriptor → Runtime
-  
+
 We have:
   Runtime → Transform → DerivedDescriptor
-  
+
 Which is the same projection operator, one level up:
   Being → Negation:Manifestation → New Being
 ```
@@ -157,16 +168,19 @@ Which is the same projection operator, one level up:
 ## The System as Encyclopedia
 
 ### Dictionary (Static)
+
 - Each term defined independently
 - No generative principle
 - Must enumerate all concepts
 
 ### Encyclopedia (Genetic)
+
 - Each concept unfolds from internal necessity
 - Every iteration follows the same logical structure
 - Infinite specialization from one principle
 
 **Codegen is Encyclopedia:**
+
 ```
 The system generates itself through recursive application of
 Membership:Consequence:Inherence projection.
@@ -184,6 +198,7 @@ and concrete concepts from one logical structure.
 ## The Three Philosophical Traditions
 
 ### 1. VEDANTIC (Five-Fold Structure)
+
 - Being (Sat) and Becoming (Ananda)
 - The eternal opposition resolved by Unity (Brahman)
 - Source: Advaita Vedanta philosophy
@@ -191,6 +206,7 @@ and concrete concepts from one logical structure.
 **Application:** Establishes the two poles (Identity and Manifestation) that all projection reconciles.
 
 ### 2. ARISTOTELIAN (Genetic Process)
+
 - Potentiality and Actuality
 - Form and Matter
 - Entelechy (actuality acting in potentiality)
@@ -198,6 +214,7 @@ and concrete concepts from one logical structure.
 **Application:** Shows how constraints (Membership) determine what can actualize (Consequence).
 
 ### 3. GERMAN IDEALIST (Recursive Recursion)
+
 - Fichtean self-positing through negation
 - Hegelian dialectic of Being-Nothing-Becoming
 - Self-determination infinitely recursive
@@ -212,19 +229,19 @@ and concrete concepts from one logical structure.
 loop {
   // Given a Descriptor (or DerivedDescriptor from previous iteration)
   let descriptor = current_descriptor;
-  
+
   // MEMBERSHIP EXTRACTION: What belongs?
   // Identity pole — encode all inherent constraints
   let membership = extract_membership(&descriptor);
-  
+
   // CONSEQUENCE DERIVATION: What must follow?
   // Manifestation pole — apply constraints to determine runtime
   let runtime = derive_consequence(&descriptor, &membership);
-  
+
   // INHERENCE RECOGNITION: What forms subsume?
   // Transform as projection — recognize patterns, generate new descriptors
   let new_descriptors = recognize_inherence(&runtime);
-  
+
   // NEXT ITERATION: New Descriptors become Being for next level
   for derived in new_descriptors {
     // This becomes the new descriptor for the recursive call
@@ -238,18 +255,21 @@ loop {
 ## Why This Architecture is Superior
 
 ### Compared to Java GDS (Factory + Reflection)
+
 - **No reflection:** All generation is compile-time deterministic
 - **No factory pattern:** The system generates itself
 - **No lookup:** No runtime discovery needed
 - **Self-certifying:** Every generated concept satisfies its constraints
 
 ### Compared to Traditional Enumeration
+
 - **Not static:** Dynamic generation through logical necessity
 - **Not arbitrary:** Each step follows from previous
 - **Infinitely extensible:** No enumeration needed
 - **Self-explaining:** To add a concept, understand the genetic process
 
 ### Compared to Generic Code Generation
+
 - **Principled:** Based on philosophical necessity, not convenience
 - **Nested:** Each iteration can contain previous as special case
 - **Recursive:** Pattern repeats at increasing levels of abstraction
@@ -264,7 +284,7 @@ LAYER 3 (RECURSIVE PROJECTION):
   German Idealism
   ├─ Fichtean Dyadic Generation
   └─ Hegelian Dialectic
-  
+
     ↑ UNFOLDS FROM ↑
 
 LAYER 2 (GENETIC PROCESS):
@@ -272,7 +292,7 @@ LAYER 2 (GENETIC PROCESS):
   ├─ Membership (Potentiality)
   ├─ Consequence (Actuality)
   └─ Inherence (Entelechy)
-  
+
     ↑ SPECIALIZES ↑
 
 LAYER 1 (FIVE-FOLD STRUCTURE):
@@ -299,14 +319,14 @@ IMPLEMENTATION:
 
 ## Documentation Map
 
-| Concept | File | Focus |
-|---------|------|-------|
-| **Five-Fold Structure** | `PROJECTION_FIVE_FOLD_SYNTHESIS.md` | Static architecture |
-| **Genetic Loop** | `CODEGEN_GENETIC_PROCESS.md` | Dynamic process (M→C→I) |
-| **Recursive Projection** | `TRANSFORMS_FICHTEAN_HEGELIAN.md` | Infinite recursion |
-| **Registry:Catalog Dyad** | `PROJECTION_ARCHITECTURE_COMPLETE.md` | Knowledge-Power poles |
-| **Complete Summary** | `CODEGEN_ARCHITECTURE_SUMMARY.md` | Integration of all concepts |
-| **This Document** | `CODEGEN_COMPLETE_PHILOSOPHY.md` | Unified philosophical view |
+| Concept                   | File                                  | Focus                       |
+| ------------------------- | ------------------------------------- | --------------------------- |
+| **Five-Fold Structure**   | `PROJECTION_FIVE_FOLD_SYNTHESIS.md`   | Static architecture         |
+| **Genetic Loop**          | `CODEGEN_GENETIC_PROCESS.md`          | Dynamic process (M→C→I)     |
+| **Recursive Projection**  | `TRANSFORMS_FICHTEAN_HEGELIAN.md`     | Infinite recursion          |
+| **Registry:Catalog Dyad** | `PROJECTION_ARCHITECTURE_COMPLETE.md` | Knowledge-Power poles       |
+| **Complete Summary**      | `CODEGEN_ARCHITECTURE_SUMMARY.md`     | Integration of all concepts |
+| **This Document**         | `CODEGEN_COMPLETE_PHILOSOPHY.md`      | Unified philosophical view  |
 
 ---
 
@@ -315,18 +335,18 @@ IMPLEMENTATION:
 ```
                     INFINITE RECURSION (Fichtean-Hegelian)
                            ↑ ↓
-                     
+
                     GENETIC LOOP (Aristotelian)
         Membership → Consequence → Inherence
                  ↑       ↓          ↓
-                 
+
               FIVE-FOLD STRUCTURE (Vedantic)
   Transform ↔ Descriptor : Membership → Runtime ← Consequence
 
                            ↑
-                    
+
             MANIFESTS IN RUST CODE
-  
+
   membership.rs : consequence.rs : inherence.rs : registry.rs : catalog.rs
 ```
 
@@ -337,6 +357,7 @@ IMPLEMENTATION:
 **CODEGEN IS SELF-GENERATING THOUGHT EMBEDDED IN CODE.**
 
 It doesn't merely create algorithms. It **thinks** by:
+
 1. Knowing what it IS (Membership extraction)
 2. Deriving what MUST BE (Consequence application)
 3. Recognizing what FORMS subsume its being (Inherence recognition)

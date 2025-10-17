@@ -59,7 +59,7 @@
 //! - `macros/` - Tools that PROJECT (eval_macro, config, procedure macros)
 //! - `descriptors/` - IDENTITY/Science (property, computation, storage, pipeline)
 //! - `runtimes/` - DIFFERENCE/Manifestation (Computer, StorageRuntime, etc.)
-//! - `transforms/` - Projection MAPPINGS (TypeProjector, Functors)
+//! - `algorithm/` - Projection MAPPINGS (TypeProjector, Functors) - the genetic constituents
 //! - `consequence/` - LOGICAL ENTAILMENT (rules determining runtime from membership)
 //! - `registry/` - OMNISCIENCE (analyze descriptors → extract schema)
 //! - `catalog/` - OMNIPOTENCE (manifest runtimes from schema)
@@ -90,6 +90,7 @@
 
 #[macro_use]
 pub mod macros;
+pub mod algorithm;
 pub mod catalog;
 pub mod consequence;
 pub mod descriptors;
@@ -97,7 +98,6 @@ pub mod inherence;
 pub mod membership;
 pub mod registry;
 pub mod runtimes;
-pub mod transforms;
 
 // ============================================================================
 // RE-EXPORTS
@@ -122,8 +122,8 @@ pub use runtimes::{
     StorageContext, StorageError, StorageRuntime, StorageRuntimeFactory, StorageValue,
 };
 
-// Transforms
-pub use transforms::{
+// Algorithm (genetic constituents)
+pub use algorithm::{
     AdaptiveProjector, ArrowProjector, HugeArrayProjector, PregelProjector, ProjectionError,
     TypeProjector, TypeValidator, ValidationError,
 };

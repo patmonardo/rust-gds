@@ -1,17 +1,20 @@
-//! Cross-Cutting Transformations
+//! Algorithm Genetic Constituents
 //!
-//! This module contains conversion utilities that operate across
-//! the descriptor and runtime spaces:
+//! This module contains the genetic constituents that give rise to Algorithms:
+//! the logical structures that determine how a concept unfolds from thought into
+//! concrete Storage + Computation manifestation.
 //!
 //! - `type_projector.rs` - Maya as Dialectical Absolute (PropertyDescriptor → Storage/Computation)
 //! - `type_validator.rs` - Inference as Brahman-Knowing (Values → PropertyDescriptor)
 //! - `functors.rs` - Gross ↔ Subtle conversions (Form Processor dependency)
 //!
-//! ## The Transcendental Function
+//! ## The Genetic Process
 //!
-//! While `descriptors/` and `runtimes/` define the extremes (WHAT and HOW),
-//! `transforms/` provides the MAPPINGS between them - the projective geometry
-//! of the type system.
+//! An Algorithm is the Concept that subsumes:
+//! - **Storage Runtime** (Being There - what persists)
+//! - **Computation Runtime** (Ephemeral Nothing - what transforms)
+//!
+//! These genetic constituents extract and validate the essence:
 //!
 //! - **TypeProjector**: Maps Form (PropertyDescriptor) → Manifestations (Storage, Computation)
 //! - **TypeValidator**: Maps Values → Form (inference, validation)
