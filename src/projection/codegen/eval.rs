@@ -1,10 +1,21 @@
-//! EVAL: Omniscience — The Analysis Pole of Projection
+//! EVAL: The First Recursive Descent of Projection (into Computation)
+//!
+//! This module is a RECURSIVE DESCENT of the Five-Fold Synthesis,
+//! applied specifically to the COMPUTATION domain.
+//!
+//! It INHERITS the Five-Fold Structure from ../codegen/mod.rs:
+//! 1. ComputationTransform (Ground) — Descriptor → Schema
+//! 2. ComputationDescriptor (Identity) — What computation IS
+//! 3. ComputationMembership (Inherence) — What belongs to computation
+//! 4. ComputationSchema (Difference) — What we KNOW about computation
+//! 5. ComputationConsequence (Entailment) — What follows from membership
+//!
+//! OPERATION: ANALYZE
+//! Direction: ComputationDescriptor → Analyze → ComputationSchema
+//! Question: "What can we KNOW about this computation?"
 //!
 //! eval is the KNOWLEDGE mode: given a Descriptor, what can we deduce?
 //! What are its inherent constraints? What consequences follow?
-//!
-//! This is the top-down application of Projection:
-//! Descriptor → Analyze Membership → Determine Schema → Extract Consequences
 //!
 //! eval overcomes the illusion of Maya by revealing the unity beneath multiplicity:
 //! Many descriptors, ONE underlying principle of constraints and relations.
@@ -12,6 +23,8 @@
 //! PRINCIPLE: Eval is not factory. Eval does NOT create runtimes.
 //! Eval ANALYZES descriptors and extracts their inherent schema.
 //! Factory will use this schema to create runtimes.
+//!
+//! See also: ../factory/mod.rs (second recursive descent)
 
 use std::fmt;
 

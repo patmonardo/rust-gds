@@ -1,10 +1,21 @@
-//! FACTORY: Omnipotence — The Manifestation Pole of Projection
+//! FACTORY: The Second Recursive Descent of Projection (into Storage)
+//!
+//! This module is a RECURSIVE DESCENT of the Five-Fold Synthesis,
+//! applied specifically to the STORAGE domain.
+//!
+//! It INHERITS the Five-Fold Structure from ../codegen/mod.rs:
+//! 1. StorageTransform (Ground) — Schema → Runtime
+//! 2. StorageSchema (Identity) — What we know about storage
+//! 3. StorageConstraints (Inherence) — What belongs to storage
+//! 4. StorageRuntime (Difference) — What we CREATE in storage
+//! 5. StorageConsequence (Entailment) — What follows from constraints
+//!
+//! OPERATION: CREATE
+//! Direction: StorageSchema → Create Consequences → StorageRuntime
+//! Question: "What shall we bring into Storage being?"
 //!
 //! factory is the POWER mode: given a Schema (analyzed from a Descriptor),
 //! what runtime shall we bring into being?
-//!
-//! This is the bottom-up application of Projection:
-//! Schema → Determine Consequences → Create Runtime → Manifest
 //!
 //! factory realizes the freedom to manifest any runtime from any schema.
 //! It is the power that turns knowledge (eval) into actual being.
@@ -12,6 +23,8 @@
 //! PRINCIPLE: Factory is not eval. Factory does NOT analyze descriptors.
 //! Factory MANIFESTS runtimes from the schema that eval provides.
 //! Together, eval + factory = complete Projection system.
+//!
+//! See also: ../eval/mod.rs (first recursive descent)
 
 use std::error::Error;
 use std::fmt;

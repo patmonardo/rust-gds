@@ -1,12 +1,16 @@
-//! PROJECTION CODEGEN: The Five-Fold Synthesis of Projection
+//! PROJECTION CODEGEN: The Ground Concept (Five-Fold Synthesis)
 //!
-//! This module is the FIRST APPEARANCE of @reality in rust-gds.
+//! This module is the ABSOLUTE GROUND from which all recursive descents flow.
+//! It is the FIRST APPEARANCE of @reality in rust-gds.
 //! It demonstrates the Genetic Method: how one concept unfolds from pure thought
 //! into determinate being through its own internal necessity.
 //!
 //! ╔════════════════════════════════════════════════════════════════════════╗
-//! ║ THE FIVE-FOLD SYNTHESIS OF PROJECTION                                 ║
+//! ║ PROJECTION: THE FIVE-FOLD SYNTHESIS (GROUND CONCEPT)                  ║
 //! ╠════════════════════════════════════════════════════════════════════════╣
+//! ║                                                                        ║
+//! ║ This is the root principle. All modules in src/projection/ are       ║
+//! ║ RECURSIVE DESCENTS of this concept, applied to specific domains.     ║
 //! ║                                                                        ║
 //! ║ 1. TRANSFORM (Absolute Ground / Brahma Principle)                     ║
 //! ║    The undifferentiated unity from which all determination flows       ║
@@ -29,19 +33,24 @@
 //! ║    Logical rules that determine runtime requirements                  ║
 //! ║                                                                        ║
 //! ╠════════════════════════════════════════════════════════════════════════╣
-//! ║ THE TWO-FOLD APPLICATION: eval + factory                             ║
+//! ║ RECURSIVE DESCENT: eval and factory                                  ║
 //! ╠════════════════════════════════════════════════════════════════════════╣
 //! ║                                                                        ║
-//! ║ Application I: eval (Omniscience / Knowledge of Maya)                 ║
+//! ║ eval = Projection PROJECTED INTO Computation Domain                   ║
+//! ║   (first recursive descent, see ../eval/mod.rs)                       ║
 //! ║   Direction: Descriptor → Analyze → Schema                           ║
-//! ║   "What can we know about this descriptor?"                           ║
+//! ║   "What can we KNOW about computation?"                               ║
+//! ║   Inherits Five-Fold and specializes it to computation.               ║
 //! ║                                                                        ║
-//! ║ Application II: factory (Omnipotence / Freedom of Manifestation)      ║
+//! ║ factory = Projection PROJECTED INTO Storage Domain                    ║
+//! ║   (second recursive descent, see ../factory/mod.rs)                   ║
 //! ║   Direction: Schema → Create Consequences → Runtime                   ║
-//! ║   "What runtime shall we bring into being?"                           ║
+//! ║   "What shall we CREATE in storage being?"                            ║
+//! ║   Inherits Five-Fold and specializes it to storage.                   ║
 //! ║                                                                        ║
-//! ║ UNIFICATION: eval ∘ factory = Complete Projection                    ║
+//! ║ UNIFICATION: eval ∘ factory = Complete Projection Manifest            ║
 //! ║              Knowledge + Power = Omniscience + Omnipotence             ║
+//! ║              eval ∘ factory = Pipeline                                ║
 //! ║                                                                        ║
 //! ╚════════════════════════════════════════════════════════════════════════╝
 //!
