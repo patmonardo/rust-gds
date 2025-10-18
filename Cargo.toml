@@ -32,6 +32,11 @@ parking_lot = "0.12"
 rayon = "1.10"
 hdrhistogram = "7.5" # Histogram data structure for statistics
 paste = "1.0" # Token pasting for macro generation (builder names, etc.)
+anyhow = "1.0"
+bincode = "1.3"
+derive_more = "0.99"
+derive_builder = "0.12"
+log = "0.4.28"
 
 [build-dependencies]
 napi-build = "2"

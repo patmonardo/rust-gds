@@ -12,8 +12,10 @@
 use super::tensor::Tensor;
 use super::tensor_data::TensorData;
 use crate::ml::core::dimensions;
+use serde::{Deserialize, Serialize};
+use std::ops::{Index, IndexMut};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Vector {
     tensor: TensorData, // COMPOSITION: wraps shared storage/methods
 }
@@ -34,6 +36,10 @@ impl Vector {
         Self { tensor }
     }
 
+    pub fn zeros(size: usize) -> Self {
+        Self::with_size(size)
+    }
+
     pub fn create(value: f64, size: usize) -> Self {
         let tensor = TensorData::filled(value, dimensions::vector(size));
         Self { tensor }
@@ -47,6 +53,10 @@ impl Vector {
         self.tensor.data().len()
     }
 
+    pub fn len(&self) -> usize {
+        self.length()
+    }
+
     /// DELEGATION: Get value at index (convenience wrapper).
     pub fn data_at(&self, index: usize) -> f64 {
         self.tensor.data_at(index)
@@ -57,6 +67,14 @@ impl Vector {
         self.tensor.set_data_at(index, value);
     }
 
+    pub fn iter(&self) -> std::slice::Iter<'_, f64> {
+        self.tensor.data().iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, f64> {
+        self.tensor.data_mut().iter_mut()
+    }
+
     // ========================================================================
     // Delegation to TensorData (shared methods)
     // ========================================================================
@@ -64,6 +82,10 @@ impl Vector {
     /// DELEGATION: Get raw data slice.
     pub fn data(&self) -> &[f64] {
         self.tensor.data()
+    }
+
+    pub fn to_vec(&self) -> Vec<f64> {
+        self.tensor.data().to_vec()
     }
 }
 
@@ -177,8 +199,64 @@ impl Tensor for Vector {
     }
 }
 
+impl Index<usize> for Vector {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.tensor.data()[index]
+    }
+}
+
+impl IndexMut<usize> for Vector {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.tensor.data_mut()[index]
+    }
+}
+
 impl std::fmt::Display for Vector {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Vector({}): {:?}", self.length(), self.data())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn add_produces_new_vector() {
+        let lhs = Vector::new(vec![1.0, 2.0, 3.0]);
+        let rhs = Vector::new(vec![4.0, 5.0, 6.0]);
+
+        let result = lhs.add(&rhs);
+        assert_eq!(result.dimensions(), &[3, 1]);
+        assert_eq!(result.data(), &[5.0, 7.0, 9.0]);
+    }
+
+    #[test]
+    fn add_inplace_updates_left_operand() {
+        let mut lhs = Vector::new(vec![1.0, 2.0, 3.0]);
+        let rhs = Vector::new(vec![0.5, 1.5, 2.5]);
+
+        lhs.add_inplace(&rhs);
+
+        assert_eq!(lhs.data(), &[1.5, 3.5, 5.5]);
+    }
+
+    #[test]
+    fn elementwise_product_matches_componentwise() {
+        let lhs = Vector::new(vec![1.0, 2.0, 3.0]);
+        let rhs = Vector::new(vec![4.0, 5.0, 6.0]);
+
+        let result = lhs.elementwise_product(&rhs);
+        assert_eq!(result.data(), &[4.0, 10.0, 18.0]);
+    }
+
+    #[test]
+    fn scalar_multiply_respects_factor() {
+        let vector = Vector::new(vec![2.0, -4.0, 6.0]);
+
+        let result = vector.scalar_multiply(0.5);
+        assert_eq!(result.data(), &[1.0, -2.0, 3.0]);
     }
 }

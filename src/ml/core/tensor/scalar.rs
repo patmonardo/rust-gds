@@ -157,3 +157,34 @@ impl std::fmt::Display for Scalar {
         write!(f, "Scalar: {}", self.value())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn add_returns_new_scalar() {
+        let lhs = Scalar::new(1.5);
+        let rhs = Scalar::new(2.5);
+
+        let result = lhs.add(&rhs);
+        assert_eq!(result.dimensions(), &[1, 1]);
+        assert_eq!(result.data(), &[4.0]);
+    }
+
+    #[test]
+    fn scalar_multiply_mutate_scales_in_place() {
+        let mut scalar = Scalar::new(3.0);
+        scalar.scalar_multiply_mutate(2.0);
+
+        assert_eq!(scalar.value(), 6.0);
+    }
+
+    #[test]
+    fn ones_like_produces_unit_scalar() {
+        let scalar = Scalar::new(42.0);
+        let one = scalar.ones_like();
+        assert_eq!(one.dimensions(), &[1, 1]);
+        assert_eq!(one.data(), &[1.0]);
+    }
+}

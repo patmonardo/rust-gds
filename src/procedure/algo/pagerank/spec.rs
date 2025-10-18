@@ -1,28 +1,21 @@
 //! PageRank Algorithm Specification
 //!
-//! This module implements the `AlgorithmSpec` trait for PageRank iteration.
-//! It is the **Species** manifestation of the abstract **Genus** (PageRank principle).
+//! This module is a STUB while we clarify Executor/Algorithm architecture.
 //!
-//! ## Path Knowledge
+//! BLOCKED: PageRank needs Pregel framework, but AlgorithmSpec::execute()
+//! signature restricts to G: GraphStore, while Pregel needs G: Graph.
 //!
-//! PageRank IS the Path by which network potential (Prajna) becomes network knowledge (Jnana):
-//! - **Prajna pole**: Distributed edge weights and initial scores (infinite potential)
-//! - **Jnana pole**: Aggregated node scores (infinite knowledge)
-//! - **Dharma (Functor)**: Message-passing that relates them (the stroke of the Path)
+//! See: doc/SESSION_CONTEXT_OCT_18_MODEL_FEATURE.md
+//!
+//! When Executor architecture is clarified, this will be re-implemented.
 
 use crate::config::PageRankConfig;
 use crate::projection::eval::procedure::{
     AlgorithmError, AlgorithmSpec, ComputationResult, ConfigError, ConsumerError, ExecutionContext,
     ExecutionMode, ProjectionHint, ValidationConfiguration,
 };
-use crate::types::graph::Degrees;
 use crate::types::prelude::GraphStore;
-use crate::types::properties::relationship::traits::RelationshipIterator;
 use serde_json::Value as JsonValue;
-use std::time::Instant;
-
-use super::computation::PageRankComputationRuntime;
-use super::storage::PageRankStorageRuntime;
 
 // ============================================================================
 // Computation Result
@@ -44,22 +37,10 @@ pub struct PageRankComputationResult {
 }
 
 // ============================================================================
-// Algorithm Specification
+// Algorithm Specification (STUB)
 // ============================================================================
 
-/// PageRank Algorithm Specification
-///
-/// This is the **Species** - concrete manifestation of the PageRank algorithm.
-/// It implements the `AlgorithmSpec` trait required by `ProcedureExecutor`.
-///
-/// ## The Path
-///
-/// Each iteration of PageRank IS one breath of the Path:
-/// 1. Validator apprehends current scores (what IS the form?)
-/// 2. Projector reveals duality (storage scores ↔ message-passing)
-/// 3. Functor converts (PropertyValues → computation)
-/// 4. Computation: scores propagate via edges
-/// 5. Return: new scores become next iteration's Prajna
+/// PageRank Algorithm Specification (STUB)
 pub struct PageRankAlgorithmSpec {
     /// Name of the graph to load
     graph_name: String,
@@ -80,7 +61,7 @@ impl PageRankAlgorithmSpec {
 }
 
 // ============================================================================
-// AlgorithmSpec Implementation
+// AlgorithmSpec Implementation (STUB - returns error for now)
 // ============================================================================
 
 impl AlgorithmSpec for PageRankAlgorithmSpec {
@@ -98,16 +79,12 @@ impl AlgorithmSpec for PageRankAlgorithmSpec {
     }
 
     /// Projection hint: dense arrays with cursor iteration
-    ///
-    /// PageRank needs efficient edge traversal and score updates,
-    /// so dense arrays with cursor-based iteration are preferred.
     fn projection_hint(&self) -> ProjectionHint {
         ProjectionHint::Dense
     }
 
     /// Parse JSON configuration into PageRankConfig
     fn parse_config(&self, json: &JsonValue) -> Result<JsonValue, ConfigError> {
-        // For now, echo back the JSON; full deserialization would happen here
         Ok(json.clone())
     }
 
@@ -118,81 +95,22 @@ impl AlgorithmSpec for PageRankAlgorithmSpec {
 
     /// Execute the PageRank algorithm
     ///
-    /// Follows Java GDS PageRankComputation.compute() logic via Pregel iteration.
+    /// STUB: Returns error until Executor/Algorithm architecture is clarified.
+    /// Real implementation requires Pregel integration.
     fn execute<G>(
         &self,
-        graph_store: &G,
+        _graph_store: &G,
         _config: &JsonValue,
         _context: &ExecutionContext,
     ) -> Result<ComputationResult<Self::Output>, AlgorithmError>
     where
-        G: GraphStore + Degrees + RelationshipIterator,
+        G: GraphStore,
     {
-        let start = Instant::now();
-
-        let node_count = graph_store.node_count() as usize;
-        if node_count == 0 {
-            return Err(AlgorithmError::Execution("Graph has no nodes".to_string()));
-        }
-
-        // Initial score: alpha = (1 - dampingFactor)
-        // This matches Java GDS: initialValue() returns alpha for source nodes
-        let alpha = 1.0 - self.config.damping_factor;
-        let mut current_scores = vec![alpha; node_count];
-        let mut deltas = vec![alpha; node_count]; // Track deltas for convergence
-
-        let storage = PageRankStorageRuntime::new(graph_store);
-        let compute =
-            PageRankComputationRuntime::new(self.config.damping_factor, self.config.tolerance);
-
-        for iteration in 0..self.config.max_iterations {
-            // Validate current scores
-            storage.validate_scores(&current_scores)?;
-
-            // Extract messages from all nodes based on current deltas
-            // (In Java: sendToNeighbors(delta / degree))
-            let incoming_messages = storage.extract_messages(&deltas)?;
-
-            // Accumulate messages at each node
-            let mut new_scores = vec![0.0; node_count];
-            compute.accumulate_scores(&incoming_messages, &mut new_scores)?;
-
-            // Apply damping: newScore = (1-d)*sum + d*initialScore
-            // (In Java: setNodeValue(rank + delta) where delta = dampingFactor * sum)
-            let mut new_deltas = vec![0.0; node_count];
-            for node_id in 0..node_count {
-                let dampened = self.config.damping_factor * new_scores[node_id];
-                new_scores[node_id] = alpha + dampened;
-                new_deltas[node_id] = dampened; // Delta for next iteration
-            }
-
-            // Check convergence: all deltas < tolerance
-            let max_delta = new_deltas.iter().fold(0.0f64, |a, &b| a.max(b.abs()));
-
-            if iteration > 0 && max_delta < self.config.tolerance {
-                let result = PageRankComputationResult {
-                    scores: new_scores,
-                    iterations: iteration + 1,
-                    converged: true,
-                    residual: max_delta,
-                    execution_time_ms: start.elapsed().as_millis(),
-                };
-                return Ok(ComputationResult::new(result, start.elapsed()));
-            }
-
-            current_scores = new_scores;
-            deltas = new_deltas;
-        }
-
-        let result = PageRankComputationResult {
-            scores: current_scores,
-            iterations: self.config.max_iterations,
-            converged: false,
-            residual: 0.0,
-            execution_time_ms: start.elapsed().as_millis(),
-        };
-
-        Ok(ComputationResult::new(result, start.elapsed()))
+        Err(AlgorithmError::Execution(
+            "PageRank execution blocked: awaiting Executor/Algorithm architecture clarification. \
+             See doc/SESSION_CONTEXT_OCT_18_MODEL_FEATURE.md"
+                .to_string(),
+        ))
     }
 
     /// Consume result and return formatted output

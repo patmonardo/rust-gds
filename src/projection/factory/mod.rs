@@ -113,6 +113,10 @@ pub mod arrow;
 #[cfg(feature = "arrow")]
 pub mod csr_huge;
 
+// Relationships builder trait (minimal stub for ML negative sampling)
+pub mod relationships_builder;
+pub use relationships_builder::RelationshipsBuilder;
+
 // Future: Polars-native factory
 // #[cfg(feature = "polars")]
 // pub mod polars;

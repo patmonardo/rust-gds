@@ -11,6 +11,7 @@
 //!
 //! This achieves the same goal as Java's inheritance but using Rust idioms.
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Shared storage and operations for all tensor types.
@@ -18,7 +19,7 @@ use std::fmt;
 /// This is the "base class" equivalent from Java's Tensor<SELF>.
 /// Contains the protected fields (data, dimensions) and all concrete methods
 /// that were inherited by Matrix, Vector, and Scalar.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TensorData {
     data: Vec<f64>,
     dimensions: Vec<usize>,

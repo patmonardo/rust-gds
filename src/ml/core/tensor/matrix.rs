@@ -13,8 +13,10 @@ use super::tensor::Tensor;
 use super::tensor_data::TensorData;
 use super::vector::Vector;
 use crate::ml::core::dimensions;
+use serde::{Deserialize, Serialize};
+use std::ops::{Index, IndexMut};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Matrix {
     tensor: TensorData, // COMPOSITION: wraps shared storage/methods
     rows: usize,
@@ -36,6 +38,10 @@ impl Matrix {
         Self { tensor, rows, cols }
     }
 
+    pub fn zeros(rows: usize, cols: usize) -> Self {
+        Self::with_dimensions(rows, cols)
+    }
+
     pub fn create(value: f64, rows: usize, cols: usize) -> Self {
         let tensor = TensorData::filled(value, dimensions::matrix(rows, cols));
         Self { tensor, rows, cols }
@@ -51,6 +57,18 @@ impl Matrix {
 
     pub fn cols(&self) -> usize {
         self.cols
+    }
+
+    pub fn row(&self, row: usize) -> &[f64] {
+        let start = row * self.cols;
+        let end = start + self.cols;
+        &self.tensor.data()[start..end]
+    }
+
+    pub fn row_mut(&mut self, row: usize) -> &mut [f64] {
+        let start = row * self.cols;
+        let end = start + self.cols;
+        &mut self.tensor.data_mut()[start..end]
     }
 
     /// Get value at (row, col) position.
@@ -87,6 +105,14 @@ impl Matrix {
     /// Forwards to TensorData.data_mut()
     pub fn data_mut(&mut self) -> &mut [f64] {
         self.tensor.data_mut()
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, f64> {
+        self.tensor.data().iter()
+    }
+
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, f64> {
+        self.tensor.data_mut().iter_mut()
     }
 
     /// DELEGATION: Set value at flat index.
@@ -375,5 +401,87 @@ impl Tensor for Matrix {
 impl std::fmt::Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Matrix({}, {})", self.rows, self.cols)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn multiply_matches_manual_product() {
+        let left = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
+        let right = Matrix::new(vec![5.0, 6.0, 7.0, 8.0], 2, 2);
+
+        let result = left.multiply(&right);
+        assert_eq!(result.dimensions(), &[2, 2]);
+        assert_eq!(result.data(), &[19.0, 22.0, 43.0, 50.0]);
+    }
+
+    #[test]
+    fn multiply_trans_a_handles_row_major_inputs() {
+        let left = Matrix::new(vec![1.0, 3.0, 2.0, 4.0], 2, 2);
+        let right = Matrix::new(vec![5.0, 7.0, 6.0, 8.0], 2, 2);
+
+        let result = left.multiply_trans_a(&right);
+        assert_eq!(result.dimensions(), &[2, 2]);
+        assert_eq!(result.data(), &[17.0, 23.0, 39.0, 53.0]);
+    }
+
+    #[test]
+    fn multiply_trans_b_handles_second_operand_transpose() {
+        let left = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
+        let right = Matrix::new(vec![5.0, 6.0, 7.0, 8.0], 2, 2);
+
+        let result = left.multiply_trans_b(&right);
+        assert_eq!(result.dimensions(), &[2, 2]);
+        assert_eq!(result.data(), &[17.0, 23.0, 39.0, 53.0]);
+    }
+
+    #[test]
+    fn sum_per_column_collapses_rows() {
+        let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], 3, 2);
+
+        let result = matrix.sum_per_column();
+        assert_eq!(result.dimensions(), &[2, 1]);
+        assert_eq!(result.data(), &[9.0, 12.0]);
+    }
+
+    #[test]
+    fn sum_broadcast_column_wise_adds_vector() {
+        let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
+        let vector = Vector::new(vec![10.0, 20.0]);
+
+        let result = matrix.sum_broadcast_column_wise(&vector);
+        assert_eq!(result.dimensions(), &[2, 2]);
+        assert_eq!(result.data(), &[11.0, 22.0, 13.0, 24.0]);
+    }
+
+    #[test]
+    fn set_row_copies_source_row() {
+        let mut destination = Matrix::with_dimensions(2, 2);
+        let source = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
+
+        destination.set_row(1, &source, 0);
+
+        assert_eq!(destination.data(), &[0.0, 0.0, 1.0, 2.0]);
+    }
+}
+
+impl Index<(usize, usize)> for Matrix {
+    type Output = f64;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        let (row, col) = index;
+        let idx = row * self.cols + col;
+        &self.tensor.data()[idx]
+    }
+}
+
+impl IndexMut<(usize, usize)> for Matrix {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        let (row, col) = index;
+        let idx = row * self.cols + col;
+        &mut self.tensor.data_mut()[idx]
     }
 }
