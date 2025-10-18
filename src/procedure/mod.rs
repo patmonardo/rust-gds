@@ -82,6 +82,15 @@
 
 // Module structure
 
+/// Algorithm implementations
+///
+/// Each algorithm implements the `AlgorithmSpec` trait and provides
+/// specific computation logic. Examples:
+/// - `algo::sum` - Sum aggregation
+/// - `algo::pagerank` - PageRank centrality (future)
+/// - `algo::louvain` - Louvain community detection (future)
+pub mod algo;
+
 /// Core utilities from Java GDS algo-common
 /// - Result builders and statistics (centrality, community, similarity)
 /// - Feature scaling for ML pipelines
@@ -89,8 +98,10 @@
 pub mod core;
 
 // Future modules (to be implemented)
-// pub mod algo;        // Algorithm implementations
 // pub mod facade;      // Public API facades
+
+// Re-export commonly used types
+pub use algo::{SumAlgorithmSpec, SumConfig};
 
 // Note: Code generation macros live in src/projection/codegen/procedure/
 // This keeps codegen infrastructure centralized with ML codegen

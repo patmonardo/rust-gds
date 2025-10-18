@@ -1,7 +1,9 @@
 //! Algorithm configuration types and builders
 
 use super::base_types::{AlgoBaseConfig, ConcurrencyConfig, Config, IterationsConfig};
+use super::pregel_config::PregelRuntimeConfig;
 use super::validation::{ConfigError, ConfigValidation};
+use crate::core::utils::partition::Partitioning;
 use crate::projection::{NodeLabel, RelationshipType};
 
 /// PageRank algorithm configuration
@@ -42,6 +44,20 @@ impl IterationsConfig for PageRankConfig {
 
     fn tolerance(&self) -> Option<f64> {
         Some(self.tolerance)
+    }
+}
+
+impl PregelRuntimeConfig for PageRankConfig {
+    fn is_asynchronous(&self) -> bool {
+        false
+    }
+
+    fn partitioning(&self) -> Partitioning {
+        Partitioning::Range
+    }
+
+    fn track_sender(&self) -> bool {
+        false
     }
 }
 

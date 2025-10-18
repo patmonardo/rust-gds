@@ -29,6 +29,7 @@ pub trait AggregationSource: Send + Sync {
 ```
 
 **Characteristics:**
+
 - Persists across operations
 - Indexed by node ID (like in Java GDS)
 - Can be queried multiple times
@@ -48,6 +49,7 @@ pub enum AccumulationStrategy {
 ```
 
 **Characteristics:**
+
 - Ephemeral - created, used, discarded
 - Describes HOW to compute (not stored data)
 - Rules for combining values
@@ -75,6 +77,7 @@ impl SumAggregation {
 ```
 
 **Characteristics:**
+
 - Unifies Storage and Procedure
 - Knows how to extract values from storage
 - Knows how to apply computation rules
@@ -92,7 +95,7 @@ pub fn extract_membership(&self) -> Result<SumAggregationMembership, Aggregation
     // 1. Values must be numeric (Long or Double, not String/Boolean)
     // 2. Nullability must be consistent
     // 3. Storage must be non-empty OR aggregation must support empty case
-    
+
     Ok(SumAggregationMembership {
         value_type: self.value_type,
         nullable: self.nullable,
@@ -102,11 +105,13 @@ pub fn extract_membership(&self) -> Result<SumAggregationMembership, Aggregation
 ```
 
 **What belongs?**
+
 - Numeric values (Long, Double)
 - Nullable or non-nullable (consistent)
 - Non-empty source
 
 **What does NOT belong?**
+
 - String values
 - Boolean values
 - Mixed nullable/non-nullable
@@ -114,14 +119,14 @@ pub fn extract_membership(&self) -> Result<SumAggregationMembership, Aggregation
 ### CONSEQUENCE (What logically follows?)
 
 ```rust
-pub fn derive_consequence(&self, membership: &SumAggregationMembership) 
-    -> Result<SumAggregationProcedure, AggregationError> 
+pub fn derive_consequence(&self, membership: &SumAggregationMembership)
+    -> Result<SumAggregationProcedure, AggregationError>
 {
     // Given the constraints (membership), what computation MUST occur?
     // If input is numeric → output is numeric
     // If input is nullable → handle nulls
     // If input is empty → return None or error
-    
+
     Ok(SumAggregationProcedure {
         value_type: membership.value_type,
         accumulation_strategy: AccumulationStrategy::Sequential,
@@ -130,6 +135,7 @@ pub fn derive_consequence(&self, membership: &SumAggregationMembership)
 ```
 
 **What follows logically?**
+
 - Numeric input → numeric output (type preservation)
 - Nullable input → skip nulls (or error)
 - Empty input → special handling (None or error)
@@ -144,12 +150,13 @@ pub fn compute(&self) -> Result<AggregationResult, AggregationError> {
     // "This IS a sum aggregation"
     // "This IS the manifestation of Storage + Procedure"
     // "This IS what Logic determined must exist"
-    
+
     // Result IS the inherence: unified manifestation
 }
 ```
 
 **What subsumes?**
+
 - `TypedSumAggregation<Long>` - recognizes Int64-specific sum
 - `TypedSumAggregation<Double>` - recognizes Float64-specific sum
 - `DistributedSumAggregation` - recognizes parallel sum
@@ -235,21 +242,25 @@ Result
 ## Proof Statements
 
 **Proof 1: The Triad is Real**
+
 - ✅ Storage exists (AggregationSource)
 - ✅ Procedure exists (SumAggregationProcedure)
 - ✅ Algorithm subsumes both (SumAggregation.compute())
 
 **Proof 2: The Genetic Loop Works**
+
 - ✅ Membership can be extracted (constraints identified)
 - ✅ Consequence can be derived (procedure determined)
 - ✅ Inherence can be recognized (result manifested)
 
 **Proof 3: Two Runtimes Manifest**
+
 - ✅ Storage Runtime: Persistent values (source array)
 - ✅ Computation Runtime: Ephemeral transformation (accumulation loop)
 - ✅ Both are necessary, both are distinct
 
 **Proof 4: No Ceremony Needed**
+
 - ✅ No factory pattern
 - ✅ No reflection
 - ✅ No runtime discovery

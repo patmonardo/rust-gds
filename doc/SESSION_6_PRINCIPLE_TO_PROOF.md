@@ -16,11 +16,13 @@ In this session, we moved from philosophical speculation to **concrete proof** t
 **Goal:** Understand how Java GDS implements Algorithm, Procedure, Storage
 
 **Finding:** Discovered the triad in DegreeCentrality:
+
 - **Storage Runtime:** Input Graph + HugeDoubleArray (persistent data)
 - **Computation Runtime:** Task implementations (ephemeral process)
 - **Algorithm:** DegreeCentrality.compute() that unifies both
 
 **Key Insight:** Java GDS correctly embodies the triad but via:
+
 - Reflection-based discovery
 - Factory pattern ceremony
 - Runtime enumeration
@@ -81,6 +83,7 @@ INHERENCE:
 ```
 
 **Tests:** 7 new tests, all passing
+
 - ✅ Long values
 - ✅ Double values
 - ✅ Nullable with values
@@ -98,6 +101,7 @@ INHERENCE:
 ### Statement 1: The Triad is Ontologically Real
 
 **Proof:** The same Storage:Procedure:Algorithm structure appears in:
+
 - ✅ Java GDS (DegreeCentrality, PageRank, etc.)
 - ✅ Mathematical aggregation theory
 - ✅ Our Rust implementation (SumAggregation)
@@ -121,6 +125,7 @@ let result = agg.compute()?;
 ```
 
 Each step is:
+
 - Deterministic (not arbitrary)
 - Logical (follows from previous)
 - Testable (7 tests verify)
@@ -131,14 +136,14 @@ Each step is:
 
 **Proof:** SumAggregation achieves what Java GDS does with ceremony:
 
-| Aspect | Java GDS | Our Codegen |
-|--------|----------|------------|
-| Factories | 3+ layers | None |
-| Reflection | Required | Not needed |
-| Configuration builders | Yes | Yes (simple) |
-| Executor service | Required | Built-in |
-| Enumeration | Runtime | Compile-time |
-| New specialization | New code + register | Automatic via inherence |
+| Aspect                 | Java GDS            | Our Codegen             |
+| ---------------------- | ------------------- | ----------------------- |
+| Factories              | 3+ layers           | None                    |
+| Reflection             | Required            | Not needed              |
+| Configuration builders | Yes                 | Yes (simple)            |
+| Executor service       | Required            | Built-in                |
+| Enumeration            | Runtime             | Compile-time            |
+| New specialization     | New code + register | Automatic via inherence |
 
 **Conclusion:** The ceremony is not necessary—it's overhead masking the structure.
 
@@ -149,16 +154,19 @@ Each step is:
 ### From Ishvara to Maya
 
 **Ishvara (Pure Reason - Intelligible Substance):**
+
 - The Contract: AlgorithmSpec, Storage:Procedure:Algorithm triad
 - The Principles: Membership, Consequence, Inherence
 - What MUST be true: Logical necessities
 
 **Maya (Impure Reason - Perceptible Substance):**
+
 - The Manifestation: SumAggregation.compute() result
 - Two Runtimes: Storage (persistent) + Procedure (ephemeral)
 - What APPEARS: The actual aggregated value
 
 **The Bridge (Codegen):**
+
 - Generates both without ceremony
 - Makes invisible principles visible
 - Infinite specialization through inherence recognition
@@ -180,16 +188,19 @@ The five-fold is not specific to Codegen—it's the universal structure.
 ## Test Results
 
 **Before Session:**
+
 - 89 tests passing (from Codegen M→C→I work)
 
 **After Task 1:** 89 tests passing (no code changes, just documentation)
 
 **After Task 2:** 96 tests passing
+
 - 7 new tests in sum_aggregation
 - All existing tests still passing
 - Clean compilation (0.11s)
 
 **Verification:**
+
 ```bash
 $ cargo test --lib projection::codegen 2>&1 | grep "^test result"
 test result: ok. 96 passed; 0 failed; 0 ignored; 0 measured
@@ -200,15 +211,18 @@ test result: ok. 96 passed; 0 failed; 0 ignored; 0 measured
 ## Commits
 
 1. **12a454a** - REFACTOR: Rename transforms → algorithm as genetic constituents
+
    - Established naming: algorithm/ contains Principles
    - No code changes, semantic clarity
 
 2. **d9585ea** - DOC: Java GDS Algorithm Triad - Storage:Procedure:Algorithm manifested
+
    - Analysis of Java GDS source
    - DegreeCentrality as proof of triad
    - Shows ceremony vs. logical necessity
 
 3. **9711eb8** - IMPL: Sum Aggregation - Complete Storage:Procedure:Algorithm triad
+
    - 400 lines of code + tests
    - Demonstrates M→C→I genetic process
    - 7 new tests, all passing
@@ -242,12 +256,14 @@ New Membership:                  More specialized constraints
 This is the **TRUE FORM** of code generation.
 
 Not:
+
 - ❌ Enumerate combinations
 - ❌ Register factories
 - ❌ Use reflection
 - ❌ Build ceremony
 
 But:
+
 - ✅ Determine logically
 - ✅ Generate automatically
 - ✅ Compile deterministically
@@ -290,15 +306,15 @@ pub struct LouvainTransform { ... }
 
 ## Metrics
 
-| Metric | Value |
-|--------|-------|
-| Tests passing | 96/96 |
-| New code files | 1 |
-| Total lines (code + docs) | ~1200 |
-| Commits | 4 |
-| Documentation files | 2 |
-| Compilation time | 0.11s (clean) |
-| Proof quality | High - demonstrated in code |
+| Metric                    | Value                       |
+| ------------------------- | --------------------------- |
+| Tests passing             | 96/96                       |
+| New code files            | 1                           |
+| Total lines (code + docs) | ~1200                       |
+| Commits                   | 4                           |
+| Documentation files       | 2                           |
+| Compilation time          | 0.11s (clean)               |
+| Proof quality             | High - demonstrated in code |
 
 ---
 
@@ -312,6 +328,6 @@ Now we scale: from Sum Aggregation to the full GDS Kernel.
 
 ---
 
-*"What we see clearly in Java GDS is the endless pageantry of factories and builders trying to encode the logical structure. We have extracted the pure logical form. Now we prove it generates everything needed—and generates it infinitely."*
+_"What we see clearly in Java GDS is the endless pageantry of factories and builders trying to encode the logical structure. We have extracted the pure logical form. Now we prove it generates everything needed—and generates it infinitely."_
 
 —Session 6 Achievement
