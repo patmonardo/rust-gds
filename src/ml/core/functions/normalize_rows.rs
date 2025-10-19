@@ -6,7 +6,7 @@
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 const EPSILON: f64 = 1e-10;
@@ -16,13 +16,13 @@ const EPSILON: f64 = 1e-10;
 /// Corresponds to NormalizeRows in Java GDS, extends SingleParentVariable.
 /// Uses composition pattern: VariableBase holds parent (matrix to normalize).
 pub struct NormalizeRows {
-    base: VariableBase,
+    base: AbstractVariable,
 }
 
 impl NormalizeRows {
     pub fn new(parent: Box<dyn Variable>) -> Self {
         let dimensions = parent.dimensions().to_vec();
-        let base = VariableBase::new(vec![parent], dimensions);
+        let base = AbstractVariable::with_gradient_requirement(vec![parent], dimensions, true);
         Self { base }
     }
 
@@ -94,11 +94,7 @@ impl Variable for NormalizeRows {
         let rows = parent_matrix.rows();
         let cols = parent_matrix.cols();
 
-        let mut result = parent_matrix.create_with_same_dimensions();
-        let result_matrix = result
-            .as_any_mut()
-            .downcast_mut::<Matrix>()
-            .expect("Result must be Matrix");
+        let mut result = Matrix::with_dimensions(rows, cols);
 
         for row in 0..rows {
             let mut squared_sum = 0.0;
@@ -110,11 +106,11 @@ impl Variable for NormalizeRows {
             // Adding EPSILON to avoid division by zero
             let l2 = squared_sum.sqrt() + EPSILON;
             for col in 0..cols {
-                result_matrix.set_data_at(row, col, parent_matrix.data_at(row, col) / l2);
+                result.set_data_at(row, col, parent_matrix.data_at(row, col) / l2);
             }
         }
 
-        result
+        Box::new(result)
     }
 
     fn gradient(&self, parent: &dyn Variable, ctx: &ComputationContext) -> Box<dyn Tensor> {

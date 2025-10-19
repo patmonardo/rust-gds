@@ -7,7 +7,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Computes focal loss given weights, bias, predictions, features and labels,
@@ -18,7 +18,7 @@ use std::fmt;
 /// Uses composition pattern: VariableBase holds parents [weights, features, labels, bias].
 /// Note: predictions is NOT a parent for gradient tracking.
 pub struct ReducedFocalLoss {
-    base: VariableBase,
+    base: AbstractVariable,
     predictions: Box<dyn Variable>,
     focus_weight: f64,
     class_weights: Vec<f64>,
@@ -37,7 +37,7 @@ impl ReducedFocalLoss {
         // Parents are [weights, features, labels, bias] - NOT predictions
         let parents = vec![weights, features, labels, bias];
         let dimensions = dimensions::scalar();
-        let base = VariableBase::new(parents, dimensions);
+        let base = AbstractVariable::with_gradient_requirement(parents, dimensions, true);
 
         Self {
             base,

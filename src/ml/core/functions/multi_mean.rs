@@ -8,7 +8,7 @@ use crate::ml::core::dimensions::{COLUMNS_INDEX, ROWS_INDEX};
 use crate::ml::core::subgraph::BatchNeighbors;
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Computes the mean of node features and their neighbors' features.
@@ -17,7 +17,7 @@ use std::fmt;
 /// Corresponds to MultiMean in Java GDS, extends SingleParentVariable.
 /// Uses composition pattern: VariableBase holds parent (matrix to aggregate).
 pub struct MultiMean {
-    base: VariableBase,
+    base: AbstractVariable,
     sub_graph: Box<dyn BatchNeighbors>,
 }
 
@@ -29,7 +29,7 @@ impl MultiMean {
         );
 
         let dimensions = vec![sub_graph.batch_size(), parent.dimension(COLUMNS_INDEX)];
-        let base = VariableBase::new(vec![parent], dimensions);
+        let base = AbstractVariable::with_gradient_requirement(vec![parent], dimensions, true);
 
         Self { base, sub_graph }
     }

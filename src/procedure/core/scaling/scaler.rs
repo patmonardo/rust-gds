@@ -466,7 +466,6 @@ impl NoneScaler {
     }
 }
 
-
 impl Scaler for NoneScaler {
     fn scale_property(&self, node_id: u64, property_fn: &dyn Fn(u64) -> f64) -> f64 {
         property_fn(node_id)

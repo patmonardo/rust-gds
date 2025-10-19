@@ -6,7 +6,7 @@
 mod constant_tests {
     use crate::ml::core::computation_context::ComputationContext;
     use crate::ml::core::functions::Constant;
-    use crate::ml::core::tensor::{Matrix, Scalar, Vector};
+    use crate::ml::core::tensor::{Matrix, Scalar, Vector, Tensor};
     use crate::ml::core::variable::Variable;
 
     #[test]
@@ -119,7 +119,7 @@ mod constant_tests {
 mod weights_tests {
     use crate::ml::core::computation_context::ComputationContext;
     use crate::ml::core::functions::Weights;
-    use crate::ml::core::tensor::{Matrix, Scalar, Vector};
+    use crate::ml::core::tensor::{Matrix, Scalar, Vector, Tensor};
     use crate::ml::core::variable::Variable;
 
     #[test]

@@ -1,15 +1,16 @@
 use super::{
     config::GradientDescentConfig,
     objective::Objective,
-    stopper::{TrainingStopper, factory},
+    stopper::{factory, TrainingStopper},
 };
 use crate::ml::core::{
     batch::{AnyBatch, Batch, BatchQueue},
     computation_context::ComputationContext,
     optimizer::{AdamOptimizer, Updater},
-    tensor::{Tensor, tensor::AsAny},
-    variable::Variable,
+    tensor::Tensor,
 };
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 /// Training implementation for gradient descent optimization
 pub struct Training {
@@ -23,37 +24,53 @@ impl Training {
     }
 
     /// Train the objective using gradient descent
+    ///
+    /// Translated from Java Training.train() method.
     pub fn train<O: Objective>(
         &self,
         objective: &O,
         mut queue_supplier: impl FnMut() -> Box<dyn BatchQueue>,
         concurrency: usize,
     ) {
-        let mut updater =
-            AdamOptimizer::new(objective.weights().into_iter().map(|w| w.handle()).collect(), self.config.learning_rate());
+        // Create updater with weight handles
+        let weight_handles: Vec<Arc<RwLock<Box<dyn Tensor>>>> = objective
+            .weights()
+            .into_iter()
+            .map(|w| w.handle())
+            .collect();
+        let mut updater = AdamOptimizer::new(weight_handles, self.config.learning_rate());
         let mut stopper = factory::default_stopper(&self.config);
 
         let mut losses = Vec::new();
 
-        // Initial loss computation
+        // Initial loss computation (Java: var initialLoss = avgLoss(consumers))
         let consumers = self.execute_batches(concurrency, objective, queue_supplier());
         let mut prev_weight_gradients = Self::avg_weight_gradients(&consumers);
         let initial_loss = Self::avg_loss(&consumers);
 
         log::info!("Initial loss {}", initial_loss);
 
+        // Main training loop (Java: while (!stopper.terminated()))
         while !stopper.terminated() {
             // Update weights with previous gradients BEFORE computing new ones
+            // Java: updater.update(prevWeightGradients);
             updater.update(&prev_weight_gradients);
-            
+
+            // Execute batches for this epoch
+            // Java: consumers = executeBatches(concurrency, objective, queueSupplier.get());
             let consumers = self.execute_batches(concurrency, objective, queue_supplier());
             prev_weight_gradients = Self::avg_weight_gradients(&consumers);
 
+            // Compute average loss for this epoch
+            // Java: double loss = avgLoss(consumers);
             let loss = Self::avg_loss(&consumers);
             stopper.register_loss(loss);
             losses.push(loss);
+
+            log::info!("Epoch {} with loss {}", losses.len(), loss);
         }
 
+        // Final logging (Java: progressTracker.logMessage(...))
         log::info!(
             "{} after {} out of {} epochs. Initial loss: {}, Last loss: {}.{}",
             if stopper.converged() {
@@ -125,8 +142,8 @@ impl Training {
             for tensor_list in &tensor_lists[1..] {
                 sum.add_inplace(tensor_list[i].as_ref());
             }
-            sum.scalar_multiply_mutate(1.0 / divisor as f64);
-            result.push(sum);
+            let scaled_sum = sum.scalar_multiply(1.0 / divisor as f64);
+            result.push(scaled_sum);
         }
 
         result
@@ -155,6 +172,11 @@ struct ObjectiveUpdateConsumer<'a, O: Objective> {
 
 impl<'a, O: Objective> ObjectiveUpdateConsumer<'a, O> {
     fn new(objective: &'a O, train_size: usize) -> Self {
+        // Java: this.summedWeightGradients = objective
+        //     .weights()
+        //     .stream()
+        //     .map(weight -> weight.data().createWithSameDimensions())
+        //     .collect(Collectors.toList());
         let summed_weight_gradients = objective
             .weights()
             .into_iter()
@@ -171,24 +193,30 @@ impl<'a, O: Objective> ObjectiveUpdateConsumer<'a, O> {
     }
 
     fn accept<B: Batch>(&mut self, batch: &B) {
-        let ctx = ComputationContext::new();
+        // Java: Variable<Scalar> loss = objective.loss(batch, trainSize);
         let loss_variable = self.objective.loss(batch, self.train_size);
 
+        // Java: var ctx = new ComputationContext();
+        let ctx = ComputationContext::new();
+
+        // Java: lossSum += ctx.forward(loss).value();
         let loss_value = ctx.forward(loss_variable.as_ref());
-        
-        // Perform backward pass to compute gradients
+        self.loss_sum += loss_value.aggregate_sum();
+
+        // Java: ctx.backward(loss);
         ctx.backward(loss_variable.as_ref());
 
-        self.loss_sum += loss_value.aggregate_sum();
-        self.consumed_batches += 1;
-
-        // For now, let's use a simpler approach: try to get gradients directly
-        // This won't work due to the Weights::clone() issue, but let's see what happens
-        let local_weight_gradients: Vec<Box<dyn Tensor>> = self.objective
+        // Java: List<? extends Tensor<?>> localWeightGradient = objective
+        //     .weights()
+        //     .stream()
+        //     .map(ctx::gradient)
+        //     .collect(Collectors.toList());
+        let local_weight_gradients: Vec<Box<dyn Tensor>> = self
+            .objective
             .weights()
             .iter()
             .map(|weights| {
-                // Try to get gradient directly (this will likely return None)
+                // Try to get gradient from context
                 ctx.gradient(weights).unwrap_or_else(|| {
                     // Fallback: create zero gradient with same dimensions
                     weights.snapshot().create_with_same_dimensions()
@@ -196,16 +224,19 @@ impl<'a, O: Objective> ObjectiveUpdateConsumer<'a, O> {
             })
             .collect();
 
-        // Accumulate gradients
+        // Java: for (int i = 0; i < summedWeightGradients.size(); i++) {
+        //     summedWeightGradients.get(i).addInPlace(localWeightGradient.get(i));
+        // }
         for (i, gradient) in local_weight_gradients.iter().enumerate() {
             self.summed_weight_gradients[i].add_inplace(gradient.as_ref());
         }
+
+        self.consumed_batches += 1;
     }
 
     fn summed_weight_gradients(&self) -> &Vec<Box<dyn Tensor>> {
         &self.summed_weight_gradients
     }
-
 
     fn consumed_batches(&self) -> usize {
         self.consumed_batches

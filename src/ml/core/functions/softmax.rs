@@ -14,7 +14,7 @@
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Softmax activation function for multi-class classification.
@@ -22,7 +22,7 @@ use std::fmt;
 /// Corresponds to Softmax in Java GDS.
 /// Computes row-wise probability distributions: softmax(x_i) = exp(x_i) / Σ exp(x_j)
 pub struct Softmax {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parent)
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic (includes parent)
 }
 
 impl Softmax {
@@ -36,7 +36,7 @@ impl Softmax {
         let dimensions = parent.dimensions().to_vec();
 
         // Java: super(parent, parent.dimensions())
-        let base = VariableBase::new(vec![parent], dimensions);
+        let base = AbstractVariable::with_gradient_requirement(vec![parent], dimensions, true);
 
         Self { base }
     }
@@ -140,11 +140,7 @@ impl Variable for Softmax {
         let rows = data.rows();
         let cols = data.cols();
 
-        let mut result = data.create_with_same_dimensions();
-        let result_matrix = result
-            .as_any_mut()
-            .downcast_mut::<Matrix>()
-            .expect("Result must be Matrix");
+        let mut result = Matrix::with_dimensions(rows, cols);
 
         let mut rescale = false;
         for row in 0..rows {
@@ -155,7 +151,7 @@ impl Variable for Softmax {
                     rescale = true;
                     exp = f64::MAX;
                 }
-                result_matrix.set_data_at(row, col, exp);
+                result.set_data_at(row, col, exp);
                 row_sum += exp;
                 if row_sum.is_infinite() {
                     rescale = true;
@@ -163,16 +159,16 @@ impl Variable for Softmax {
                 }
             }
             for col in 0..cols {
-                let current = result_matrix.data_at(row, col);
-                result_matrix.set_data_at(row, col, current / row_sum);
+                let current = result.data_at(row, col);
+                result.set_data_at(row, col, current / row_sum);
             }
         }
 
         if rescale {
-            Self::rescale(result_matrix);
+            Self::rescale(&mut result);
         }
 
-        result
+        Box::new(result)
     }
 
     /// Compute gradient with respect to parent.

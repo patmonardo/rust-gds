@@ -36,7 +36,10 @@ impl PartialOrd for WeightedEntry {
 impl Ord for WeightedEntry {
     fn cmp(&self, other: &Self) -> Ordering {
         // Reverse ordering for max-heap (BinaryHeap is max-heap by default)
-        other.priority.partial_cmp(&self.priority).unwrap_or(Ordering::Equal)
+        other
+            .priority
+            .partial_cmp(&self.priority)
+            .unwrap_or(Ordering::Equal)
     }
 }
 

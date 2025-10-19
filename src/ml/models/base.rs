@@ -125,12 +125,12 @@ impl ModelData for LegacyBaseModelData {
 pub trait ClassifierTrainer: Send + Sync {
     /// Train a classifier
     /// features: feature store
-    /// labels: class labels (HugeIntArray in Java, HugeLongArray in Rust)
+    /// labels: class labels (HugeIntArray in Java, HugeIntArray in Rust)
     /// train_set: indices of training samples
     fn train(
         &self,
         features: &dyn Features,
-        labels: &crate::collections::HugeLongArray,
+        labels: &crate::collections::HugeIntArray,
         train_set: &Arc<Vec<u64>>,
     ) -> Box<dyn Classifier>;
 }

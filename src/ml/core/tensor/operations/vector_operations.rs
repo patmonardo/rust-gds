@@ -3,7 +3,7 @@
 /// Add rhs to lhs in place.
 pub fn add_in_place(lhs: &mut [f64], rhs: &[f64]) {
     let length = lhs.len().min(rhs.len());
-    
+
     for i in 0..length {
         lhs[i] += rhs[i];
     }
@@ -12,7 +12,7 @@ pub fn add_in_place(lhs: &mut [f64], rhs: &[f64]) {
 /// Add weighted rhs to lhs in place: lhs[i] += weight * rhs[i]
 pub fn add_weighted_in_place(lhs: &mut [f64], rhs: &[f64], weight: f64) {
     let length = lhs.len().min(rhs.len());
-    
+
     for i in 0..length {
         lhs[i] += weight * rhs[i];
     }
@@ -28,7 +28,7 @@ pub fn scale(lhs: &mut [f64], scalar: f64) {
 /// Scale vector by scalar and write to output.
 pub fn scale_to(lhs: &[f64], scalar: f64, out: &mut [f64]) {
     assert_eq!(out.len(), lhs.len());
-    
+
     for (i, &value) in lhs.iter().enumerate() {
         out[i] = value * scalar;
     }

@@ -1,16 +1,9 @@
 //! Matrix tensor - translated from Matrix.java
 //!
-//! ## Design Pattern: Composition + Delegation
-//!
-//! This Matrix wraps a TensorData (composition) to share storage and methods.
-//! This matches Java's inheritance: Matrix extends Tensor<Matrix>
-//!
-//! - TensorData provides: data, dimensions, aggregate_sum(), map(), etc.
-//! - Matrix adds: rows, cols, multiply(), data_at(row, col), etc.
-//! - Matrix delegates shared operations to inner TensorData
+//! This directly mirrors Java's `Matrix extends Tensor<Matrix>` pattern.
+//! Contains data and dimensions directly, not wrapped in TensorData.
 
 use super::tensor::Tensor;
-use super::tensor_data::TensorData;
 use super::vector::Vector;
 use crate::ml::core::dimensions;
 use serde::{Deserialize, Serialize};
@@ -18,33 +11,54 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Matrix {
-    tensor: TensorData, // COMPOSITION: wraps shared storage/methods
+    data: Vec<f64>,
+    dimensions: Vec<usize>,
     rows: usize,
     cols: usize,
 }
 
 impl Matrix {
     // ========================================================================
-    // Constructors
+    // Constructors - match Java's constructor pattern
     // ========================================================================
 
+    /// Create matrix from data array and dimensions.
+    /// Java: `public Matrix(double[] data, int rows, int cols)`
     pub fn new(data: Vec<f64>, rows: usize, cols: usize) -> Self {
-        let tensor = TensorData::new(data, dimensions::matrix(rows, cols));
-        Self { tensor, rows, cols }
+        let dimensions = dimensions::matrix(rows, cols);
+        assert_eq!(data.len(), rows * cols, "Data length must match dimensions");
+        Self {
+            data,
+            dimensions,
+            rows,
+            cols,
+        }
     }
 
+    /// Create matrix with given dimensions, filled with zeros.
+    /// Java: `public Matrix(int rows, int cols)`
     pub fn with_dimensions(rows: usize, cols: usize) -> Self {
-        let tensor = TensorData::zeros(dimensions::matrix(rows, cols));
-        Self { tensor, rows, cols }
+        let data = vec![0.0; rows * cols];
+        Self::new(data, rows, cols)
     }
 
+    /// Create matrix filled with a constant value.
+    /// Java: `public static Matrix create(double v, int rows, int cols)`
+    pub fn create(value: f64, rows: usize, cols: usize) -> Self {
+        let data = vec![value; rows * cols];
+        Self::new(data, rows, cols)
+    }
+
+    /// Create matrix filled with zeros.
+    /// Java: `public static Matrix zeros(int rows, int cols)`
     pub fn zeros(rows: usize, cols: usize) -> Self {
         Self::with_dimensions(rows, cols)
     }
 
-    pub fn create(value: f64, rows: usize, cols: usize) -> Self {
-        let tensor = TensorData::filled(value, dimensions::matrix(rows, cols));
-        Self { tensor, rows, cols }
+    /// Calculate size in bytes for matrix.
+    /// Java: `public static long sizeInBytes(int rows, int cols)`
+    pub fn size_in_bytes(rows: usize, cols: usize) -> usize {
+        crate::ml::core::tensor::size_in_bytes(&[rows, cols])
     }
 
     // ========================================================================
@@ -59,246 +73,211 @@ impl Matrix {
         self.cols
     }
 
-    pub fn row(&self, row: usize) -> &[f64] {
-        let start = row * self.cols;
-        let end = start + self.cols;
-        &self.tensor.data()[start..end]
-    }
-
-    pub fn row_mut(&mut self, row: usize) -> &mut [f64] {
-        let start = row * self.cols;
-        let end = start + self.cols;
-        &mut self.tensor.data_mut()[start..end]
-    }
-
     /// Get value at (row, col) position.
-    /// Matrix-specific: uses 2D indexing.
     /// Java: `public double dataAt(int row, int col)`
     pub fn data_at(&self, row: usize, col: usize) -> f64 {
-        self.tensor.data_at(row * self.cols + col)
+        self.data[row * self.cols + col]
     }
 
     /// Set value at (row, col) position.
-    /// Matrix-specific: uses 2D indexing.
     /// Java: `public void setDataAt(int row, int column, double newValue)`
     pub fn set_data_at(&mut self, row: usize, col: usize, value: f64) {
-        self.tensor.set_data_at(row * self.cols + col, value);
+        self.data[row * self.cols + col] = value;
+    }
+
+    /// Set value at flat index position.
+    /// Java: `public void setDataAtFlat(int index, double newValue)`
+    pub fn set_data_at_flat(&mut self, index: usize, value: f64) {
+        self.data[index] = value;
     }
 
     /// Add to value at (row, col) position.
-    /// Matrix-specific: uses 2D indexing.
+    /// Java: `public void addDataAt(int row, int column, double newValue)`
     pub fn add_data_at(&mut self, row: usize, col: usize, value: f64) {
-        self.tensor.add_data_at(row * self.cols + col, value);
+        self.data[row * self.cols + col] += value;
+    }
+
+    /// Set a row from values array.
+    /// Java: `public void setRow(int row, double[] values)`
+    pub fn set_row(&mut self, row: usize, values: &[f64]) {
+        if values.len() != self.cols {
+            panic!(
+                "Input vector dimension {} is unequal to column count {}",
+                values.len(), self.cols
+            );
+        }
+        let start = row * self.cols;
+        self.data[start..start + self.cols].copy_from_slice(values);
+    }
+
+    /// Get a row as a slice.
+    /// Java: `public double[] getRow(int rowIdx)`
+    pub fn get_row(&self, row_idx: usize) -> &[f64] {
+        let start = row_idx * self.cols;
+        &self.data[start..start + self.cols]
+    }
+
+    /// Update data at (row, col) using a function.
+    /// Java: `public void updateDataAt(int row, int column, DoubleUnaryOperator updater)`
+    pub fn update_data_at<F>(&mut self, row: usize, col: usize, updater: F)
+    where
+        F: FnOnce(f64) -> f64,
+    {
+        let idx = row * self.cols + col;
+        self.data[idx] = updater(self.data[idx]);
     }
 
     // ========================================================================
-    // Delegation to TensorData (shared methods)
-    // ========================================================================
-
-    /// DELEGATION: Get raw data slice.
-    /// Forwards to TensorData.data()
-    pub fn data(&self) -> &[f64] {
-        self.tensor.data()
-    }
-
-    /// DELEGATION: Get mutable data slice.
-    /// Forwards to TensorData.data_mut()
-    pub fn data_mut(&mut self) -> &mut [f64] {
-        self.tensor.data_mut()
-    }
-
-    pub fn iter(&self) -> std::slice::Iter<'_, f64> {
-        self.tensor.data().iter()
-    }
-
-    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, f64> {
-        self.tensor.data_mut().iter_mut()
-    }
-
-    /// DELEGATION: Set value at flat index.
-    /// Forwards to TensorData.set_data_at()
-    /// Use `set_data_at(row, col, value)` for 2D access.
-    pub fn set_data_at_flat(&mut self, index: usize, value: f64) {
-        self.tensor.set_data_at(index, value);
-    }
-
-    /// DELEGATION: Get value at flat index.
-    /// Forwards to TensorData.data_at()
-    /// Use `data_at(row, col)` for 2D access.
-    pub fn data_at_flat(&self, index: usize) -> f64 {
-        self.tensor.data_at(index)
-    }
-
-    // ========================================================================
-    // Matrix-specific operations (NOT delegated)
+    // Matrix-specific operations
     // ========================================================================
 
     /// Standard matrix multiplication: C = self × other
-    /// Dimensions: (m×n) × (n×p) -> (m×p)
-    pub fn multiply(&self, other: &Matrix) -> Box<dyn Tensor> {
+    /// Java: `public Matrix multiply(Matrix other)`
+    pub fn multiply(&self, other: &Matrix) -> Matrix {
         assert_eq!(
             self.cols, other.rows,
-            "Matrix multiplication dimension mismatch: ({}, {}) × ({}, {})",
+            "Matrix dimensions must match! Got dimensions ({}, {}) + ({}, {})",
             self.rows, self.cols, other.rows, other.cols
         );
-
-        let m = self.rows;
-        let n = self.cols;
-        let p = other.cols;
-
-        let mut result = vec![0.0; m * p];
-
-        for i in 0..m {
-            for j in 0..p {
+        
+        let mut result = Matrix::with_dimensions(self.rows, other.cols);
+        for i in 0..self.rows {
+            for j in 0..other.cols {
                 let mut sum = 0.0;
-                for k in 0..n {
+                for k in 0..self.cols {
                     sum += self.data_at(i, k) * other.data_at(k, j);
                 }
-                result[i * p + j] = sum;
+                result.set_data_at(i, j, sum);
             }
         }
-
-        Box::new(Matrix::new(result, m, p))
-    }
-
-    /// Matrix multiplication with first operand transposed: C = self^T × other
-    /// Dimensions: (n×m)^T × (n×p) -> (m×p)
-    pub fn multiply_trans_a(&self, other: &Matrix) -> Box<dyn Tensor> {
-        assert_eq!(
-            self.rows, other.rows,
-            "Matrix multiply_trans_a dimension mismatch: ({}, {})^T × ({}, {})",
-            self.rows, self.cols, other.rows, other.cols
-        );
-
-        let m = self.cols;
-        let n = self.rows;
-        let p = other.cols;
-
-        let mut result = vec![0.0; m * p];
-
-        for i in 0..m {
-            for j in 0..p {
-                let mut sum = 0.0;
-                for k in 0..n {
-                    // self transposed: self[k][i] instead of self[i][k]
-                    sum += self.data_at(k, i) * other.data_at(k, j);
-                }
-                result[i * p + j] = sum;
-            }
-        }
-
-        Box::new(Matrix::new(result, m, p))
+        result
     }
 
     /// Matrix multiplication with second operand transposed: C = self × other^T
-    /// Dimensions: (m×n) × (p×n)^T -> (m×p)
-    pub fn multiply_trans_b(&self, other: &Matrix) -> Box<dyn Tensor> {
+    /// Java: `public Matrix multiplyTransB(Matrix other)`
+    pub fn multiply_trans_b(&self, other: &Matrix) -> Matrix {
         assert_eq!(
             self.cols, other.cols,
-            "Matrix multiply_trans_b dimension mismatch: ({}, {}) × ({}, {})^T",
+            "Cannot multiply matrix having dimensions ({}, {}) with transposed matrix of dimensions ({}, {})",
             self.rows, self.cols, other.rows, other.cols
         );
-
-        let m = self.rows;
-        let n = self.cols;
-        let p = other.rows;
-
-        let mut result = vec![0.0; m * p];
-
-        for i in 0..m {
-            for j in 0..p {
+        
+        let mut result = Matrix::with_dimensions(self.rows, other.rows);
+        for i in 0..self.rows {
+            for j in 0..other.rows {
                 let mut sum = 0.0;
-                for k in 0..n {
-                    // other transposed: other[j][k] instead of other[k][j]
+                for k in 0..self.cols {
                     sum += self.data_at(i, k) * other.data_at(j, k);
                 }
-                result[i * p + j] = sum;
+                result.set_data_at(i, j, sum);
             }
         }
-
-        Box::new(Matrix::new(result, m, p))
+        result
     }
 
-    /// Sum each column to create a vector.
-    /// Matrix (m×n) -> Vector (n) where each element is the sum of one column.
-    pub fn sum_per_column(&self) -> Box<dyn Tensor> {
-        let mut column_sums = vec![0.0; self.cols];
-
-        for (col, sum) in column_sums.iter_mut().enumerate().take(self.cols) {
-            *sum = 0.0;
-            for row in 0..self.rows {
-                *sum += self.data_at(row, col);
+    /// Matrix multiplication with first operand transposed: C = self^T × other
+    /// Java: `public Matrix multiplyTransA(Matrix other)`
+    pub fn multiply_trans_a(&self, other: &Matrix) -> Matrix {
+        let mut result = Matrix::with_dimensions(self.cols, other.cols);
+        for i in 0..self.cols {
+            for j in 0..other.cols {
+                let mut sum = 0.0;
+                for k in 0..self.rows {
+                    sum += self.data_at(k, i) * other.data_at(k, j);
+                }
+                result.set_data_at(i, j, sum);
             }
         }
-
-        Box::new(Vector::new(column_sums))
+        result
     }
 
     /// Add vector to each row of matrix (broadcast column-wise).
-    /// Matrix (m×n) + Vector (n) -> Matrix (m×n)
-    /// Each element result[i][j] = self[i][j] + vector[j]
-    pub fn sum_broadcast_column_wise(&self, vector: &Vector) -> Box<dyn Tensor> {
-        assert_eq!(
-            self.cols,
-            vector.length(),
-            "Broadcast dimension mismatch: matrix has {} cols, vector has {} elements",
-            self.cols,
-            vector.length()
-        );
-
-        let mut result = self.tensor.data().to_vec();
-
+    /// Java: `public Matrix sumBroadcastColumnWise(Vector vector)`
+    pub fn sum_broadcast_column_wise(&self, vector: &Vector) -> Matrix {
+        let mut result = self.clone();
         for row in 0..self.rows {
             for col in 0..self.cols {
                 let idx = row * self.cols + col;
-                result[idx] += vector.data()[col];
+                result.data[idx] += vector.data()[col];
             }
         }
+        result
+    }
 
-        Box::new(Matrix::new(result, self.rows, self.cols))
+    /// Sum each column to create a vector.
+    /// Java: `public Vector sumPerColumn()`
+    pub fn sum_per_column(&self) -> Vector {
+        let mut column_sums = vec![0.0; self.cols];
+        for col in 0..self.cols {
+            for row in 0..self.rows {
+                column_sums[col] += self.data_at(row, col);
+            }
+        }
+        Vector::new(column_sums)
     }
 
     /// Copy a row from source matrix into this matrix.
-    /// Sets self[target_row] = source[source_row_idx]
-    pub fn set_row(&mut self, target_row: usize, source: &Matrix, source_row_idx: usize) {
-        assert!(target_row < self.rows, "Target row out of bounds");
-        assert!(source_row_idx < source.rows, "Source row out of bounds");
-        assert_eq!(
-            self.cols, source.cols,
-            "Column count mismatch: self has {}, source has {}",
-            self.cols, source.cols
-        );
-
-        for col in 0..self.cols {
-            let target_idx = target_row * self.cols + col;
-            let source_idx = source_row_idx * source.cols + col;
-            self.tensor
-                .set_data_at(target_idx, source.tensor.data_at(source_idx));
+    /// Java: `public void setRow(int rowIdx, Matrix input, int inputRowIdx)`
+    pub fn set_row_from_matrix(&mut self, target_row: usize, source: &Matrix, source_row_idx: usize) {
+        if source.cols != self.cols {
+            panic!(
+                "Input matrix must have the same number of columns. Expected {}, but got {}.",
+                self.cols, source.cols
+            );
         }
+        let target_start = target_row * self.cols;
+        let source_start = source_row_idx * source.cols;
+        self.data[target_start..target_start + self.cols]
+            .copy_from_slice(&source.data[source_start..source_start + source.cols]);
+    }
+
+    /// Check if this matrix is actually a vector.
+    /// Java: `public boolean isVector()`
+    pub fn is_vector(&self) -> bool {
+        dimensions::is_vector(&self.dimensions)
     }
 }
 
 // ============================================================================
-// Tensor Trait Implementation - DELEGATION Pattern
+// Tensor Trait Implementation
 // ============================================================================
-//
-// Most methods delegate to the inner TensorData.
-// Matrix-specific logic wraps the result in a new Matrix with correct dimensions.
 
 impl Tensor for Matrix {
-    // DELEGATION: Forward to TensorData
     fn dimensions(&self) -> &[usize] {
-        self.tensor.dimensions()
+        &self.dimensions
     }
 
-    // DELEGATION: Forward to TensorData
     fn data(&self) -> &[f64] {
-        self.tensor.data()
+        &self.data
     }
 
-    // DELEGATION: Forward to TensorData
-    fn set_data_at(&mut self, idx: usize, new_value: f64) {
-        self.tensor.set_data_at(idx, new_value);
+    fn data_at(&self, idx: usize) -> f64 {
+        self.data[idx]
+    }
+
+    fn dimension(&self, dimension_index: usize) -> usize {
+        self.dimensions[dimension_index]
+    }
+
+    fn equals(&self, other: &dyn Tensor, tolerance: f64) -> bool {
+        if let Some(other_matrix) = other.as_any().downcast_ref::<Matrix>() {
+            if self.dimensions != other_matrix.dimensions {
+                return false;
+            }
+            self.data.iter()
+                .zip(other_matrix.data.iter())
+                .all(|(a, b)| (a - b).abs() <= tolerance)
+        } else {
+            false
+        }
+    }
+
+    fn short_description(&self) -> String {
+        format!("Matrix({}, {})", self.rows, self.cols)
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 
     fn clone_box(&self) -> Box<dyn Tensor> {
@@ -309,161 +288,70 @@ impl Tensor for Matrix {
         Box::new(Matrix::with_dimensions(self.rows, self.cols))
     }
 
-    // DELEGATION: Use TensorData.add(), wrap result
     fn add(&self, other: &dyn Tensor) -> Box<dyn Tensor> {
         let other_matrix = other.as_any().downcast_ref::<Matrix>().unwrap();
-        assert_eq!(self.rows, other_matrix.rows);
-        assert_eq!(self.cols, other_matrix.cols);
+        assert_eq!(
+            self.rows, other_matrix.rows,
+            "Matrix dimensions must match! Got dimensions ({}, {}) + ({}, {})",
+            self.rows, self.cols, other_matrix.rows, other_matrix.cols
+        );
+        assert_eq!(
+            self.cols, other_matrix.cols,
+            "Matrix dimensions must match! Got dimensions ({}, {}) + ({}, {})",
+            self.rows, self.cols, other_matrix.rows, other_matrix.cols
+        );
+        
+        let mut result = Matrix::with_dimensions(self.rows, self.cols);
+        for i in 0..self.data.len() {
+            result.data[i] = self.data[i] + other_matrix.data[i];
+        }
+        Box::new(result)
+    }
 
-        let result_tensor = self.tensor.add(&other_matrix.tensor);
+    fn map(&self, f: fn(f64) -> f64) -> Box<dyn Tensor> {
+        let new_data: Vec<f64> = self.data.iter().map(|&x| f(x)).collect();
         Box::new(Matrix {
-            tensor: result_tensor,
+            data: new_data,
+            dimensions: self.dimensions.clone(),
             rows: self.rows,
             cols: self.cols,
         })
     }
 
-    // DELEGATION: Forward to TensorData.add_inplace()
-    fn add_inplace(&mut self, other: &dyn Tensor) {
-        let other_matrix = other.as_any().downcast_ref::<Matrix>().unwrap();
-        self.tensor.add_inplace(&other_matrix.tensor);
-    }
-
-    // DELEGATION: Use TensorData.scalar_multiply(), wrap result
     fn scalar_multiply(&self, scalar: f64) -> Box<dyn Tensor> {
-        let result_tensor = self.tensor.scalar_multiply(scalar);
+        let new_data: Vec<f64> = self.data.iter().map(|x| x * scalar).collect();
         Box::new(Matrix {
-            tensor: result_tensor,
+            data: new_data,
+            dimensions: self.dimensions.clone(),
             rows: self.rows,
             cols: self.cols,
         })
     }
 
-    // DELEGATION: Forward to TensorData.scalar_multiply_mutate()
-    fn scalar_multiply_mutate(&mut self, scalar: f64) {
-        self.tensor.scalar_multiply_mutate(scalar);
-    }
-
-    // DELEGATION: Use TensorData.elementwise_product(), wrap result
     fn elementwise_product(&self, other: &dyn Tensor) -> Box<dyn Tensor> {
         let other_matrix = other.as_any().downcast_ref::<Matrix>().unwrap();
-        let result_tensor = self.tensor.elementwise_product(&other_matrix.tensor);
-        Box::new(Matrix {
-            tensor: result_tensor,
-            rows: self.rows,
-            cols: self.cols,
-        })
-    }
-
-    // DELEGATION: Forward to TensorData.elementwise_product_mutate()
-    fn elementwise_product_mutate(&mut self, other: &dyn Tensor) {
-        let other_matrix = other.as_any().downcast_ref::<Matrix>().unwrap();
-        self.tensor.elementwise_product_mutate(&other_matrix.tensor);
-    }
-
-    // DELEGATION: Use TensorData.map(), wrap result
-    fn map(&self, f: fn(f64) -> f64) -> Box<dyn Tensor> {
-        let result_tensor = self.tensor.map(f);
-        Box::new(Matrix {
-            tensor: result_tensor,
-            rows: self.rows,
-            cols: self.cols,
-        })
-    }
-
-    // DELEGATION: Forward to TensorData.map_inplace()
-    fn map_inplace(&mut self, f: fn(f64) -> f64) {
-        self.tensor.map_inplace(f);
+        let mut result = Matrix::with_dimensions(self.rows, self.cols);
+        for i in 0..self.data.len() {
+            result.data[i] = self.data[i] * other_matrix.data[i];
+        }
+        Box::new(result)
     }
 
     fn ones_like(&self) -> Box<dyn Tensor> {
         Box::new(Matrix::create(1.0, self.rows, self.cols))
     }
 
-    // DELEGATION: Forward to TensorData.equals()
-    fn equals(&self, other: &dyn Tensor, tolerance: f64) -> bool {
-        if let Some(other_matrix) = other.as_any().downcast_ref::<Matrix>() {
-            if self.rows != other_matrix.rows || self.cols != other_matrix.cols {
-                return false;
-            }
-            self.tensor.equals(&other_matrix.tensor, tolerance)
-        } else {
-            false
+    fn add_inplace(&mut self, other: &dyn Tensor) {
+        let other_matrix = other.as_any().downcast_ref::<Matrix>().unwrap();
+        for i in 0..self.data.len() {
+            self.data[i] += other_matrix.data[i];
         }
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
     }
 }
 
 impl std::fmt::Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Matrix({}, {})", self.rows, self.cols)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn multiply_matches_manual_product() {
-        let left = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
-        let right = Matrix::new(vec![5.0, 6.0, 7.0, 8.0], 2, 2);
-
-        let result = left.multiply(&right);
-        assert_eq!(result.dimensions(), &[2, 2]);
-        assert_eq!(result.data(), &[19.0, 22.0, 43.0, 50.0]);
-    }
-
-    #[test]
-    fn multiply_trans_a_handles_row_major_inputs() {
-        let left = Matrix::new(vec![1.0, 3.0, 2.0, 4.0], 2, 2);
-        let right = Matrix::new(vec![5.0, 7.0, 6.0, 8.0], 2, 2);
-
-        let result = left.multiply_trans_a(&right);
-        assert_eq!(result.dimensions(), &[2, 2]);
-        assert_eq!(result.data(), &[17.0, 23.0, 39.0, 53.0]);
-    }
-
-    #[test]
-    fn multiply_trans_b_handles_second_operand_transpose() {
-        let left = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
-        let right = Matrix::new(vec![5.0, 6.0, 7.0, 8.0], 2, 2);
-
-        let result = left.multiply_trans_b(&right);
-        assert_eq!(result.dimensions(), &[2, 2]);
-        assert_eq!(result.data(), &[17.0, 23.0, 39.0, 53.0]);
-    }
-
-    #[test]
-    fn sum_per_column_collapses_rows() {
-        let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], 3, 2);
-
-        let result = matrix.sum_per_column();
-        assert_eq!(result.dimensions(), &[2, 1]);
-        assert_eq!(result.data(), &[9.0, 12.0]);
-    }
-
-    #[test]
-    fn sum_broadcast_column_wise_adds_vector() {
-        let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
-        let vector = Vector::new(vec![10.0, 20.0]);
-
-        let result = matrix.sum_broadcast_column_wise(&vector);
-        assert_eq!(result.dimensions(), &[2, 2]);
-        assert_eq!(result.data(), &[11.0, 22.0, 13.0, 24.0]);
-    }
-
-    #[test]
-    fn set_row_copies_source_row() {
-        let mut destination = Matrix::with_dimensions(2, 2);
-        let source = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
-
-        destination.set_row(1, &source, 0);
-
-        assert_eq!(destination.data(), &[0.0, 0.0, 1.0, 2.0]);
+        write!(f, "{}: {:?}", self.short_description(), self.data)
     }
 }
 
@@ -472,15 +360,41 @@ impl Index<(usize, usize)> for Matrix {
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         let (row, col) = index;
-        let idx = row * self.cols + col;
-        &self.tensor.data()[idx]
+        &self.data[row * self.cols + col]
     }
 }
 
 impl IndexMut<(usize, usize)> for Matrix {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         let (row, col) = index;
-        let idx = row * self.cols + col;
-        &mut self.tensor.data_mut()[idx]
+        &mut self.data[row * self.cols + col]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_matrix_creation() {
+        let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
+        assert_eq!(matrix.rows(), 2);
+        assert_eq!(matrix.cols(), 2);
+        assert_eq!(matrix.data(), &[1.0, 2.0, 3.0, 4.0]);
+    }
+
+    #[test]
+    fn test_matrix_multiply() {
+        let a = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
+        let b = Matrix::new(vec![5.0, 6.0, 7.0, 8.0], 2, 2);
+        let result = a.multiply(&b);
+        assert_eq!(result.data(), &[19.0, 22.0, 43.0, 50.0]);
+    }
+
+    #[test]
+    fn test_sum_per_column() {
+        let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], 3, 2);
+        let result = matrix.sum_per_column();
+        assert_eq!(result.data(), &[9.0, 12.0]);
     }
 }

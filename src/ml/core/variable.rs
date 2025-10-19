@@ -25,54 +25,48 @@ use std::fmt;
 /// Extends Any for downcasting and pointer-based keying.
 pub trait Variable: fmt::Display + Any {
     /// Apply this variable to get its tensor value.
+    /// Java: `T apply(ComputationContext ctx)`
     fn apply(&self, ctx: &ComputationContext) -> Box<dyn Tensor>;
 
     /// Compute gradient with respect to a parent variable.
+    /// Java: `Tensor<?> gradient(Variable<?> parent, ComputationContext ctx)`
     fn gradient(&self, parent: &dyn Variable, ctx: &ComputationContext) -> Box<dyn Tensor>;
 
     /// Whether this variable requires gradient computation.
+    /// Java: `boolean requireGradient()`
     fn require_gradient(&self) -> bool;
 
     /// Get parent variables.
+    /// Java: `Iterable<? extends Variable<?>> parents()`
     fn parents(&self) -> &[Box<dyn Variable>];
 
-    /// Get dimensions of this variable.
+    /// Get dimensions of this variable's output tensor.
+    /// Java: `int[] dimensions()`
     fn dimensions(&self) -> &[usize];
 
     /// Get a specific dimension by index.
+    /// Java: `int dimension(int i)`
     fn dimension(&self, i: usize) -> usize {
         self.dimensions()[i]
     }
-
-    /// Renders the variable into a human readable representation.
-    fn render(&self) -> String
-    where
-        Self: Sized,
-    {
-        let mut sb = String::new();
-        render_recursive(&mut sb, self, 0);
-        sb
-    }
 }
 
-/// Helper function for recursive rendering (static method in Java).
-///
-/// This is a free function following the established pattern.
-/// With type erasure, this is now straightforward - all variables are `dyn Variable`.
-pub fn render_recursive(sb: &mut String, variable: &dyn Variable, depth: usize) {
-    // Render indentation
-    for _ in 0..depth.saturating_sub(1) {
-        sb.push('\t');
-    }
+/// Helper function to traverse variable tree and collect all variables.
+pub fn collect_variables(variable: &dyn Variable) -> Vec<Box<dyn Variable>> {
+    let mut result = Vec::new();
+    collect_variables_recursive(variable, &mut result);
+    result
+}
 
-    if depth > 0 {
-        sb.push_str("|-- ");
-    }
-
-    sb.push_str(&variable.to_string());
-    sb.push('\n');
-
+fn collect_variables_recursive(variable: &dyn Variable, result: &mut Vec<Box<dyn Variable>>) {
     for parent in variable.parents() {
-        render_recursive(sb, parent.as_ref(), depth + 1);
+        collect_variables_recursive(parent.as_ref(), result);
     }
+    // Note: We can't clone variables, so we'll skip this for now
+    // result.push(Box::new(variable.clone_box()));
+}
+
+/// Helper function to check if any parent requires gradient.
+pub fn any_parent_requires_gradient(parents: &[Box<dyn Variable>]) -> bool {
+    parents.iter().any(|parent| parent.require_gradient())
 }

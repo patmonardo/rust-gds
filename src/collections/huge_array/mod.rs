@@ -22,9 +22,11 @@
 //! - **Explicit lifecycle**: Manual `release()` for memory management
 
 pub mod huge_double_array;
+pub mod huge_int_array;
 pub mod huge_long_array;
 pub mod huge_object_array;
 
 pub use huge_double_array::HugeDoubleArray;
+pub use huge_int_array::HugeIntArray;
 pub use huge_long_array::HugeLongArray;
 pub use huge_object_array::HugeObjectArray;

@@ -63,10 +63,7 @@ impl LogStore {
         let key = TaskKey::from_task(task);
 
         // Get or create message queue for this task
-        self.messages
-            .entry(key)
-            .or_default()
-            .push_back(message);
+        self.messages.entry(key).or_default().push_back(message);
 
         // Enforce capacity by removing oldest task if needed
         while self.messages.len() > self.capacity {

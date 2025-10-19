@@ -30,4 +30,4 @@ pub mod config;
 
 // Re-exports
 pub use algorithm::*;
- // algorithm_config! macro // define_algorithm! macro
+// algorithm_config! macro // define_algorithm! macro

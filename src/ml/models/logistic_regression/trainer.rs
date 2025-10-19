@@ -2,10 +2,9 @@ use super::{
     classifier::LogisticRegressionClassifier, config::LogisticRegressionTrainConfig,
     data::LogisticRegressionData, objective::LogisticRegressionObjective,
 };
-use crate::collections::cursor::huge_cursor_support::HugeCursorSupport;
 use crate::ml::{
     core::batch::consecutive_with_batch_size,
-    gradient_descent::{Training, GradientDescentConfig},
+    gradient_descent::{GradientDescentConfig, Training},
     models::{ClassifierTrainer, Features},
 };
 use parking_lot::RwLock;
@@ -44,7 +43,7 @@ impl ClassifierTrainer for LogisticRegressionTrainer {
     fn train(
         &self,
         features: &dyn Features,
-        labels: &crate::collections::HugeLongArray,
+        labels: &crate::collections::HugeIntArray,
         train_set: &Arc<Vec<u64>>,
     ) -> Box<dyn crate::ml::models::Classifier> {
         let data = if self.reduce_class_count {
@@ -58,10 +57,8 @@ impl ClassifierTrainer for LogisticRegressionTrainer {
 
         let classifier = LogisticRegressionClassifier::from(data);
 
-        // Convert HugeLongArray to Vec<i32> for labels
-        let labels_vec: Vec<i32> = (0..labels.capacity())
-            .map(|i| labels.get(i) as i32)
-            .collect();
+        // Convert HugeIntArray to Vec<i32> for labels
+        let labels_vec: Vec<i32> = (0..labels.size()).map(|i| labels.get(i)).collect();
         let labels_arc = Arc::new(RwLock::new(labels_vec));
 
         let objective = LogisticRegressionObjective::new(
@@ -87,12 +84,8 @@ impl ClassifierTrainer for LogisticRegressionTrainer {
             train_set.len(),
         );
 
-        let queue_supplier = || {
-            consecutive_with_batch_size(
-                train_set.len() as u64,
-                self.train_config.batch_size,
-            )
-        };
+        let queue_supplier =
+            || consecutive_with_batch_size(train_set.len() as u64, self.train_config.batch_size);
 
         training.train(&objective, queue_supplier, self.concurrency);
 

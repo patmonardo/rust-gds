@@ -4,18 +4,18 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This function wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This function wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: MatrixSum extends AbstractVariable<Matrix>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - MatrixSum adds: element-wise summation logic
-//! - Delegates Variable trait methods to inner VariableBase
+//! - Delegates Variable trait methods to inner AbstractVariable
 
+use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions::{COLUMNS_INDEX, ROWS_INDEX};
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
 use std::fmt;
 
 /// Sums multiple matrices element-wise.
@@ -23,7 +23,7 @@ use std::fmt;
 /// All parent matrices must have the same dimensions.
 /// Corresponds to MatrixSum in Java GDS.
 pub struct MatrixSum {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
 }
 
 impl MatrixSum {
@@ -35,10 +35,7 @@ impl MatrixSum {
     /// Java: `public MatrixSum(List<Variable<Matrix>> parents) { super(parents, validatedDimensions(parents)); }`
     pub fn new(parents: Vec<Box<dyn Variable>>) -> Self {
         let dimensions = Self::validated_dimensions(&parents);
-
-        // Java: super(parents, validatedDimensions(parents))
-        let base = VariableBase::new(parents, dimensions);
-
+        let base = AbstractVariable::new(parents, dimensions);
         Self { base }
     }
 
@@ -105,7 +102,7 @@ impl Variable for MatrixSum {
     }
 
     // ========================================================================
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     // ========================================================================
 
     /// Check if gradient is required.

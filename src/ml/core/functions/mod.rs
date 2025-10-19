@@ -76,3 +76,6 @@ pub use weights::*;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod test_core_functions;

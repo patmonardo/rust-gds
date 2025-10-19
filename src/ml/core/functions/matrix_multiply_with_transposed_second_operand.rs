@@ -4,18 +4,18 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This function wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This function wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: MatrixMultiplyWithTransposedSecondOperand extends AbstractVariable<Matrix>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - This function adds: A, B operands and Ax=b computation logic
-//! - Delegates Variable trait methods to inner VariableBase
+//! - Delegates Variable trait methods to inner AbstractVariable
 
+use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions::{self, COLUMNS_INDEX, ROWS_INDEX};
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
 use std::fmt;
 
 /// Matrix multiplication where the second operand is transposed: A * B^T
@@ -26,7 +26,7 @@ use std::fmt;
 ///
 /// Note: Parents A and B are stored in base.parents(). Access via a() and b() helpers.
 pub struct MatrixMultiplyWithTransposedSecondOperand {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parents)
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
 }
 
 impl MatrixMultiplyWithTransposedSecondOperand {
@@ -41,11 +41,7 @@ impl MatrixMultiplyWithTransposedSecondOperand {
 
         // Result dimensions: (m, n) x (p, n)^T = (m, p)
         let dimensions = dimensions::matrix(a.dimension(ROWS_INDEX), b.dimension(ROWS_INDEX));
-
-        // Java: super(List.of(A, B), Dimensions.matrix(...))
-        // Store parents [A, B] in VariableBase
-        let base = VariableBase::new(vec![a, b], dimensions);
-
+        let base = AbstractVariable::new(vec![a, b], dimensions);
         Self { base }
     }
 
@@ -108,7 +104,7 @@ impl MatrixMultiplyWithTransposedSecondOperand {
             .downcast_ref::<Matrix>()
             .expect("B must be Matrix");
 
-        gradient.multiply(b_data)
+        Box::new(gradient.multiply(b_data))
     }
 
     /// Gradient with respect to B.
@@ -126,7 +122,7 @@ impl MatrixMultiplyWithTransposedSecondOperand {
             .downcast_ref::<Matrix>()
             .expect("A must be Matrix");
 
-        gradient.multiply_trans_a(a_data)
+        Box::new(gradient.multiply_trans_a(a_data))
     }
 }
 
@@ -155,7 +151,7 @@ impl Variable for MatrixMultiplyWithTransposedSecondOperand {
             .downcast_ref::<Matrix>()
             .expect("B must be Matrix");
 
-        a_matrix.multiply_trans_b(b_matrix)
+        Box::new(a_matrix.multiply_trans_b(b_matrix))
     }
 
     /// Compute gradient with respect to parent (A or B).
@@ -171,7 +167,7 @@ impl Variable for MatrixMultiplyWithTransposedSecondOperand {
     }
 
     // ========================================================================
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     // ========================================================================
 
     /// Check if gradient is required.

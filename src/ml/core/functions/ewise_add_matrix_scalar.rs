@@ -40,7 +40,7 @@
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 
 /// Element-wise addition of matrix and scalar.
 ///
@@ -62,7 +62,7 @@ use crate::ml::core::variable_base::VariableBase;
 /// // Result: [[11.0, 12.0], [13.0, 14.0]]
 /// ```
 pub struct EWiseAddMatrixScalar {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parents)
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic (includes parents)
 }
 
 impl EWiseAddMatrixScalar {
@@ -87,7 +87,7 @@ impl EWiseAddMatrixScalar {
 
         // Java: super(List.of(matrixVariable, scalarVariable), matrixVariable.dimensions())
         // Store parents [matrix, scalar] in VariableBase
-        let base = VariableBase::new(vec![matrix_variable, scalar_variable], dimensions);
+        let base = AbstractVariable::with_gradient_requirement(vec![matrix_variable, scalar_variable], dimensions, true);
 
         Self { base }
     }

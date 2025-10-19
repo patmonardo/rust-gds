@@ -7,7 +7,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Logistic loss function combining logistic regression prediction and cross-entropy loss.
@@ -25,7 +25,7 @@ use std::fmt;
 /// Uses composition pattern: VariableBase holds parents [weights, features, targets] or [weights, bias, features, targets].
 /// Note: predictions is NOT a parent (graph optimization - bypasses predictions node).
 pub struct LogisticLoss {
-    base: VariableBase,
+    base: AbstractVariable,
     predictions: Box<dyn Variable>, // NOT a parent - graph optimization
     has_bias: bool,                 // Track if bias is included
 }
@@ -52,7 +52,7 @@ impl LogisticLoss {
 
         // Parents: [weights, features, targets] - NOT predictions (graph optimization)
         let parents = vec![weights, features, targets];
-        let base = VariableBase::new(parents, dimensions::scalar());
+        let base = AbstractVariable::with_gradient_requirement(parents, dimensions::scalar(), true);
 
         Self {
             base,
@@ -83,7 +83,7 @@ impl LogisticLoss {
 
         // Parents: [weights, bias, features, targets] - NOT predictions (graph optimization)
         let parents = vec![weights, bias, features, targets];
-        let base = VariableBase::new(parents, dimensions::scalar());
+        let base = AbstractVariable::with_gradient_requirement(parents, dimensions::scalar(), true);
 
         Self {
             base,
@@ -215,18 +215,17 @@ impl LogisticLoss {
             .downcast_ref::<Vector>()
             .expect("Targets must be Vector");
 
-        let mut gradient = Box::new(Scalar::new(0.0));
         let number_of_examples = target_vector.length();
 
+        let mut total_error = 0.0;
         for idx in 0..number_of_examples {
             // pred_vector is Matrix, so use (row, col) indexing
             let error_per_example = pred_vector.data_at(idx, 0) - target_vector.data_at(idx);
-            let current = gradient.value();
-            gradient.set_data_at(0, current + self_gradient * error_per_example);
+            total_error += self_gradient * error_per_example;
         }
 
-        gradient.scalar_multiply_mutate(1.0 / number_of_examples as f64);
-        gradient
+        let final_gradient = total_error / number_of_examples as f64;
+        Box::new(Scalar::new(final_gradient))
     }
 }
 

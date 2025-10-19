@@ -38,9 +38,7 @@ impl PerDatabaseUserLogStore {
         // Need write lock to create new store
         let mut stores = self.log_stores.write().unwrap();
         // Double-check after acquiring write lock
-        stores
-            .entry(username.to_string())
-            .or_default();
+        stores.entry(username.to_string()).or_default();
 
         // Return a new LogStore - note: this is a limitation of our simple implementation
         // In a real system, we'd want to return a reference or use Arc
@@ -50,9 +48,7 @@ impl PerDatabaseUserLogStore {
     /// Adds a log message, handling the store access internally.
     fn add_log_message_internal(&self, username: &str, task: &Task, message: String) {
         let mut stores = self.log_stores.write().unwrap();
-        let log_store = stores
-            .entry(username.to_string())
-            .or_default();
+        let log_store = stores.entry(username.to_string()).or_default();
         log_store.add_log_message(task, message);
     }
 

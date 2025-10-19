@@ -4,17 +4,17 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This function wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This function wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: Relu<T> extends SingleParentVariable<T, T>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - Relu adds: leaky ReLU activation logic with configurable alpha
-//! - Delegates Variable trait methods to inner VariableBase
+//! - Delegates Variable trait methods to inner AbstractVariable
 
+use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::Tensor;
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
 use std::fmt;
 
 const ALPHA: f64 = 0.01;
@@ -24,8 +24,9 @@ const ALPHA: f64 = 0.01;
 /// Corresponds to Relu<T> in Java GDS.
 /// Single-parent activation with configurable leak factor α (default 0.01).
 pub struct Relu {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parent)
-    alpha: f64,         // Leak factor for negative values
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
+    parent: Box<dyn Variable>,
+    alpha: f64,             // Leak factor for negative values
 }
 
 impl Relu {
@@ -37,11 +38,9 @@ impl Relu {
     /// Java: `public Relu(Variable<T> parent, double alpha) { super(parent, parent.dimensions()); this.alpha = alpha; }`
     pub fn new(parent: Box<dyn Variable>, alpha: f64) -> Self {
         let dimensions = parent.dimensions().to_vec();
-
-        // Java: super(parent, parent.dimensions())
-        let base = VariableBase::new(vec![parent], dimensions);
-
-        Self { base, alpha }
+        let require_gradient = parent.require_gradient();
+        let base = AbstractVariable::with_gradient_requirement(vec![], dimensions, require_gradient);
+        Self { base, parent, alpha }
     }
 
     /// Create leaky ReLU with default alpha (0.01).
@@ -52,7 +51,7 @@ impl Relu {
 
     /// Get parent variable.
     fn parent(&self) -> &dyn Variable {
-        self.base.parents()[0].as_ref()
+        self.parent.as_ref()
     }
 
     // ========================================================================
@@ -65,18 +64,27 @@ impl Relu {
     fn gradient_for_parent(&self, ctx: &ComputationContext) -> Box<dyn Tensor> {
         let alpha = self.alpha;
         let parent_data = ctx.data(self.parent()).expect("Parent data not computed");
-
-        // Manually create gradient tensor instead of using map() with closure
-        let mut gradient = parent_data.create_with_same_dimensions();
-        for (idx, &value) in parent_data.data().iter().enumerate() {
-            let grad_value = if value > 0.0 { 1.0 } else { alpha };
-            gradient.set_data_at(idx, grad_value);
-        }
-
         let self_gradient = ctx.gradient(self).expect("Self gradient not computed");
 
-        gradient.elementwise_product_mutate(self_gradient.as_ref());
-        gradient
+        // Create gradient by manually iterating over data
+        let mut gradient_data = Vec::new();
+        for &value in parent_data.data() {
+            gradient_data.push(if value > 0.0 { 1.0 } else { alpha });
+        }
+        
+        // Create gradient tensor based on parent type
+        let gradient = if let Some(matrix) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Matrix>() {
+            Box::new(crate::ml::core::tensor::Matrix::new(gradient_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
+        } else if let Some(vector) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Vector>() {
+            Box::new(crate::ml::core::tensor::Vector::new(gradient_data)) as Box<dyn Tensor>
+        } else if let Some(scalar) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Scalar>() {
+            Box::new(crate::ml::core::tensor::Scalar::new(gradient_data[0])) as Box<dyn Tensor>
+        } else {
+            panic!("Unknown tensor type");
+        };
+        
+        // Element-wise product with self gradient
+        gradient.elementwise_product(self_gradient.as_ref())
     }
 }
 
@@ -96,13 +104,22 @@ impl Variable for Relu {
         let alpha = self.alpha;
         let parent_data = ctx.data(self.parent()).expect("Parent data not computed");
 
-        // Manually create result tensor instead of using map() with closure
-        let mut result = parent_data.create_with_same_dimensions();
-        for (idx, &value) in parent_data.data().iter().enumerate() {
-            let output = if value > 0.0 { value } else { alpha * value };
-            result.set_data_at(idx, output);
+        // Create result by manually iterating over data
+        let mut result_data = Vec::new();
+        for &value in parent_data.data() {
+            result_data.push(if value > 0.0 { value } else { alpha * value });
         }
-        result
+        
+        // Create result tensor based on parent type
+        if let Some(matrix) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Matrix>() {
+            Box::new(crate::ml::core::tensor::Matrix::new(result_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
+        } else if let Some(vector) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Vector>() {
+            Box::new(crate::ml::core::tensor::Vector::new(result_data)) as Box<dyn Tensor>
+        } else if let Some(scalar) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Scalar>() {
+            Box::new(crate::ml::core::tensor::Scalar::new(result_data[0])) as Box<dyn Tensor>
+        } else {
+            panic!("Unknown tensor type");
+        }
     }
 
     /// Compute gradient with respect to parent.
@@ -116,7 +133,7 @@ impl Variable for Relu {
     }
 
     // ========================================================================
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     // ========================================================================
 
     /// Check if gradient is required.
@@ -128,7 +145,7 @@ impl Variable for Relu {
     /// Get parent variables.
     /// Java: Inherited from `super(parent, ...)`
     fn parents(&self) -> &[Box<dyn Variable>] {
-        self.base.parents()
+        std::slice::from_ref(&self.parent)
     }
 
     /// Get output dimensions (same as input).

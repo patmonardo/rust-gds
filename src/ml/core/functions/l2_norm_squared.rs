@@ -3,6 +3,7 @@
 //! Translated from Java GDS ml-core functions L2NormSquared.java.
 //! This is a literal 1:1 translation following repository translation policy.
 
+use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
 use crate::ml::core::tensor::{Scalar, Tensor};
@@ -12,19 +13,19 @@ use std::fmt;
 /// L2 norm squared of a tensor.
 ///
 /// Computes the sum of squared elements. Corresponds to L2NormSquared in Java GDS.
+/// Uses composition with AbstractVariable to match Java's inheritance pattern.
 pub struct L2NormSquared {
+    base: AbstractVariable,
     parent: Box<dyn Variable>,
-    dimensions: Vec<usize>,
-    require_gradient: bool,
 }
 
 impl L2NormSquared {
     pub fn new(parent: Box<dyn Variable>) -> Self {
         let require_gradient = parent.require_gradient();
+        let base = AbstractVariable::with_gradient_requirement(vec![], dimensions::scalar(), require_gradient);
         Self {
+            base,
             parent,
-            dimensions: dimensions::scalar(),
-            require_gradient,
         }
     }
 
@@ -74,16 +75,19 @@ impl Variable for L2NormSquared {
         self.gradient_for_parent(ctx)
     }
 
+    // DELEGATION: Forward to AbstractVariable
     fn require_gradient(&self) -> bool {
-        self.require_gradient
+        self.base.require_gradient()
     }
 
+    // DELEGATION: Forward to AbstractVariable
     fn parents(&self) -> &[Box<dyn Variable>] {
         std::slice::from_ref(&self.parent)
     }
 
+    // DELEGATION: Forward to AbstractVariable
     fn dimensions(&self) -> &[usize] {
-        &self.dimensions
+        self.base.dimensions()
     }
 }
 

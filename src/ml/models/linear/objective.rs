@@ -71,7 +71,7 @@ impl<'a> Objective for LinearRegressionObjective<'a> {
     ) -> Box<dyn crate::ml::core::variable::Variable> {
         let batch_features = batch_feature_matrix(batch, self.features);
         let regressor = LinearRegressor::new(self.model_data.clone());
-        
+
         // Use the same Weights instances that are returned by weights() method
         let weights_var = self.model_data.weights().clone();
         let bias_var = self.model_data.bias().clone();
@@ -80,7 +80,7 @@ impl<'a> Objective for LinearRegressionObjective<'a> {
             Box::new(weights_var),
             Box::new(bias_var),
         );
-        
+
         let targets = self.batch_targets(batch);
 
         let mse = MeanSquareError::new(predictions, Box::new(targets));

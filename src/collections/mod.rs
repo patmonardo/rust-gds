@@ -21,7 +21,7 @@ pub use bit_set::BitSet;
 pub use cursor::{
     init_cursor, init_cursor_range, HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor,
 };
-pub use huge_array::{HugeDoubleArray, HugeLongArray, HugeObjectArray};
+pub use huge_array::{HugeDoubleArray, HugeIntArray, HugeLongArray, HugeObjectArray};
 pub use huge_atomic_array::{HugeAtomicDoubleArray, HugeAtomicLongArray};
 // Re-exported from core::utils::paged for backward compatibility
 pub use crate::core::utils::paged::{HugeAtomicBitSet, HugeAtomicGrowingBitSet};

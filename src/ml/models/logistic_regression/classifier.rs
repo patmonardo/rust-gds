@@ -3,13 +3,14 @@ use crate::ml::{
     core::{
         batch::Batch,
         functions::{
-            constant::Constant, ewise_add_matrix_scalar::EWiseAddMatrixScalar,
+            constant::Constant,
             matrix_multiply_with_transposed_second_operand::MatrixMultiplyWithTransposedSecondOperand,
-            sigmoid::Sigmoid, softmax::Softmax, reduced_softmax::ReducedSoftmax,
+            matrix_vector_sum::MatrixVectorSum, reduced_softmax::ReducedSoftmax, sigmoid::Sigmoid,
+            softmax::Softmax,
         },
         tensor::Matrix,
-        ComputationContext,
         variable::Variable,
+        ComputationContext,
     },
     models::{Classifier, Features},
 };
@@ -51,18 +52,15 @@ impl LogisticRegressionClassifier {
     }
 
     /// Creates the predictions variable for the computation graph
-    pub(crate) fn predictions_variable(
-        &self,
-        batch_features: Constant,
-    ) -> Box<dyn Variable> {
+    pub(crate) fn predictions_variable(&self, batch_features: Constant) -> Box<dyn Variable> {
         let weights = self.data.weights();
         let weighted_features = MatrixMultiplyWithTransposedSecondOperand::new(
             Box::new(batch_features),
-            Box::new(weights.clone()),
+            Box::new(weights.clone()) as Box<dyn Variable>,
         );
-        let softmax_input = EWiseAddMatrixScalar::new(
+        let softmax_input = MatrixVectorSum::new(
             Box::new(weighted_features),
-            Box::new(self.data.bias().clone()),
+            Box::new(self.data.bias().clone()) as Box<dyn Variable>,
         );
 
         if weights.borrow_matrix().rows() == self.data.number_of_classes() {
@@ -73,7 +71,11 @@ impl LogisticRegressionClassifier {
     }
 
     /// Creates batch feature matrix from batch and features
-    fn batch_feature_matrix_from_indices(&self, batch: &[usize], features: &dyn Features) -> Constant {
+    fn batch_feature_matrix_from_indices(
+        &self,
+        batch: &[usize],
+        features: &dyn Features,
+    ) -> Constant {
         let rows = batch.len();
         let cols = features.feature_dimension();
         let mut batch_features = Matrix::zeros(rows, cols);

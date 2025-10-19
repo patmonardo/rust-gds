@@ -27,7 +27,7 @@ pub mod training;
 pub mod training_method;
 
 // Curated re-exports for common surface area
-pub use core::tensor::{size_in_bytes, Matrix, Scalar, Tensor, TensorData, Vector};
+pub use core::tensor::{size_in_bytes, Matrix, Scalar, Tensor, Vector};
 pub use models::{
     BaseModelData, Classifier, ClassifierData, ClassifierTrainer, DenseFeatures, Features,
     FeaturesFactory, LazyFeatures, ModelData, Regressor, RegressorData, RegressorTrainer,
@@ -42,6 +42,6 @@ pub mod prelude {
     pub use super::{
         size_in_bytes, BaseModelData, Classifier, ClassifierData, ClassifierTrainer, DenseFeatures,
         Features, FeaturesFactory, LazyFeatures, Matrix, ModelData, Regressor, RegressorData,
-        RegressorTrainer, Scalar, Tensor, TensorData, TrainingMethod, Vector,
+        RegressorTrainer, Scalar, Tensor, TrainingMethod, Vector,
     };
 }

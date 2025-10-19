@@ -26,8 +26,7 @@ impl ExhaustiveLinkPredictionResult {
     where
         F: FnMut(i64, i64, f64),
     {
-        self.prediction_queue
-            .for_each(consumer);
+        self.prediction_queue.for_each(consumer);
     }
 }
 

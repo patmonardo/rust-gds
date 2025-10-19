@@ -7,7 +7,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
 use crate::ml::core::tensor::{Scalar, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Mean square error loss function.
@@ -16,7 +16,7 @@ use std::fmt;
 /// Corresponds to MeanSquareError in Java GDS.
 /// Uses composition pattern: VariableBase holds parents [predictions, targets].
 pub struct MeanSquareError {
-    base: VariableBase,
+    base: AbstractVariable,
 }
 
 impl MeanSquareError {
@@ -25,7 +25,7 @@ impl MeanSquareError {
 
         let parents = vec![predictions, targets];
         let dimensions = dimensions::scalar();
-        let base = VariableBase::new(parents, dimensions);
+        let base = AbstractVariable::with_gradient_requirement(parents, dimensions, true);
 
         Self { base }
     }
@@ -87,8 +87,7 @@ impl Variable for MeanSquareError {
                 .expect("Predictions not computed")
         };
 
-        let length = parent_data.total_size();
-        let mut parent_gradient = parent_data.create_with_same_dimensions();
+        let length = parent_data.data().len();
 
         let self_gradient = ctx
             .gradient(self)
@@ -100,12 +99,23 @@ impl Variable for MeanSquareError {
 
         let scale = 2.0 * self_gradient / length as f64;
 
+        // Create gradient data vector
+        let mut gradient_data = Vec::new();
         for i in 0..length {
             let error = parent_data.data()[i] - other_parent_data.data()[i];
-            parent_gradient.set_data_at(i, scale * error);
+            gradient_data.push(scale * error);
         }
 
-        parent_gradient
+        // Create gradient tensor based on parent type
+        if let Some(matrix) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Matrix>() {
+            Box::new(crate::ml::core::tensor::Matrix::new(gradient_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
+        } else if let Some(vector) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Vector>() {
+            Box::new(crate::ml::core::tensor::Vector::new(gradient_data)) as Box<dyn Tensor>
+        } else if let Some(scalar) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Scalar>() {
+            Box::new(crate::ml::core::tensor::Scalar::new(gradient_data[0])) as Box<dyn Tensor>
+        } else {
+            panic!("Unknown tensor type");
+        }
     }
 
     fn require_gradient(&self) -> bool {

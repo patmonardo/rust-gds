@@ -4,20 +4,20 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This Weights wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This Weights wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: Weights<T> extends AbstractVariable<T>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - Weights adds: data storage (trainable parameters)
-//! - Weights delegates Variable trait methods to inner VariableBase
+//! - Weights delegates Variable trait methods to inner AbstractVariable
 
 use crate::ml::core::abstract_variable::NotAFunctionException;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use parking_lot::{
-    MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
+    MappedRwLockReadGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
 };
 use std::fmt;
 use std::sync::Arc;
@@ -28,7 +28,7 @@ use std::sync::Arc;
 /// Uses type erasure - stores a boxed Tensor protected by an `Arc<RwLock<…>>`
 /// so that gradients can update the value concurrently.
 pub struct Weights {
-    base: VariableBase,                 // COMPOSITION: shared Variable behaviour
+    base: AbstractVariable,                 // COMPOSITION: shared Variable behaviour
     data: Arc<RwLock<Box<dyn Tensor>>>, // Shared trainable tensor
 }
 
@@ -50,25 +50,25 @@ impl Weights {
     /// Create matrix weights.
     /// Java: `public static Weights<Matrix> ofMatrix(int rows, int cols)`
     pub fn of_matrix(rows: usize, cols: usize) -> Self {
-        Self::new(Box::new(Matrix::with_dimensions(rows, cols)))
+        Self::from_tensor(Box::new(Matrix::with_dimensions(rows, cols)))
     }
 
     /// Create vector weights from values.
     /// Java: `public static Weights<Vector> ofVector(double... values)`
     pub fn of_vector(values: Vec<f64>) -> Self {
-        Self::new(Box::new(Vector::new(values)))
+        Self::from_tensor(Box::new(Vector::new(values)))
     }
 
     /// Create scalar weights.
     /// Java: `public static Weights<Scalar> ofScalar(double value)`
     pub fn of_scalar(value: f64) -> Self {
-        Self::new(Box::new(Scalar::new(value)))
+        Self::from_tensor(Box::new(Scalar::new(value)))
     }
 
     /// Construct weights from any tensor. Convenience for serialization paths.
     pub fn from_tensor(data: Box<dyn Tensor>) -> Self {
         let dimensions = data.dimensions().to_vec();
-        let base = VariableBase::with_gradient_requirement(vec![], dimensions, true);
+        let base = AbstractVariable::with_gradient_requirement(vec![], dimensions, true);
         Self {
             base,
             data: Arc::new(RwLock::new(data)),
@@ -115,32 +115,12 @@ impl Weights {
         })
     }
 
-    /// Borrow as mutable matrix.
-    pub fn borrow_matrix_mut(&self) -> MappedRwLockWriteGuard<'_, Matrix> {
-        RwLockWriteGuard::map(self.data.write(), |tensor| {
-            tensor
-                .as_any_mut()
-                .downcast_mut::<Matrix>()
-                .expect("Weights tensor is not Matrix")
-        })
-    }
-
     /// Borrow as scalar (panic if not Scalar).
     pub fn borrow_scalar(&self) -> MappedRwLockReadGuard<'_, Scalar> {
         RwLockReadGuard::map(self.data.read(), |tensor| {
             tensor
                 .as_any()
                 .downcast_ref::<Scalar>()
-                .expect("Weights tensor is not Scalar")
-        })
-    }
-
-    /// Borrow as mutable scalar (panic if not Scalar).
-    pub fn borrow_scalar_mut(&self) -> MappedRwLockWriteGuard<'_, Scalar> {
-        RwLockWriteGuard::map(self.data.write(), |tensor| {
-            tensor
-                .as_any_mut()
-                .downcast_mut::<Scalar>()
                 .expect("Weights tensor is not Scalar")
         })
     }
@@ -158,8 +138,11 @@ impl Weights {
 
 impl Clone for Weights {
     fn clone(&self) -> Self {
-        let base =
-            VariableBase::with_gradient_requirement(vec![], self.base.dimensions().to_vec(), true);
+        let base = AbstractVariable::with_gradient_requirement(
+            vec![], 
+            self.base.dimensions().to_vec(), 
+            true
+        );
         Self {
             base,
             data: self.data.clone(),
@@ -171,7 +154,7 @@ impl Clone for Weights {
 // Variable Trait Implementation - DELEGATION Pattern
 // ============================================================================
 //
-// Weights delegates dimension/parent/gradient tracking to VariableBase.
+// Weights delegates dimension/parent/gradient tracking to AbstractVariable.
 // Only implements function-specific logic (apply, gradient).
 //
 // This matches Java's inheritance where Weights extends AbstractVariable.
@@ -190,7 +173,7 @@ impl Variable for Weights {
     }
 
     // ========================================================================
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     // ========================================================================
 
     /// Weights always require gradients (trainable parameters).

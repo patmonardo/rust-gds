@@ -17,7 +17,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 const PREDICTED_PROBABILITY_THRESHOLD: f64 = 1e-50;
@@ -29,7 +29,7 @@ const PREDICTED_PROBABILITY_THRESHOLD: f64 = 1e-50;
 ///
 /// This is **protected** - FocalLoss extends this to add focal weighting.
 pub struct CrossEntropyLoss {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parents)
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic (includes parents)
     pub(crate) class_weights: Vec<f64>, // Protected in Java - subclasses need access
 }
 
@@ -46,7 +46,7 @@ impl CrossEntropyLoss {
         class_weights: Vec<f64>,
     ) -> Self {
         // Java: super(List.of(predictions, targets), Dimensions.scalar())
-        let base = VariableBase::new(vec![predictions, targets], dimensions::scalar());
+        let base = AbstractVariable::with_gradient_requirement(vec![predictions, targets], dimensions::scalar(), true);
 
         Self {
             base,

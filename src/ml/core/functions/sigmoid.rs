@@ -4,17 +4,17 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This function wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This function wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: Sigmoid<T> extends SingleParentVariable<T, T>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - Sigmoid adds: sigmoid activation logic (forward/backward)
-//! - Delegates Variable trait methods to inner VariableBase
+//! - Delegates Variable trait methods to inner AbstractVariable
 
+use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::Tensor;
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
 use std::fmt;
 
 /// Sigmoid activation function: σ(x) = 1 / (1 + e^(-x))
@@ -22,7 +22,8 @@ use std::fmt;
 /// Corresponds to Sigmoid<T> in Java GDS.
 /// Single-parent activation function with element-wise non-linearity.
 pub struct Sigmoid {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parent)
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
+    parent: Box<dyn Variable>,
 }
 
 impl Sigmoid {
@@ -34,17 +35,14 @@ impl Sigmoid {
     /// Java: `public Sigmoid(Variable<T> parent) { super(parent, parent.dimensions()); }`
     pub fn new(parent: Box<dyn Variable>) -> Self {
         let dimensions = parent.dimensions().to_vec();
-
-        // Java: super(parent, parent.dimensions())
-        // Store parent in VariableBase
-        let base = VariableBase::new(vec![parent], dimensions);
-
-        Self { base }
+        let require_gradient = parent.require_gradient();
+        let base = AbstractVariable::with_gradient_requirement(vec![], dimensions, require_gradient);
+        Self { base, parent }
     }
 
     /// Get parent variable.
     fn parent(&self) -> &dyn Variable {
-        self.base.parents()[0].as_ref()
+        self.parent.as_ref()
     }
 
     // ========================================================================
@@ -78,8 +76,7 @@ impl Sigmoid {
 
         let self_gradient = ctx.gradient(self).expect("Self gradient not computed");
 
-        result.elementwise_product_mutate(self_gradient.as_ref());
-        result
+        result.elementwise_product(self_gradient.as_ref())
     }
 }
 
@@ -112,7 +109,7 @@ impl Variable for Sigmoid {
     }
 
     // ========================================================================
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     // ========================================================================
 
     /// Check if gradient is required.
@@ -124,7 +121,7 @@ impl Variable for Sigmoid {
     /// Get parent variables.
     /// Java: Inherited from `super(parent, ...)`
     fn parents(&self) -> &[Box<dyn Variable>] {
-        self.base.parents()
+        std::slice::from_ref(&self.parent)
     }
 
     /// Get output dimensions (same as input).

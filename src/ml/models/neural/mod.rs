@@ -1,11 +1,16 @@
-//! Neural network implementations
+//! Neural Network Models
 //!
-//! Contains:
-//! - MLP (Multi-Layer Perceptron) classifier
-//! - Core neural network functions (activation, loss)
-//! - Training infrastructure
+//! This module contains neural network implementations translated from Java GDS.
+//! Currently includes Multi-Layer Perceptron (MLP) classifier.
 
-mod functions;
-mod mlp;
+mod classifier;
+mod config;
+mod data;
+mod objective;
+mod trainer;
 
-pub use mlp::{MLPClassifier, MLPClassifierConfig, MLPClassifierData, MLPClassifierTrainer};
+pub use classifier::MLPClassifier;
+pub use config::MLPClassifierTrainConfig;
+pub use data::MLPClassifierData;
+pub use objective::MLPClassifierObjective;
+pub use trainer::MLPClassifierTrainer;

@@ -7,7 +7,7 @@ const CLIP_MAX: f64 = 5.0;
 const CLIP_MIN: f64 = -5.0;
 
 /// Adam optimizer implementation based on https://arxiv.org/pdf/1412.6980.pdf
-/// 
+///
 /// Division, squaring and square-rooting is done element-wise.
 pub struct AdamOptimizer {
     learning_rate: f64,
@@ -26,7 +26,7 @@ impl AdamOptimizer {
         let term_size = rows * cols * std::mem::size_of::<f64>();
         std::mem::size_of::<Self>() + 
             2 * term_size + // fields
-            2 * term_size   // working memory: mCap, vCap
+            2 * term_size // working memory: mCap, vCap
     }
 
     /// Create a new Adam optimizer
@@ -35,7 +35,7 @@ impl AdamOptimizer {
             .iter()
             .map(|w| w.read().create_with_same_dimensions())
             .collect();
-        
+
         let velocity_terms: Vec<Box<dyn Tensor>> = weights
             .iter()
             .map(|w| w.read().create_with_same_dimensions())
@@ -67,48 +67,51 @@ impl Updater for AdamOptimizer {
     fn update(&mut self, context_local_weight_gradients: &[Box<dyn Tensor>]) {
         self.iteration += 1;
 
-        for (i, _gradient) in context_local_weight_gradients.iter().enumerate().take(self.weights.len()) {
+        for (i, _gradient) in context_local_weight_gradients
+            .iter()
+            .enumerate()
+            .take(self.weights.len())
+        {
             let mut weight = self.weights[i].write();
             let gradient = context_local_weight_gradients[i].as_ref();
             let momentum_term = self.momentum_terms[i].as_mut();
             let velocity_term = self.velocity_terms[i].as_mut();
 
             // Clip gradient to avoid exploding gradients
-            let mut clipped_gradient = gradient.map(Self::clip);
+            let clipped_gradient = gradient.map(Self::clip);
 
             // In-Place update momentum term
             // m_t = beta_1 * m_t + (1 - beta_1) * g_t
-            momentum_term.scalar_multiply_mutate(self.beta_1);
+            let momentum_scaled = momentum_term.scalar_multiply(self.beta_1);
             let scaled_gradient = clipped_gradient.as_ref().scalar_multiply(1.0 - self.beta_1);
+            momentum_term.add_inplace(momentum_scaled.as_ref());
             momentum_term.add_inplace(scaled_gradient.as_ref());
 
             // In-Place updates the velocity terms
             // v_t = beta_2 * v_t + (1 - beta_2) * (g_t^2)
-            clipped_gradient.map_inplace(|v| v * v);
-            velocity_term.scalar_multiply_mutate(self.beta_2);
-            let scaled_squared = clipped_gradient.as_ref().scalar_multiply(1.0 - self.beta_2);
+            let squared_gradient = clipped_gradient.map(|v| v * v);
+            let velocity_scaled = velocity_term.scalar_multiply(self.beta_2);
+            let scaled_squared = squared_gradient.as_ref().scalar_multiply(1.0 - self.beta_2);
+            velocity_term.add_inplace(velocity_scaled.as_ref());
             velocity_term.add_inplace(scaled_squared.as_ref());
 
             // m_cap = m_t / (1 - beta_1^t)  // calculates the bias-corrected estimates
-            let m_cap = momentum_term.scalar_multiply(
-                1.0 / (1.0 - self.beta_1.powi(self.iteration as i32))
-            );
+            let m_cap = momentum_term
+                .scalar_multiply(1.0 / (1.0 - self.beta_1.powi(self.iteration as i32)));
 
             // v_cap = v_t / (1 - beta_2^t)  // calculates the bias-corrected estimates
-            let v_cap = velocity_term.scalar_multiply(
-                1.0 / (1.0 - self.beta_2.powi(self.iteration as i32))
-            );
+            let v_cap = velocity_term
+                .scalar_multiply(1.0 / (1.0 - self.beta_2.powi(self.iteration as i32)));
 
             // theta_0 = theta_0 - (alpha * m_cap) / (sqrt(v_cap) + epsilon)  // updates the parameters
-            let mut update = m_cap.scalar_multiply(-self.learning_rate);
-            let mut v_cap_sqrt = v_cap.map(f64::sqrt);
-            let mut epsilon_tensor = v_cap_sqrt.ones_like();
-            epsilon_tensor.scalar_multiply_mutate(self.epsilon);
-            v_cap_sqrt.add_inplace(epsilon_tensor.as_ref());
-            let v_cap_inv = v_cap_sqrt.map(|v| 1.0 / v);
-            update = update.elementwise_product(v_cap_inv.as_ref());
-            
-            weight.add_inplace(update.as_ref());
+            let update = m_cap.scalar_multiply(-self.learning_rate);
+            let v_cap_sqrt = v_cap.map(f64::sqrt);
+            let epsilon_tensor = v_cap_sqrt.as_ref().ones_like().scalar_multiply(self.epsilon);
+            let v_cap_sqrt_with_epsilon = v_cap_sqrt.add(epsilon_tensor.as_ref());
+            let v_cap_inv = v_cap_sqrt_with_epsilon.map(|v| 1.0 / v);
+            let final_update = update.elementwise_product(v_cap_inv.as_ref());
+
+            weight.add_inplace(final_update.as_ref());
         }
     }
 }

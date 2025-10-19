@@ -18,7 +18,6 @@ pub mod samplers;
 pub mod subgraph;
 pub mod tensor;
 pub mod variable;
-pub mod variable_base;
 
 pub use abstract_variable::*;
 pub use batch::*;
@@ -34,4 +33,3 @@ pub use samplers::*;
 pub use subgraph::*;
 pub use tensor::*;
 pub use variable::*;
-pub use variable_base::*;

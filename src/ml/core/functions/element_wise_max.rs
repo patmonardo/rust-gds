@@ -8,7 +8,7 @@ use crate::ml::core::dimensions::{COLUMNS_INDEX, ROWS_INDEX};
 use crate::ml::core::subgraph::BatchNeighbors;
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 const INVALID_NEIGHBOR: i32 = -1;
@@ -19,7 +19,7 @@ const INVALID_NEIGHBOR: i32 = -1;
 /// Corresponds to ElementWiseMax in Java GDS, extends SingleParentVariable.
 /// Uses composition pattern: VariableBase holds parent (matrix to aggregate).
 pub struct ElementWiseMax {
-    base: VariableBase,
+    base: AbstractVariable,
     batch_neighbors: Box<dyn BatchNeighbors>,
 }
 
@@ -34,7 +34,7 @@ impl ElementWiseMax {
             batch_neighbors.batch_size(),
             parent.dimension(COLUMNS_INDEX),
         ];
-        let base = VariableBase::new(vec![parent], dimensions);
+        let base = AbstractVariable::with_gradient_requirement(vec![parent], dimensions, true);
 
         Self {
             base,

@@ -9,7 +9,7 @@ pub trait TrainingStopper {
 /// Factory functions for TrainingStopper
 pub mod factory {
     use super::*;
-    
+
     /// Create a default stopper from config (matching Java's defaultStopper)
     pub fn default_stopper(config: &GradientDescentConfig) -> StreakStopper {
         StreakStopper::from_config(config)

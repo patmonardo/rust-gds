@@ -18,6 +18,7 @@ pub mod config;
 pub mod features;
 pub mod linear;
 pub mod logistic_regression;
+// pub mod neural;
 pub mod training_method;
 pub mod trees;
 
@@ -33,6 +34,10 @@ pub use training_method::TrainingMethod;
 // Model implementations
 pub use linear::{LinearRegressionData, LinearRegressor};
 pub use logistic_regression::{LogisticRegressionClassifier, LogisticRegressionData};
+// pub use neural::{
+//     MLPClassifier, MLPClassifierData, MLPClassifierObjective, MLPClassifierTrainConfig,
+//     MLPClassifierTrainer,
+// };
 pub use trees::{
     DatasetBootstrapper, DecisionTreePredictor, RandomForestClassifier,
     RandomForestClassifierConfig, RandomForestClassifierData, RandomForestClassifierTrainerConfig,

@@ -12,13 +12,12 @@ use parking_lot::RwLock;
 use std::sync::Arc;
 
 use super::{
-    config::LinearRegressionTrainConfig,
-    objective::LinearRegressionObjective,
+    config::LinearRegressionTrainConfig, objective::LinearRegressionObjective,
     regressor::LinearRegressor,
 };
 
 /// Trainer for linear regression models.
-/// 
+///
 /// This struct orchestrates the training process by:
 /// 1. Creating a LinearRegressionObjective with the provided features, targets, and penalty
 /// 2. Setting up batch queues for gradient descent
@@ -32,7 +31,7 @@ pub struct LinearRegressionTrainer {
 
 impl LinearRegressionTrainer {
     /// Create a new LinearRegressionTrainer with the given configuration and resources.
-    /// 
+    ///
     /// # Arguments
     /// * `concurrency` - Number of concurrent threads for training
     /// * `config` - Training configuration including gradient descent and penalty parameters
@@ -52,7 +51,7 @@ impl LinearRegressionTrainer {
 
 impl RegressorTrainer for LinearRegressionTrainer {
     /// Train a linear regression model using gradient descent.
-    /// 
+    ///
     /// This method mirrors the Java `LinearRegressionTrainer.train()` method:
     /// 1. Creates a LinearRegressionObjective with features, targets, and penalty
     /// 2. Sets up batch queues from the training set
@@ -65,25 +64,15 @@ impl RegressorTrainer for LinearRegressionTrainer {
         train_set: &Arc<Vec<u64>>,
     ) -> Box<dyn crate::ml::models::Regressor> {
         // Create objective with features, targets, and penalty from config
-        let objective = LinearRegressionObjective::new(
-            features,
-            targets,
-            self.train_config.penalty(),
-        );
+        let objective =
+            LinearRegressionObjective::new(features, targets, self.train_config.penalty());
 
         // Create batch queue supplier - matches Java's BatchQueue.fromArray(trainSet, batchSize)
-        let queue_supplier = || {
-            consecutive_with_batch_size(
-                train_set.len() as u64,
-                self.train_config.batch_size(),
-            )
-        };
+        let queue_supplier =
+            || consecutive_with_batch_size(train_set.len() as u64, self.train_config.batch_size());
 
         // Create training instance with config and progress tracking
-        let training = Training::new(
-            self.train_config.gradient().clone(),
-            train_set.len(),
-        );
+        let training = Training::new(self.train_config.gradient().clone(), train_set.len());
 
         // Run gradient descent training
         training.train(&objective, queue_supplier, self.concurrency);

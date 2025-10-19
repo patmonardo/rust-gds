@@ -7,7 +7,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Root mean square error loss function.
@@ -16,7 +16,7 @@ use std::fmt;
 /// Corresponds to RootMeanSquareError in Java GDS.
 /// Uses composition pattern: VariableBase holds parents [predictions, targets].
 pub struct RootMeanSquareError {
-    base: VariableBase,
+    base: AbstractVariable,
 }
 
 impl RootMeanSquareError {
@@ -34,7 +34,7 @@ impl RootMeanSquareError {
 
         let parents = vec![predictions, targets];
         let dimensions = dimensions::scalar();
-        let base = VariableBase::new(parents, dimensions);
+        let base = AbstractVariable::with_gradient_requirement(parents, dimensions, true);
 
         Self { base }
     }
@@ -107,10 +107,8 @@ impl Variable for RootMeanSquareError {
 
             let parent_data = ctx.data(parent).expect("Parent data not computed");
 
-            let mut parent_gradient = parent_data.create_with_same_dimensions();
-
             if root_of_sum_of_square_error_over_n.value() == 0.0 {
-                return parent_gradient;
+                return Box::new(Vector::with_size(number_of_examples));
             }
 
             let denominator = root_of_sum_of_square_error_over_n
@@ -134,13 +132,15 @@ impl Variable for RootMeanSquareError {
                 .downcast_ref::<Vector>()
                 .expect("Targets must be Vector");
 
+            // Create gradient data vector
+            let mut gradient_data = Vec::new();
             for idx in 0..number_of_examples {
                 // predictions is Matrix, targets is Vector
                 let error = predictions.data_at(idx, 0) - targets.data_at(idx);
-                parent_gradient.set_data_at(idx, error * scale);
+                gradient_data.push(error * scale);
             }
 
-            return parent_gradient;
+            return Box::new(Vector::new(gradient_data));
         }
 
         panic!(

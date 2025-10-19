@@ -2,7 +2,10 @@
 //!
 //! Translation of `LinearRegressionTrainConfig.java` from Java GDS.
 
-use crate::ml::{gradient_descent::GradientDescentConfig, models::{TrainingMethod, TrainerConfig}};
+use crate::ml::{
+    gradient_descent::GradientDescentConfig,
+    models::{TrainerConfig, TrainingMethod},
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -88,17 +91,45 @@ impl TrainerConfig for LinearRegressionTrainConfig {
 
     fn to_map(&self) -> HashMap<String, serde_json::Value> {
         let mut map = HashMap::new();
-        map.insert("method".to_string(), serde_json::Value::String("LinearRegression".to_string()));
-        map.insert("penalty".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(self.penalty).unwrap()));
-        
+        map.insert(
+            "method".to_string(),
+            serde_json::Value::String("LinearRegression".to_string()),
+        );
+        map.insert(
+            "penalty".to_string(),
+            serde_json::Value::Number(serde_json::Number::from_f64(self.penalty).unwrap()),
+        );
+
         // Add gradient descent config fields
-        map.insert("batch_size".to_string(), serde_json::Value::Number(serde_json::Number::from(self.gradient.batch_size())));
-        map.insert("learning_rate".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(self.gradient.learning_rate()).unwrap()));
-        map.insert("max_epochs".to_string(), serde_json::Value::Number(serde_json::Number::from(self.gradient.max_epochs())));
-        map.insert("tolerance".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(self.gradient.tolerance()).unwrap()));
-        map.insert("min_epochs".to_string(), serde_json::Value::Number(serde_json::Number::from(self.gradient.min_epochs())));
-        map.insert("patience".to_string(), serde_json::Value::Number(serde_json::Number::from(self.gradient.patience())));
-        
+        map.insert(
+            "batch_size".to_string(),
+            serde_json::Value::Number(serde_json::Number::from(self.gradient.batch_size())),
+        );
+        map.insert(
+            "learning_rate".to_string(),
+            serde_json::Value::Number(
+                serde_json::Number::from_f64(self.gradient.learning_rate()).unwrap(),
+            ),
+        );
+        map.insert(
+            "max_epochs".to_string(),
+            serde_json::Value::Number(serde_json::Number::from(self.gradient.max_epochs())),
+        );
+        map.insert(
+            "tolerance".to_string(),
+            serde_json::Value::Number(
+                serde_json::Number::from_f64(self.gradient.tolerance()).unwrap(),
+            ),
+        );
+        map.insert(
+            "min_epochs".to_string(),
+            serde_json::Value::Number(serde_json::Number::from(self.gradient.min_epochs())),
+        );
+        map.insert(
+            "patience".to_string(),
+            serde_json::Value::Number(serde_json::Number::from(self.gradient.patience())),
+        );
+
         map
     }
 }

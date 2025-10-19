@@ -7,7 +7,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions::{self, COLUMNS_INDEX};
 use crate::ml::core::tensor::{Matrix, Tensor};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// Slices a matrix by selecting specific rows via batch IDs.
@@ -15,14 +15,14 @@ use std::fmt;
 /// Corresponds to Slice in Java GDS, extends SingleParentVariable<Matrix, Matrix>.
 /// Uses composition pattern: VariableBase holds parent (matrix to slice).
 pub struct Slice {
-    base: VariableBase,
+    base: AbstractVariable,
     batch_ids: Vec<usize>,
 }
 
 impl Slice {
     pub fn new(parent: Box<dyn Variable>, batch_ids: Vec<usize>) -> Self {
         let dimensions = dimensions::matrix(batch_ids.len(), parent.dimension(COLUMNS_INDEX));
-        let base = VariableBase::new(vec![parent], dimensions);
+        let base = AbstractVariable::with_gradient_requirement(vec![parent], dimensions, true);
 
         Self { base, batch_ids }
     }
@@ -73,7 +73,7 @@ impl Variable for Slice {
         let mut result = Matrix::create(0.0, rows, parent_data.cols());
 
         for row in 0..rows {
-            result.set_row(row, parent_data, self.batch_ids[row]);
+            result.set_row_from_matrix(row, parent_data, self.batch_ids[row]);
         }
 
         Box::new(result)

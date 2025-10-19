@@ -1,6 +1,6 @@
 //! Matrix operations - translated from DoubleMatrixOperations.java
 
-use crate::ml::core::tensor::Matrix;
+use crate::ml::core::tensor::{Matrix, Tensor};
 
 /// Modified version of Ejml implementation for multTransB.
 ///

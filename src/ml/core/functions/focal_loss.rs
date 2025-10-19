@@ -6,7 +6,7 @@
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 const PREDICTED_PROBABILITY_THRESHOLD: f64 = 1e-50;
@@ -16,7 +16,7 @@ const PREDICTED_PROBABILITY_THRESHOLD: f64 = 1e-50;
 /// Corresponds to FocalLoss in Java GDS, extends CrossEntropyLoss.
 /// Uses composition pattern: VariableBase holds parents (predictions, targets).
 pub struct FocalLoss {
-    base: VariableBase,
+    base: AbstractVariable,
     class_weights: Vec<f64>,
     focus_weight: f64,
 }
@@ -30,7 +30,7 @@ impl FocalLoss {
     ) -> Self {
         let parents = vec![predictions, targets];
         let dimensions = vec![1];
-        let base = VariableBase::new(parents, dimensions);
+        let base = AbstractVariable::with_gradient_requirement(parents, dimensions, true);
 
         Self {
             base,

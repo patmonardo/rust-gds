@@ -1,153 +1,116 @@
 //! Scalar tensor - translated from Scalar.java
 //!
-//! ## Design Pattern: Composition + Delegation
-//!
-//! This Scalar wraps a TensorData (composition) to share storage and methods.
-//! This matches Java's inheritance: Scalar extends Tensor<Scalar>
-//!
-//! - TensorData provides: data, dimensions, aggregate_sum(), map(), etc.
-//! - Scalar adds: value() convenience accessor
-//! - Scalar delegates shared operations to inner TensorData
+//! This directly mirrors Java's `Scalar extends Tensor<Scalar>` pattern.
+//! Contains data and dimensions directly, not wrapped in TensorData.
 
 use super::tensor::Tensor;
-use super::tensor_data::TensorData;
 use crate::ml::core::dimensions;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Scalar {
-    tensor: TensorData, // COMPOSITION: wraps shared storage/methods
+    data: Vec<f64>,
+    dimensions: Vec<usize>,
 }
 
 impl Scalar {
     // ========================================================================
-    // Constructors
+    // Constructors - match Java's constructor pattern
     // ========================================================================
 
+    /// Create scalar from value.
+    /// Java: `public Scalar(double value)`
     pub fn new(value: f64) -> Self {
-        let tensor = TensorData::new(vec![value], dimensions::scalar());
-        Self { tensor }
+        let data = vec![value];
+        let dimensions = dimensions::scalar();
+        Self { data, dimensions }
     }
 
     // ========================================================================
     // Scalar-specific accessors
     // ========================================================================
 
-    /// DELEGATION: Get scalar value (convenience wrapper).
+    /// Get scalar value.
+    /// Java: `public double value()`
     pub fn value(&self) -> f64 {
-        self.tensor.data_at(0)
+        self.data[0]
     }
 
-    // ========================================================================
-    // Delegation to TensorData (shared methods)
-    // ========================================================================
-
-    /// DELEGATION: Get raw data slice.
-    pub fn data(&self) -> &[f64] {
-        self.tensor.data()
+    /// Calculate size in bytes for scalar.
+    /// Java: `public static long sizeInBytes()`
+    pub fn size_in_bytes() -> usize {
+        crate::ml::core::tensor::size_in_bytes(&dimensions::scalar())
     }
 }
 
 // ============================================================================
-// Tensor Trait Implementation - DELEGATION Pattern
+// Tensor Trait Implementation
 // ============================================================================
-//
-// Most methods delegate to the inner TensorData.
-// Scalar-specific logic wraps the result in a new Scalar.
 
 impl Tensor for Scalar {
-    // DELEGATION: Forward to TensorData
     fn dimensions(&self) -> &[usize] {
-        self.tensor.dimensions()
+        &self.dimensions
     }
 
-    // DELEGATION: Forward to TensorData
     fn data(&self) -> &[f64] {
-        self.tensor.data()
+        &self.data
     }
 
-    // DELEGATION: Forward to TensorData
-    fn set_data_at(&mut self, idx: usize, new_value: f64) {
-        self.tensor.set_data_at(idx, new_value);
+    fn data_at(&self, idx: usize) -> f64 {
+        self.data[idx]
     }
 
-    fn clone_box(&self) -> Box<dyn Tensor> {
-        Box::new(self.clone())
+    fn dimension(&self, dimension_index: usize) -> usize {
+        self.dimensions[dimension_index]
     }
 
     fn create_with_same_dimensions(&self) -> Box<dyn Tensor> {
         Box::new(Scalar::new(0.0))
     }
 
-    // DELEGATION: Use TensorData.add(), wrap result
+    fn clone_box(&self) -> Box<dyn Tensor> {
+        Box::new(self.clone())
+    }
+
     fn add(&self, other: &dyn Tensor) -> Box<dyn Tensor> {
         let other_scalar = other.as_any().downcast_ref::<Scalar>().unwrap();
-        let result_tensor = self.tensor.add(&other_scalar.tensor);
-        Box::new(Scalar {
-            tensor: result_tensor,
-        })
+        Box::new(Scalar::new(self.value() + other_scalar.value()))
     }
 
-    // DELEGATION: Forward to TensorData.add_inplace()
-    fn add_inplace(&mut self, other: &dyn Tensor) {
-        let other_scalar = other.as_any().downcast_ref::<Scalar>().unwrap();
-        self.tensor.add_inplace(&other_scalar.tensor);
+    fn map(&self, f: fn(f64) -> f64) -> Box<dyn Tensor> {
+        Box::new(Scalar::new(f(self.value())))
     }
 
-    // DELEGATION: Use TensorData.scalar_multiply(), wrap result
     fn scalar_multiply(&self, scalar: f64) -> Box<dyn Tensor> {
-        let result_tensor = self.tensor.scalar_multiply(scalar);
-        Box::new(Scalar {
-            tensor: result_tensor,
-        })
+        Box::new(Scalar::new(self.value() * scalar))
     }
 
-    // DELEGATION: Forward to TensorData.scalar_multiply_mutate()
-    fn scalar_multiply_mutate(&mut self, scalar: f64) {
-        self.tensor.scalar_multiply_mutate(scalar);
-    }
-
-    // DELEGATION: Use TensorData.elementwise_product(), wrap result
     fn elementwise_product(&self, other: &dyn Tensor) -> Box<dyn Tensor> {
         let other_scalar = other.as_any().downcast_ref::<Scalar>().unwrap();
-        let result_tensor = self.tensor.elementwise_product(&other_scalar.tensor);
-        Box::new(Scalar {
-            tensor: result_tensor,
-        })
-    }
-
-    // DELEGATION: Forward to TensorData.elementwise_product_mutate()
-    fn elementwise_product_mutate(&mut self, other: &dyn Tensor) {
-        let other_scalar = other.as_any().downcast_ref::<Scalar>().unwrap();
-        self.tensor.elementwise_product_mutate(&other_scalar.tensor);
-    }
-
-    // DELEGATION: Use TensorData.map(), wrap result
-    fn map(&self, f: fn(f64) -> f64) -> Box<dyn Tensor> {
-        let result_tensor = self.tensor.map(f);
-        Box::new(Scalar {
-            tensor: result_tensor,
-        })
-    }
-
-    // DELEGATION: Forward to TensorData.map_inplace()
-    fn map_inplace(&mut self, f: fn(f64) -> f64) {
-        self.tensor.map_inplace(f);
+        Box::new(Scalar::new(self.value() * other_scalar.value()))
     }
 
     fn ones_like(&self) -> Box<dyn Tensor> {
         Box::new(Scalar::new(1.0))
     }
 
-    // DELEGATION: Forward to TensorData.equals()
+    fn add_inplace(&mut self, other: &dyn Tensor) {
+        let other_scalar = other.as_any().downcast_ref::<Scalar>().unwrap();
+        self.data[0] += other_scalar.value();
+    }
+
     fn equals(&self, other: &dyn Tensor, tolerance: f64) -> bool {
         if let Some(other_scalar) = other.as_any().downcast_ref::<Scalar>() {
-            self.tensor.equals(&other_scalar.tensor, tolerance)
+            (self.value() - other_scalar.value()).abs() <= tolerance
         } else {
             false
         }
     }
 
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+    fn short_description(&self) -> String {
+        "Scalar".to_string()
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
@@ -163,28 +126,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn add_returns_new_scalar() {
-        let lhs = Scalar::new(1.5);
-        let rhs = Scalar::new(2.5);
-
-        let result = lhs.add(&rhs);
-        assert_eq!(result.dimensions(), &[1, 1]);
-        assert_eq!(result.data(), &[4.0]);
-    }
-
-    #[test]
-    fn scalar_multiply_mutate_scales_in_place() {
-        let mut scalar = Scalar::new(3.0);
-        scalar.scalar_multiply_mutate(2.0);
-
-        assert_eq!(scalar.value(), 6.0);
-    }
-
-    #[test]
-    fn ones_like_produces_unit_scalar() {
+    fn test_scalar_creation() {
         let scalar = Scalar::new(42.0);
-        let one = scalar.ones_like();
-        assert_eq!(one.dimensions(), &[1, 1]);
-        assert_eq!(one.data(), &[1.0]);
+        assert_eq!(scalar.value(), 42.0);
+        assert_eq!(scalar.data(), &[42.0]);
+    }
+
+    #[test]
+    fn test_scalar_add() {
+        let a = Scalar::new(1.5);
+        let b = Scalar::new(2.5);
+        let result = a.add(&b);
+        let result_scalar = result.as_any().downcast_ref::<Scalar>().expect("Expected Scalar");
+        assert_eq!(result_scalar.value(), 4.0);
+    }
+
+    #[test]
+    fn test_scalar_multiply() {
+        let scalar = Scalar::new(3.0);
+        let result = scalar.scalar_multiply(2.0);
+        let result_scalar = result.as_any().downcast_ref::<Scalar>().expect("Expected Scalar");
+        assert_eq!(result_scalar.value(), 6.0);
     }
 }

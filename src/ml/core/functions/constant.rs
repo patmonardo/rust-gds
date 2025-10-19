@@ -4,18 +4,18 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This Constant wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This Constant wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: Constant extends AbstractVariable<T>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - Constant adds: data storage
-//! - Constant delegates Variable trait methods to inner VariableBase
+//! - Constant delegates Variable trait methods to inner AbstractVariable
 
 use crate::ml::core::abstract_variable::NotAFunctionException;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
+use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
 
 /// A constant tensor value that doesn't depend on any parents.
@@ -23,7 +23,7 @@ use std::fmt;
 /// This corresponds to the Constant class in Java GDS.
 /// Uses type erasure - stores a boxed Tensor.
 pub struct Constant {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
     data: Box<dyn Tensor>,
 }
 
@@ -35,7 +35,7 @@ impl Constant {
     /// Create a new constant from any tensor.
     pub fn new(data: Box<dyn Tensor>) -> Self {
         let dimensions = data.dimensions().to_vec();
-        let base = VariableBase::with_gradient_requirement(
+        let base = AbstractVariable::with_gradient_requirement(
             vec![], // Constants have no parents
             dimensions,
             false, // Constants don't require gradients
@@ -78,7 +78,7 @@ impl Constant {
 // Variable Trait Implementation - DELEGATION Pattern
 // ============================================================================
 //
-// Most methods delegate to the inner VariableBase.
+// Most methods delegate to the inner AbstractVariable.
 // Constant-specific logic (apply, gradient) is implemented here.
 
 impl Variable for Constant {
@@ -94,17 +94,17 @@ impl Variable for Constant {
         panic!("{}", NotAFunctionException);
     }
 
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     fn require_gradient(&self) -> bool {
         self.base.require_gradient()
     }
 
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     fn parents(&self) -> &[Box<dyn Variable>] {
         self.base.parents()
     }
 
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     fn dimensions(&self) -> &[usize] {
         self.base.dimensions()
     }

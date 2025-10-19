@@ -4,18 +4,18 @@
 //!
 //! ## Design Pattern: Composition + Delegation
 //!
-//! This function wraps a VariableBase (composition) to share dimension/parent tracking.
+//! This function wraps an AbstractVariable (composition) to share dimension/parent tracking.
 //! This matches Java's inheritance: MatrixVectorSum extends AbstractVariable<Matrix>
 //!
-//! - VariableBase provides: dimensions, parents, require_gradient tracking
+//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
 //! - MatrixVectorSum adds: matrix, vector operands and broadcasting logic
-//! - Delegates Variable trait methods to inner VariableBase
+//! - Delegates Variable trait methods to inner AbstractVariable
 
+use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions::{COLUMNS_INDEX, ROWS_INDEX};
 use crate::ml::core::tensor::{Matrix, Tensor, Vector};
 use crate::ml::core::variable::Variable;
-use crate::ml::core::variable_base::VariableBase;
 use std::fmt;
 
 /// Adds a vector to each row of a matrix (broadcasting).
@@ -25,7 +25,7 @@ use std::fmt;
 ///
 /// Note: Parents (matrix, vector) are stored in base.parents(). Access via matrix() and vector() helpers.
 pub struct MatrixVectorSum {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic (includes parents)
+    base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
 }
 
 impl MatrixVectorSum {
@@ -46,11 +46,7 @@ impl MatrixVectorSum {
         );
 
         let dimensions = matrix.dimensions().to_vec();
-
-        // Java: super(List.of(matrix, vector), matrix.dimensions())
-        // Store parents [matrix, vector] in VariableBase
-        let base = VariableBase::new(vec![matrix, vector], dimensions);
-
+        let base = AbstractVariable::new(vec![matrix, vector], dimensions);
         Self { base }
     }
 
@@ -90,7 +86,7 @@ impl Variable for MatrixVectorSum {
             .downcast_ref::<Vector>()
             .expect("Vector parent must be Vector");
 
-        matrix_data.sum_broadcast_column_wise(vector_data)
+        Box::new(matrix_data.sum_broadcast_column_wise(vector_data))
     }
 
     /// Compute gradient with respect to parent (matrix or vector).
@@ -109,14 +105,14 @@ impl Variable for MatrixVectorSum {
                 .as_any()
                 .downcast_ref::<Matrix>()
                 .expect("Gradient must be Matrix");
-            grad.sum_per_column()
+            Box::new(grad.sum_per_column())
         } else {
             panic!("Gradient requested for unknown parent");
         }
     }
 
     // ========================================================================
-    // DELEGATION: Forward to VariableBase
+    // DELEGATION: Forward to AbstractVariable
     // ========================================================================
 
     /// Check if gradient is required.
