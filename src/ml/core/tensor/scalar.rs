@@ -3,7 +3,7 @@
 //! This directly mirrors Java's `Scalar extends Tensor<Scalar>` pattern.
 //! Contains data and dimensions directly, not wrapped in TensorData.
 
-use super::tensor::Tensor;
+use super::tensor::{Tensor, AsAny};
 use crate::ml::core::dimensions;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -33,6 +33,12 @@ impl Scalar {
     /// Java: `public double value()`
     pub fn value(&self) -> f64 {
         self.data[0]
+    }
+
+    /// Set scalar value.
+    /// Java: `public void setValue(double value)`
+    pub fn set_value(&mut self, value: f64) {
+        self.data[0] = value;
     }
 
     /// Calculate size in bytes for scalar.
@@ -109,8 +115,14 @@ impl Tensor for Scalar {
     fn short_description(&self) -> String {
         "Scalar".to_string()
     }
+}
 
+impl AsAny for Scalar {
     fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
         self
     }
 }

@@ -3,8 +3,9 @@
 //! This directly mirrors Java's `Matrix extends Tensor<Matrix>` pattern.
 //! Contains data and dimensions directly, not wrapped in TensorData.
 
-use super::tensor::Tensor;
+use super::tensor::{Tensor, AsAny};
 use super::vector::Vector;
+use super::scalar::Scalar;
 use crate::ml::core::dimensions;
 use serde::{Deserialize, Serialize};
 use std::ops::{Index, IndexMut};
@@ -91,6 +92,12 @@ impl Matrix {
         self.data[index] = value;
     }
 
+    /// Get value at flat index position.
+    /// Java: `public double dataAtFlat(int index)`
+    pub fn data_at_flat(&self, index: usize) -> f64 {
+        self.data[index]
+    }
+
     /// Add to value at (row, col) position.
     /// Java: `public void addDataAt(int row, int column, double newValue)`
     pub fn add_data_at(&mut self, row: usize, col: usize, value: f64) {
@@ -115,6 +122,12 @@ impl Matrix {
     pub fn get_row(&self, row_idx: usize) -> &[f64] {
         let start = row_idx * self.cols;
         &self.data[start..start + self.cols]
+    }
+
+    /// Get a row as a slice (alias for get_row).
+    /// Java: `public double[] getRow(int rowIdx)`
+    pub fn row(&self, row_idx: usize) -> &[f64] {
+        self.get_row(row_idx)
     }
 
     /// Update data at (row, col) using a function.
@@ -276,10 +289,6 @@ impl Tensor for Matrix {
         format!("Matrix({}, {})", self.rows, self.cols)
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
     fn clone_box(&self) -> Box<dyn Tensor> {
         Box::new(self.clone())
     }
@@ -342,10 +351,30 @@ impl Tensor for Matrix {
     }
 
     fn add_inplace(&mut self, other: &dyn Tensor) {
-        let other_matrix = other.as_any().downcast_ref::<Matrix>().unwrap();
-        for i in 0..self.data.len() {
-            self.data[i] += other_matrix.data[i];
+        if let Some(other_matrix) = other.as_any().downcast_ref::<Matrix>() {
+            // Both are matrices - element-wise addition
+            for i in 0..self.data.len() {
+                self.data[i] += other_matrix.data[i];
+            }
+        } else if let Some(other_scalar) = other.as_any().downcast_ref::<Scalar>() {
+            // Other is a scalar - add scalar to each element
+            let scalar_value = other_scalar.value();
+            for i in 0..self.data.len() {
+                self.data[i] += scalar_value;
+            }
+        } else {
+            panic!("Cannot add tensor of type {} to Matrix", std::any::type_name_of_val(other));
         }
+    }
+}
+
+impl AsAny for Matrix {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
     }
 }
 

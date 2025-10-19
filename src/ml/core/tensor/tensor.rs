@@ -5,11 +5,17 @@
 
 use std::fmt;
 
+/// Trait for downcasting to Any for type checking.
+pub trait AsAny {
+    fn as_any(&self) -> &dyn std::any::Any;
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
+}
+
 /// Core tensor trait that is object-safe for use in ML functions.
 /// 
 /// This trait provides the interface needed by ML functions while being
 /// compatible with trait objects (Box<dyn Tensor>).
-pub trait Tensor: fmt::Debug + fmt::Display + Send + Sync {
+pub trait Tensor: fmt::Debug + fmt::Display + Send + Sync + AsAny {
     /// Get the dimensions of this tensor.
     /// Java: `public int[] dimensions()`
     fn dimensions(&self) -> &[usize];
@@ -45,9 +51,6 @@ pub trait Tensor: fmt::Debug + fmt::Display + Send + Sync {
     /// Get short description for display.
     /// Java: `protected abstract String shortDescription()`
     fn short_description(&self) -> String;
-    
-    /// Downcast to Any for type checking.
-    fn as_any(&self) -> &dyn std::any::Any;
     
     /// Clone this tensor as a boxed trait object.
     fn clone_box(&self) -> Box<dyn Tensor>;

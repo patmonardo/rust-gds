@@ -2,7 +2,6 @@
 
 use parking_lot::RwLock;
 use rust_gds::collections::HugeDoubleArray;
-use rust_gds::ml::core::tensor::tensor::AsAny;
 use rust_gds::ml::core::tensor::Tensor;
 use rust_gds::ml::gradient_descent::GradientDescentConfig;
 use rust_gds::ml::models::linear::*;
@@ -58,7 +57,7 @@ mod debug_tests {
 
         {
             let mut bias_scalar = model_data.bias().borrow_scalar_mut();
-            bias_scalar.set_data_at(0, 1.0); // bias = 1.0
+            bias_scalar.set_value(1.0); // bias = 1.0
         }
 
         let regressor = LinearRegressor::new(model_data);

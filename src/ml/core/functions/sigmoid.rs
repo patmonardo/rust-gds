@@ -69,7 +69,7 @@ impl Sigmoid {
     /// Java: `public T gradientForParent(ComputationContext ctx)`
     /// Gradient: σ'(x) = σ(x) * (1 - σ(x))
     fn gradient_for_parent(&self, ctx: &ComputationContext) -> Box<dyn Tensor> {
-        let mut result = ctx
+        let result = ctx
             .data(self)
             .expect("Self data not computed")
             .map(|value| value * (1.0 - value));

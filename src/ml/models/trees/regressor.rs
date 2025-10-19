@@ -60,6 +60,10 @@ impl Regressor for RandomForestRegressor {
 
         sum / number_of_decision_trees as f64
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// Random Forest Regressor Data.

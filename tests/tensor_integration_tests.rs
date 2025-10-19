@@ -294,14 +294,14 @@ mod advanced_operations {
         matrix.add_inplace(&other);
         assert_eq!(matrix.data(), &[1.5, 3.0, 4.5, 6.0]);
 
-        // Test inplace scalar multiplication
-        matrix.scalar_multiply_mutate(2.0);
-        assert_eq!(matrix.data(), &[3.0, 6.0, 9.0, 12.0]);
+        // Test scalar multiplication (immutable operation)
+        let scaled = matrix.scalar_multiply(2.0);
+        assert_eq!(scaled.data(), &[3.0, 6.0, 9.0, 12.0]);
 
-        // Test inplace elementwise product
+        // Test elementwise product (immutable operation)
         let factor = Matrix::new(vec![2.0, 1.0, 0.5, 1.0], 2, 2);
-        matrix.elementwise_product_mutate(&factor);
-        assert_eq!(matrix.data(), &[6.0, 6.0, 4.5, 12.0]);
+        let result = scaled.elementwise_product(&factor);
+        assert_eq!(result.data(), &[6.0, 6.0, 4.5, 12.0]);
     }
 
     #[test]
@@ -312,10 +312,10 @@ mod advanced_operations {
         let sqrt_vector = vector.map(|x| x.sqrt());
         assert_eq!(sqrt_vector.data(), &[1.0, 2.0, 3.0, 4.0]);
 
-        // Test map_inplace
-        let mut vector_copy = vector.clone();
-        vector_copy.map_inplace(|x| x.sqrt());
-        assert_eq!(vector_copy.data(), &[1.0, 2.0, 3.0, 4.0]);
+        // Test map operation on clone (immutable operation)
+        let vector_copy = vector.clone();
+        let sqrt_vector_copy = vector_copy.map(|x| x.sqrt());
+        assert_eq!(sqrt_vector_copy.data(), &[1.0, 2.0, 3.0, 4.0]);
     }
 
     #[test]

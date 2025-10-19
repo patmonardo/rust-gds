@@ -41,6 +41,7 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor};
 use crate::ml::core::variable::Variable;
 use crate::ml::core::abstract_variable::AbstractVariable;
+use std::any::Any;
 
 /// Element-wise addition of matrix and scalar.
 ///
@@ -121,7 +122,7 @@ impl Variable for EWiseAddMatrixScalar {
             .data(self.matrix_variable())
             .expect("Matrix data not computed");
 
-        let scalar = ctx
+        let _scalar = ctx
             .data(self.scalar_variable())
             .expect("Scalar data not computed");
 
@@ -131,12 +132,15 @@ impl Variable for EWiseAddMatrixScalar {
             .downcast_ref::<Matrix>()
             .expect("Expected Matrix type");
 
-        let scalar = scalar
-            .as_any()
-            .downcast_ref::<Scalar>()
-            .expect("Expected Scalar type");
-
-        let scalar_value = scalar.value();
+        // Handle scalar - extract value from Weights variable directly
+        let scalar_var = self.scalar_variable();
+        let scalar_value = if let Some(weights) = (scalar_var as &dyn Any).downcast_ref::<crate::ml::core::functions::Weights>() {
+            // Extract scalar value from Weights
+            let scalar_ref = weights.borrow_scalar();
+            scalar_ref.value()
+        } else {
+            panic!("Expected Weights type for scalar variable, got: {}", std::any::type_name_of_val(scalar_var));
+        };
 
         // Map: add scalar to each element
         // TODO: Once Matrix::map() is implemented, use: matrix.map(|v| v + scalar_value)

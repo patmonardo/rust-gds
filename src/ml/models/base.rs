@@ -62,6 +62,9 @@ pub trait Regressor: Send + Sync + Debug {
 
     /// Predict a single value for given features
     fn predict(&self, features: &[f64]) -> f64;
+
+    /// Get self as Any for downcasting
+    fn as_any(&self) -> &dyn std::any::Any;
 }
 
 /// Features trait - 1:1 with Features.java

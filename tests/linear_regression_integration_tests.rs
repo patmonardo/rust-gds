@@ -15,7 +15,7 @@
 
 use parking_lot::RwLock;
 use rust_gds::collections::HugeDoubleArray;
-use rust_gds::ml::core::tensor::tensor::AsAny;
+use rust_gds::ml::core::tensor::AsAny;
 use rust_gds::ml::gradient_descent::GradientDescentConfig;
 use rust_gds::ml::models::linear::*;
 use rust_gds::ml::models::{Features, ModelData, Regressor, RegressorTrainer, TrainerConfig};

@@ -10,5 +10,5 @@ pub mod vector;
 
 pub use matrix::Matrix;
 pub use scalar::Scalar;
-pub use tensor::{size_in_bytes, Tensor};
+pub use tensor::{size_in_bytes, Tensor, AsAny};
 pub use vector::Vector;

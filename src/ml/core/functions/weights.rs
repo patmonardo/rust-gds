@@ -134,6 +134,36 @@ impl Weights {
                 .expect("Weights tensor is not Vector")
         })
     }
+
+    /// Borrow as matrix mutably (panic if underlying tensor is not a Matrix).
+    pub fn borrow_matrix_mut(&self) -> parking_lot::MappedRwLockWriteGuard<'_, Matrix> {
+        RwLockWriteGuard::map(self.data.write(), |tensor| {
+            tensor
+                .as_any_mut()
+                .downcast_mut::<Matrix>()
+                .expect("Weights tensor is not Matrix")
+        })
+    }
+
+    /// Borrow as scalar mutably (panic if not Scalar).
+    pub fn borrow_scalar_mut(&self) -> parking_lot::MappedRwLockWriteGuard<'_, Scalar> {
+        RwLockWriteGuard::map(self.data.write(), |tensor| {
+            tensor
+                .as_any_mut()
+                .downcast_mut::<Scalar>()
+                .expect("Weights tensor is not Scalar")
+        })
+    }
+
+    /// Borrow as vector mutably (panic if not Vector).
+    pub fn borrow_vector_mut(&self) -> parking_lot::MappedRwLockWriteGuard<'_, Vector> {
+        RwLockWriteGuard::map(self.data.write(), |tensor| {
+            tensor
+                .as_any_mut()
+                .downcast_mut::<Vector>()
+                .expect("Weights tensor is not Vector")
+        })
+    }
 }
 
 impl Clone for Weights {

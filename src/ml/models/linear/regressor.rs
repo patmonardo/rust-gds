@@ -76,4 +76,8 @@ impl Regressor for LinearRegressor {
 
         prediction + bias_ref.value()
     }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }

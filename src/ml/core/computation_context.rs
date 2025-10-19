@@ -15,8 +15,8 @@ use std::collections::{HashMap, VecDeque};
 /// Uses type erasure - all tensors are stored as `Box<dyn Tensor>`.
 /// Uses interior mutability (RefCell) for caching during forward/backward passes.
 pub struct ComputationContext {
-    data: RefCell<HashMap<*const dyn Any, Box<dyn Tensor>>>,
-    gradients: RefCell<HashMap<*const dyn Any, Box<dyn Tensor>>>,
+    data: RefCell<HashMap<String, Box<dyn Tensor>>>,
+    gradients: RefCell<HashMap<String, Box<dyn Tensor>>>,
 }
 
 impl ComputationContext {
@@ -27,13 +27,26 @@ impl ComputationContext {
         }
     }
 
+    /// Create a unique key for a variable based on its content.
+    /// This avoids issues with trait object pointer identity.
+    fn variable_key(&self, variable: &dyn Variable) -> String {
+        // Use a combination of dimensions and a hash of the variable's data
+        let dims = variable.dimensions();
+        let dim_str = format!("{:?}", dims);
+        
+        // For now, use a simple approach: dimensions + a hash of the variable's type
+        // In a more robust implementation, we'd use the variable's actual data
+        let type_name = std::any::type_name_of_val(variable);
+        format!("{}:{}", type_name, dim_str)
+    }
+
     /// Forward pass - compute variable value with caching.
     ///
     /// Only one forward call is expected for the caching strategy.
     /// Returns boxed tensor due to type erasure.
     /// Uses interior mutability to allow caching even with immutable reference.
     pub fn forward(&self, variable: &dyn Variable) -> Box<dyn Tensor> {
-        let var_key = variable as *const _ as *const dyn Any;
+        let var_key = self.variable_key(variable);
 
         // Check cache
         if let Some(cached) = self.data.borrow().get(&var_key) {
@@ -54,13 +67,13 @@ impl ComputationContext {
 
     /// Get cached data for a variable.
     pub fn data(&self, variable: &dyn Variable) -> Option<Box<dyn Tensor>> {
-        let var_key = variable as *const _ as *const dyn Any;
+        let var_key = self.variable_key(variable);
         self.data.borrow().get(&var_key).map(|t| t.clone_box())
     }
 
     /// Get cached gradient for a variable.
     pub fn gradient(&self, variable: &dyn Variable) -> Option<Box<dyn Tensor>> {
-        let var_key = variable as *const _ as *const dyn Any;
+        let var_key = self.variable_key(variable);
         self.gradients.borrow().get(&var_key).map(|t| t.clone_box())
     }
 
@@ -89,8 +102,61 @@ impl ComputationContext {
         let root_gradient = root_data.map(|_| 1.0);
         self.update_gradient(function, root_gradient);
 
-        // Recursively compute gradients for all parents
-        self.backward_recursive(function);
+        // Collect all variables in topological order (children before parents)
+        let mut execution_order = Vec::new();
+        self.collect_variables_topological(function, &mut execution_order);
+
+        // Process variables in multiple passes until all gradients are computed
+        let max_passes = execution_order.len(); // Safety limit
+        for _pass in 0..max_passes {
+            let mut progress_made = false;
+            
+            // Process variables in reverse topological order (parents before children)
+            for var_ptr in execution_order.iter().rev() {
+                let variable = unsafe { &**var_ptr };
+                
+                // Skip if gradient not available yet
+                if self.gradient(variable).is_none() {
+                    continue;
+                }
+                
+                // Compute gradients for all parents
+                for parent in variable.parents() {
+                    if parent.require_gradient() && self.gradient(parent.as_ref()).is_none() {
+                        // Compute gradient for this parent
+                        let parent_gradient = variable.gradient(parent.as_ref(), self);
+                        self.update_gradient(parent.as_ref(), parent_gradient);
+                        progress_made = true;
+                    }
+                }
+            }
+            
+            // If no progress was made, we're done
+            if !progress_made {
+                break;
+            }
+        }
+    }
+
+    /// Collect all variables in topological order (children before parents).
+    /// This ensures that when we process in reverse order, parents are processed before children.
+    fn collect_variables_topological(&self, variable: &dyn Variable, result: &mut Vec<*const dyn Variable>) {
+        let var_key = variable as *const _ as *const dyn Variable;
+
+        // Skip if already collected
+        if result.contains(&var_key) {
+            return;
+        }
+
+        // First, collect all parents (recursively)
+        for parent in variable.parents() {
+            if parent.require_gradient() {
+                self.collect_variables_topological(parent.as_ref(), result);
+            }
+        }
+
+        // Then add this variable
+        result.push(var_key);
     }
 
     /// Recursive backward pass implementation.
@@ -243,7 +309,7 @@ impl ComputationContext {
 
     /// Update gradient for a variable (accumulate if already exists)
     fn update_gradient(&self, variable: &dyn Variable, gradient: Box<dyn Tensor>) {
-        let var_key = variable as *const _ as *const dyn Any;
+        let var_key = self.variable_key(variable);
 
         let mut gradients = self.gradients.borrow_mut();
         if let Some(existing_gradient) = gradients.get_mut(&var_key) {
