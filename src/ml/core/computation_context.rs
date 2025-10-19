@@ -57,8 +57,9 @@ impl ComputationContext {
     fn variable_key(&self, variable: &dyn Variable) -> String {
         let dims = variable.dimensions();
         let dim_str = format!("{:?}", dims);
-        let type_name = std::any::type_name_of_val(variable);
-        format!("{}:{}", type_name, dim_str)
+        // Use memory address for unique identification
+        let addr = variable as *const dyn Variable as *const () as usize;
+        format!("{}:{}", addr, dim_str)
     }
 
     /// Forward pass - compute variable value with caching.

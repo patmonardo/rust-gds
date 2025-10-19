@@ -99,7 +99,6 @@ impl TestObjective {
         );
 
         let result = ctx.forward(&prediction);
-        println!("  Result type: {:?}", result);
 
         // Try to access the result directly
         let result_value = if let Some(matrix) = result.as_any().downcast_ref::<Matrix>() {

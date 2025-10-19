@@ -132,18 +132,24 @@ impl Variable for EWiseAddMatrixScalar {
             .downcast_ref::<Matrix>()
             .expect("Expected Matrix type");
 
-        // Handle scalar - extract value from Weights variable directly
-        let scalar_var = self.scalar_variable();
-        let scalar_value = if let Some(weights) = (scalar_var as &dyn Any).downcast_ref::<crate::ml::core::functions::Weights>() {
-            // Extract scalar value from Weights
-            let scalar_ref = weights.borrow_scalar();
-            scalar_ref.value()
-        } else {
-            // Try to extract from the tensor data directly
-            if let Some(scalar_tensor) = scalar.as_any().downcast_ref::<Scalar>() {
-                scalar_tensor.value()
+        // Handle scalar - extract value from tensor data
+        // Note: Scalar tensors have dimensions [1, 1] and can be downcast to either Scalar or Matrix
+        let scalar_value = if let Some(scalar_tensor) = scalar.as_any().downcast_ref::<Scalar>() {
+            scalar_tensor.value()
+        } else if let Some(matrix_tensor) = scalar.as_any().downcast_ref::<Matrix>() {
+            // Scalar tensors are actually stored as 1x1 matrices
+            if matrix_tensor.rows() == 1 && matrix_tensor.cols() == 1 {
+                matrix_tensor[(0, 0)]
             } else {
-                panic!("Expected Weights or Scalar type for scalar variable, got: {}", std::any::type_name_of_val(scalar_var));
+                panic!("Expected 1x1 matrix for scalar, got {}x{} matrix", matrix_tensor.rows(), matrix_tensor.cols());
+            }
+        } else {
+            // Try to extract from Weights variable if it's a Weights wrapper
+            let scalar_var = self.scalar_variable();
+            if let Some(weights) = (scalar_var as &dyn Any).downcast_ref::<crate::ml::core::functions::Weights>() {
+                weights.borrow_scalar().value()
+            } else {
+                panic!("Expected Scalar tensor, 1x1 Matrix, or Weights variable for scalar, got: {}", std::any::type_name_of_val(scalar_var));
             }
         };
 
