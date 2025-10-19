@@ -1,5 +1,5 @@
 [package]
-name = "gdsl-macros"
+name = "gds-macros"
 version.workspace = true
 edition.workspace = true
 

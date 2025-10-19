@@ -28,4 +28,4 @@ pub mod empirical_forms;
 pub mod organic_unity;
 
 // Re-export the main derive macro
-pub use gdsl_macros::EmpiricalForm;
+pub use gds_macros::EmpiricalForm;
