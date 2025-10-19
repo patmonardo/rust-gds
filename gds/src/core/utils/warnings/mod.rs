@@ -16,7 +16,7 @@
 //! # Example
 //!
 //! ```text
-//! use rust_gds::core::utils::warnings::*;
+//! use gds::core::utils::warnings::*;
 //! use std::sync::Arc;
 //!
 //! // Create a store (empty for this example)

@@ -24,7 +24,7 @@
 //! # Examples
 //!
 //! ```
-//! use rust_gds::core::utils::ProgressTimer;
+//! use gds::core::utils::ProgressTimer;
 //!
 //! // Basic usage - measure and print
 //! let timer = ProgressTimer::start(|duration| {
@@ -70,7 +70,7 @@ impl ProgressTimer {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::ProgressTimer;
+    /// use gds::core::utils::ProgressTimer;
     ///
     /// let timer = ProgressTimer::start(|duration| {
     ///     println!("Graph algorithm completed in {} ms", duration);
@@ -97,7 +97,7 @@ impl ProgressTimer {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::ProgressTimer;
+    /// use gds::core::utils::ProgressTimer;
     ///
     /// let timer = ProgressTimer::start_simple();
     /// // ... do work ...
@@ -115,7 +115,7 @@ impl ProgressTimer {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::ProgressTimer;
+    /// use gds::core::utils::ProgressTimer;
     ///
     /// let timer = ProgressTimer::start_simple();
     /// // ... work ...
@@ -138,7 +138,7 @@ impl ProgressTimer {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::ProgressTimer;
+    /// use gds::core::utils::ProgressTimer;
     ///
     /// let timer = ProgressTimer::start_simple();
     /// // ... work ...
@@ -155,7 +155,7 @@ impl Drop for ProgressTimer {
     ///
     /// This enables RAII-style automatic timing with the following pattern:
     /// ```
-    /// use rust_gds::core::utils::ProgressTimer;
+    /// use gds::core::utils::ProgressTimer;
     ///
     /// {
     ///     let _timer = ProgressTimer::start(|d| println!("Took {} ms", d));

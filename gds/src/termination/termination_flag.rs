@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 /// # Examples
 ///
 /// ```
-/// use rust_gds::termination::{TerminationFlag, EmptyTerminationMonitor};
+/// use gds::termination::{TerminationFlag, EmptyTerminationMonitor};
 ///
 /// let flag = TerminationFlag::new(EmptyTerminationMonitor);
 ///
@@ -38,7 +38,7 @@ impl TerminationFlag {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::termination::{TerminationFlag, EmptyTerminationMonitor};
+    /// use gds::termination::{TerminationFlag, EmptyTerminationMonitor};
     ///
     /// let flag = TerminationFlag::new(EmptyTerminationMonitor);
     /// assert!(flag.running());
@@ -55,7 +55,7 @@ impl TerminationFlag {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::termination::{TerminationFlag, EmptyTerminationMonitor};
+    /// use gds::termination::{TerminationFlag, EmptyTerminationMonitor};
     /// use std::time::Duration;
     ///
     /// let flag = TerminationFlag::with_interval(
@@ -84,7 +84,7 @@ impl TerminationFlag {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::termination::{TerminationFlag, EmptyTerminationMonitor};
+    /// use gds::termination::{TerminationFlag, EmptyTerminationMonitor};
     ///
     /// let flag = TerminationFlag::new(EmptyTerminationMonitor);
     /// assert!(flag.running());
@@ -113,7 +113,7 @@ impl TerminationFlag {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::termination::{TerminationFlag, EmptyTerminationMonitor};
+    /// use gds::termination::{TerminationFlag, EmptyTerminationMonitor};
     ///
     /// let flag = TerminationFlag::new(EmptyTerminationMonitor);
     /// flag.assert_running(); // Does not panic
@@ -143,7 +143,7 @@ impl TerminationFlag {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::termination::TerminationFlag;
+    /// use gds::termination::TerminationFlag;
     ///
     /// let flag = TerminationFlag::running_true();
     /// assert!(flag.running());
@@ -158,7 +158,7 @@ impl TerminationFlag {
     /// # Examples
     ///
     /// ```should_panic
-    /// use rust_gds::termination::TerminationFlag;
+    /// use gds::termination::TerminationFlag;
     ///
     /// let flag = TerminationFlag::stop_running();
     /// flag.assert_running(); // Panics!

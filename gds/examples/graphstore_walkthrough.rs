@@ -1,17 +1,17 @@
-use rust_gds::projection::{NodeLabel, RelationshipType};
-use rust_gds::types::graph::id_map::{IdMap, MappedNodeId, SimpleIdMap};
-use rust_gds::types::graph::topology::RelationshipTopology;
-use rust_gds::types::graph::Graph;
-use rust_gds::types::graph_store::{
+use gds::projection::{NodeLabel, RelationshipType};
+use gds::types::graph::id_map::{IdMap, MappedNodeId, SimpleIdMap};
+use gds::types::graph::topology::RelationshipTopology;
+use gds::types::graph::Graph;
+use gds::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore, GraphStoreResult,
 };
-use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
-use rust_gds::types::properties::node::DefaultLongNodePropertyValues;
-use rust_gds::types::properties::relationship::PropertyValue;
-use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
-use rust_gds::types::schema::{Direction, MutableGraphSchema};
-use rust_gds::types::value_type::ValueType;
+use gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
+use gds::types::properties::node::DefaultLongNodePropertyValues;
+use gds::types::properties::relationship::PropertyValue;
+use gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
+use gds::types::schema::{Direction, MutableGraphSchema};
+use gds::types::value_type::ValueType;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::sync::Arc;

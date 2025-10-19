@@ -14,10 +14,10 @@
 //! - Error handling and edge cases
 
 use parking_lot::RwLock;
-use rust_gds::collections::HugeDoubleArray;
-use rust_gds::ml::gradient_descent::GradientDescentConfig;
-use rust_gds::ml::models::linear::*;
-use rust_gds::ml::models::{Features, ModelData, Regressor, RegressorTrainer, TrainerConfig};
+use gds::collections::HugeDoubleArray;
+use gds::ml::gradient_descent::GradientDescentConfig;
+use gds::ml::models::linear::*;
+use gds::ml::models::{Features, ModelData, Regressor, RegressorTrainer, TrainerConfig};
 use std::sync::Arc;
 
 /// Simple feature store for testing
@@ -312,7 +312,7 @@ mod configuration_tests {
         assert_eq!(train_config.tolerance(), 1e-8);
         assert_eq!(
             train_config.method(),
-            rust_gds::ml::models::TrainingMethod::LinearRegression
+            gds::ml::models::TrainingMethod::LinearRegression
         );
 
         // Test configuration modification
@@ -325,7 +325,7 @@ mod configuration_tests {
         assert_eq!(default_config.penalty(), 0.0);
         assert_eq!(
             default_config.method(),
-            rust_gds::ml::models::TrainingMethod::LinearRegression
+            gds::ml::models::TrainingMethod::LinearRegression
         );
     }
 

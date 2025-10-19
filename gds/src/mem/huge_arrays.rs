@@ -27,7 +27,7 @@ impl HugeArrays {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::HugeArrays;
+    /// use gds::mem::HugeArrays;
     ///
     /// let index = 100_000;
     /// let page = HugeArrays::page_index(index);
@@ -42,7 +42,7 @@ impl HugeArrays {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::HugeArrays;
+    /// use gds::mem::HugeArrays;
     ///
     /// let index = 100_000;
     /// let in_page = HugeArrays::index_in_page(index);
@@ -74,7 +74,7 @@ impl HugeArrays {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::HugeArrays;
+    /// use gds::mem::HugeArrays;
     ///
     /// let page = 6;
     /// let in_page = 1696;
@@ -93,7 +93,7 @@ impl HugeArrays {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::HugeArrays;
+    /// use gds::mem::HugeArrays;
     ///
     /// let pages = HugeArrays::number_of_pages(100_000);
     /// assert_eq!(pages, 7); // ceil(100,000 / 16,384) = 7

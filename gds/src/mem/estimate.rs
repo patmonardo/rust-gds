@@ -27,7 +27,7 @@ impl Estimate {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::Estimate;
+    /// use gds::mem::Estimate;
     ///
     /// let size = Estimate::size_of_byte_array(1000);
     /// assert!(size > 1000); // Includes header overhead
@@ -162,7 +162,7 @@ impl Estimate {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::Estimate;
+    /// use gds::mem::Estimate;
     ///
     /// assert_eq!(Estimate::human_readable(512), "512 Bytes");
     /// assert_eq!(Estimate::human_readable(1024), "1.00 KiB");

@@ -9,7 +9,7 @@ mod arrow_reference_tests {
     use arrow2::array::{Array, Int64Array, Utf8Array};
     use arrow2::chunk::Chunk;
     use arrow2::datatypes::{DataType, Field, Schema};
-    use rust_gds::projection::factory::arrow::{
+    use gds::projection::factory::arrow::{
         ArrowBatchReference, ArrowReference, ArrowReferenceError, EdgeTableReference,
         NodeTableReference,
     };

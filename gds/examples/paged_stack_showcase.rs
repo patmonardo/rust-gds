@@ -2,7 +2,7 @@
 //!
 //! Demonstrates billion-scale DFS capability using paged stack implementation.
 
-use rust_gds::core::utils::paged::PagedLongStack;
+use gds::core::utils::paged::PagedLongStack;
 use std::time::Instant;
 
 fn main() {

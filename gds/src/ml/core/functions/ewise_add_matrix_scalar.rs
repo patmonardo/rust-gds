@@ -53,8 +53,8 @@ use std::any::Any;
 /// # Examples
 ///
 /// ```rust,ignore
-/// use rust_gds::ml::core::functions::{EWiseAddMatrixScalar, Constant};
-/// use rust_gds::ml::core::tensor::{Matrix, Scalar};
+/// use gds::ml::core::functions::{EWiseAddMatrixScalar, Constant};
+/// use gds::ml::core::tensor::{Matrix, Scalar};
 ///
 /// let matrix = Box::new(Constant::new(Matrix::new(vec![1.0, 2.0, 3.0, 4.0], vec![2, 2])));
 /// let scalar = Box::new(Constant::new(Scalar::new(10.0)));

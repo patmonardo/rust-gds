@@ -16,7 +16,7 @@
 //! # Example
 //!
 //! ```rust,ignore
-//! use rust_gds::mem::memest::*;
+//! use gds::mem::memest::*;
 //!
 //! // Create estimation result
 //! let result = MemoryEstimationResultBuilder::new()

@@ -3,7 +3,7 @@
 //! Demonstrates the difference between fixed-size and growing atomic bitsets
 //! for concurrent graph algorithm scenarios.
 
-use rust_gds::core::utils::paged::{HugeAtomicBitSet, HugeAtomicGrowingBitSet};
+use gds::core::utils::paged::{HugeAtomicBitSet, HugeAtomicGrowingBitSet};
 use std::sync::Arc;
 use std::time::Instant;
 

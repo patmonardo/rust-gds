@@ -38,8 +38,8 @@ use std::sync::Arc;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::paged::ParallelLongPageCreator;
-/// use rust_gds::concurrency::Concurrency;
+/// use gds::core::utils::paged::ParallelLongPageCreator;
+/// use gds::concurrency::Concurrency;
 ///
 /// // Identity mapping for 1 billion elements
 /// let creator = ParallelLongPageCreator::identity(Concurrency::of(8));
@@ -69,8 +69,8 @@ impl ParallelLongPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelLongPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelLongPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Create pages with squared values
     /// let creator = ParallelLongPageCreator::of(
@@ -108,8 +108,8 @@ impl ParallelLongPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelLongPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelLongPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Create node ID mapping for graph with 1M nodes
     /// let creator = ParallelLongPageCreator::identity(Concurrency::of(8));
@@ -139,8 +139,8 @@ impl ParallelLongPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelLongPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelLongPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Allocate pages without initialization
     /// let creator = ParallelLongPageCreator::pass_through(Concurrency::of(4));
@@ -172,8 +172,8 @@ impl ParallelLongPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelLongPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelLongPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelLongPageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(10_000);
@@ -225,8 +225,8 @@ impl ParallelLongPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelLongPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelLongPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelLongPageCreator::identity(Concurrency::of(4));
     /// let mut pages = vec![Vec::new(); 100];

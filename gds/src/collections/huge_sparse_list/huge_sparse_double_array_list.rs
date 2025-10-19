@@ -22,7 +22,7 @@ const PAGE_MASK: usize = PAGE_SIZE - 1;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeSparseDoubleArrayList;
+/// use gds::collections::HugeSparseDoubleArrayList;
 ///
 /// let list = HugeSparseDoubleArrayList::of(vec![]);
 ///
@@ -55,7 +55,7 @@ impl HugeSparseDoubleArrayList {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::HugeSparseDoubleArrayList;
+    /// use gds::collections::HugeSparseDoubleArrayList;
     ///
     /// let list = HugeSparseDoubleArrayList::of(vec![0.0]);
     /// list.set(42, vec![3.14, 2.71]);

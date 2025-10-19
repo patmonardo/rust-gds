@@ -19,7 +19,7 @@ use crate::types::ValueType;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::MappedIdNodePropertyValues;
+/// use gds::core::utils::MappedIdNodePropertyValues;
 ///
 /// // Create from node count
 /// let props = MappedIdNodePropertyValues::new(1000);
@@ -44,8 +44,8 @@ impl MappedIdNodePropertyValues {
     /// # Examples
     ///
     /// ```ignore
-    /// use rust_gds::core::utils::MappedIdNodePropertyValues;
-    /// use rust_gds::types::graph::id_map::IdMap;
+    /// use gds::core::utils::MappedIdNodePropertyValues;
+    /// use gds::types::graph::id_map::IdMap;
     ///
     /// let id_map = /* some IdMap implementation */;
     /// let props = MappedIdNodePropertyValues::from_id_map(&id_map);
@@ -65,7 +65,7 @@ impl MappedIdNodePropertyValues {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::MappedIdNodePropertyValues;
+    /// use gds::core::utils::MappedIdNodePropertyValues;
     ///
     /// let props = MappedIdNodePropertyValues::new(5000);
     /// assert_eq!(props.node_count(), 5000);

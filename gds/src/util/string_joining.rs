@@ -6,7 +6,7 @@
 ///
 /// # Examples
 /// ```
-/// use rust_gds::util::string_joining::join;
+/// use gds::util::string_joining::join;
 /// let items = vec!["a", "b", "c"];
 /// assert_eq!(join(&items), "a, b, c");
 /// ```
@@ -22,7 +22,7 @@ pub fn join<T: ToString>(items: &[T]) -> String {
 ///
 /// # Examples
 /// ```
-/// use rust_gds::util::string_joining::join_with_delimiter;
+/// use gds::util::string_joining::join_with_delimiter;
 /// let items = vec![1, 2, 3];
 /// assert_eq!(join_with_delimiter(&items, " | "), "1 | 2 | 3");
 /// ```
@@ -38,7 +38,7 @@ pub fn join_with_delimiter<T: ToString>(items: &[T], delimiter: &str) -> String 
 ///
 /// # Examples
 /// ```
-/// use rust_gds::util::string_joining::format_list;
+/// use gds::util::string_joining::format_list;
 /// let items = vec!["x", "y", "z"];
 /// assert_eq!(format_list(&items), "[x, y, z]");
 /// ```

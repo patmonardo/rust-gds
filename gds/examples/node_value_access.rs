@@ -5,7 +5,7 @@
 //!
 //! Run with: cargo run --example node_value_access
 
-use rust_gds::types::graph::id_map::{NodeIterator, SimpleIdMap};
+use gds::types::graph::id_map::{NodeIterator, SimpleIdMap};
 
 fn main() {
     println!("=== Node Value Access Pattern ===\n");

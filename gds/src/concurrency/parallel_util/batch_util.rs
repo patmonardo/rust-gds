@@ -20,7 +20,7 @@ impl BatchUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::parallel_util::BatchUtil;
+    /// use gds::concurrency::parallel_util::BatchUtil;
     ///
     /// assert_eq!(BatchUtil::thread_count(1000, 10_000), 1);
     /// assert_eq!(BatchUtil::thread_count(1000, 5_000), 5);
@@ -42,7 +42,7 @@ impl BatchUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::{Concurrency, parallel_util::BatchUtil};
+    /// use gds::concurrency::{Concurrency, parallel_util::BatchUtil};
     ///
     /// let concurrency = Concurrency::of(4);
     ///
@@ -66,7 +66,7 @@ impl BatchUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::{Concurrency, parallel_util::BatchUtil};
+    /// use gds::concurrency::{Concurrency, parallel_util::BatchUtil};
     ///
     /// let concurrency = Concurrency::of(4);
     ///
@@ -95,7 +95,7 @@ impl BatchUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::parallel_util::BatchUtil;
+    /// use gds::concurrency::parallel_util::BatchUtil;
     ///
     /// assert_eq!(BatchUtil::power_of_two_batch_size(1000, 10), 16);
     /// assert_eq!(BatchUtil::power_of_two_batch_size(1000, 100), 128);
@@ -123,7 +123,7 @@ impl BatchUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::parallel_util::BatchUtil;
+    /// use gds::concurrency::parallel_util::BatchUtil;
     ///
     /// assert_eq!(BatchUtil::next_highest_power_of_two(0), 0);
     /// assert_eq!(BatchUtil::next_highest_power_of_two(1), 1);
@@ -154,7 +154,7 @@ impl BatchUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::parallel_util::BatchUtil;
+    /// use gds::concurrency::parallel_util::BatchUtil;
     ///
     /// assert_eq!(BatchUtil::ceil_div(10, 3), 4);
     /// assert_eq!(BatchUtil::ceil_div(9, 3), 3);

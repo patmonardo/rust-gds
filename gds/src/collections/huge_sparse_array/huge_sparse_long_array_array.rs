@@ -19,7 +19,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeSparseLongArrayArray;
+/// use gds::collections::HugeSparseLongArrayArray;
 ///
 /// // Build sparse array of adjacency lists
 /// let default_empty = vec![];

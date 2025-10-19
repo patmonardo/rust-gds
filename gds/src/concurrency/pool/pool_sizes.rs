@@ -13,7 +13,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, default, fixed};
+/// use gds::concurrency::pool::{PoolSizes, default, fixed};
 ///
 /// let pool = default();
 /// assert_eq!(pool.core_pool_size(), 4);
@@ -47,7 +47,7 @@ pub trait PoolSizes {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, default};
+/// use gds::concurrency::pool::{PoolSizes, default};
 ///
 /// let pool = default();
 /// assert_eq!(pool.core_pool_size(), 4);
@@ -65,7 +65,7 @@ pub fn default() -> DefaultPoolSizes {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, fixed};
+/// use gds::concurrency::pool::{PoolSizes, fixed};
 ///
 /// let pool = fixed(8);
 /// assert_eq!(pool.core_pool_size(), 8);
@@ -80,7 +80,7 @@ pub fn fixed(size: usize) -> FixedPoolSizes {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, single_threaded};
+/// use gds::concurrency::pool::{PoolSizes, single_threaded};
 ///
 /// let pool = single_threaded();
 /// assert_eq!(pool.core_pool_size(), 1);
@@ -99,7 +99,7 @@ pub fn single_threaded() -> FixedPoolSizes {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, from_cpu_cores};
+/// use gds::concurrency::pool::{PoolSizes, from_cpu_cores};
 ///
 /// // 1:1 mapping to CPU cores
 /// let pool = from_cpu_cores(1.0);
@@ -123,7 +123,7 @@ pub fn from_cpu_cores(factor: f64) -> FixedPoolSizes {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, custom};
+/// use gds::concurrency::pool::{PoolSizes, custom};
 ///
 /// let pool = custom(4, 16);
 /// assert_eq!(pool.core_pool_size(), 4);

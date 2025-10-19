@@ -39,7 +39,7 @@ use std::sync::{Arc, RwLock};
 /// # Example
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// let store = PerDatabaseTaskStore::new();
 ///

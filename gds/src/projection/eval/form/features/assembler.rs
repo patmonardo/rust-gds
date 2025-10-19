@@ -58,7 +58,7 @@ pub trait FeatureAssembler: Send + Sync {
 /// # Examples
 ///
 /// ```ignore
-/// use rust_gds::projection::eval::form::features::DefaultFeatureAssembler;
+/// use gds::projection::eval::form::features::DefaultFeatureAssembler;
 ///
 /// let assembler = DefaultFeatureAssembler::new();
 /// let feature = assembler.assemble(&properties, &step_descriptor)?;

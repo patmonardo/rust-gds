@@ -55,7 +55,7 @@ thread_local! {
 /// # Example
 ///
 /// ```rust,ignore
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// let logger = BatchingProgressLogger::new(
 ///     Task::new("Algorithm".to_string(), 1_000_000),

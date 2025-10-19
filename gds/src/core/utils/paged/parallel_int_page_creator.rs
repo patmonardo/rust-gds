@@ -38,8 +38,8 @@ use std::sync::Arc;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::paged::ParallelIntPageCreator;
-/// use rust_gds::concurrency::Concurrency;
+/// use gds::core::utils::paged::ParallelIntPageCreator;
+/// use gds::concurrency::Concurrency;
 ///
 /// // Identity mapping for 1 billion elements
 /// let creator = ParallelIntPageCreator::identity(Concurrency::of(8));
@@ -65,8 +65,8 @@ impl ParallelIntPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelIntPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelIntPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Create pages with modulo values
     /// let creator = ParallelIntPageCreator::of(
@@ -100,8 +100,8 @@ impl ParallelIntPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelIntPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelIntPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelIntPageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(10_000);
@@ -125,8 +125,8 @@ impl ParallelIntPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelIntPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelIntPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelIntPageCreator::pass_through(Concurrency::of(4));
     /// let mut pages = creator.create_pages(10_000);
@@ -146,8 +146,8 @@ impl ParallelIntPageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelIntPageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelIntPageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelIntPageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(1_000_000);

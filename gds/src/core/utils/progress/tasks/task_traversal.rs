@@ -36,7 +36,7 @@ impl TaskTraversal {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Task, DepthAwareTaskVisitor, TaskTraversal};
+    /// use gds::core::utils::progress::tasks::{Task, DepthAwareTaskVisitor, TaskTraversal};
     /// use std::sync::Arc;
     ///
     /// struct PrintVisitor;

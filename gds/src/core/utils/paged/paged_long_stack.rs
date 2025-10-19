@@ -35,7 +35,7 @@
 //! # Example
 //!
 //! ```rust
-//! use rust_gds::core::utils::paged::PagedLongStack;
+//! use gds::core::utils::paged::PagedLongStack;
 //!
 //! // Stack for DFS on massive graph
 //! let mut dfs_stack = PagedLongStack::new(1_000_000);
@@ -92,7 +92,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// // Stack for DFS on 10M node graph
     /// let stack = PagedLongStack::new(10_000_000);
@@ -131,7 +131,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let memory = PagedLongStack::memory_estimation(1_000_000_000);
     /// println!("1B stack needs ~{} GB", memory / (1024 * 1024 * 1024));
@@ -156,7 +156,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let mut stack = PagedLongStack::new(1000);
     /// stack.push(42);
@@ -204,7 +204,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let mut stack = PagedLongStack::new(100);
     /// stack.push(42);
@@ -265,7 +265,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let mut stack = PagedLongStack::new(100);
     /// stack.push(42);
@@ -317,7 +317,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let mut stack = PagedLongStack::new(100);
     /// stack.push(42);
@@ -349,7 +349,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let mut stack = PagedLongStack::new(100);
     /// assert!(stack.is_empty());
@@ -370,7 +370,7 @@ impl PagedLongStack {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PagedLongStack;
+    /// use gds::core::utils::paged::PagedLongStack;
     ///
     /// let mut stack = PagedLongStack::new(100);
     /// assert_eq!(stack.size(), 0);

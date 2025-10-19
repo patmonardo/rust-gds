@@ -15,9 +15,9 @@ use std::marker::PhantomData;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::virtual_threads::{WorkerContext, Executor};
-/// use rust_gds::concurrency::Concurrency;
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::virtual_threads::{WorkerContext, Executor};
+/// use gds::concurrency::Concurrency;
+/// use gds::termination::TerminationFlag;
 ///
 /// // Each worker accumulates a local sum
 /// let context = WorkerContext::new(|| 0usize);

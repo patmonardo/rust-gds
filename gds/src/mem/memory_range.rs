@@ -22,7 +22,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let range = MemoryRange::of(1024);
     /// assert_eq!(range.min(), 1024);
@@ -44,7 +44,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let range = MemoryRange::of_range(1024, 2048);
     /// assert_eq!(range.min(), 1024);
@@ -80,7 +80,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let range = MemoryRange::of_range(100, 200);
     /// let result = range.add_scalar(50);
@@ -99,7 +99,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let r1 = MemoryRange::of_range(100, 200);
     /// let r2 = MemoryRange::of_range(50, 150);
@@ -119,7 +119,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let range = MemoryRange::of_range(100, 200);
     /// let result = range.times(3);
@@ -140,7 +140,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let range = MemoryRange::of_range(100, 200);
     /// let result = range.subtract(50);
@@ -159,7 +159,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let r1 = MemoryRange::of_range(200, 300);
     /// let r2 = MemoryRange::of_range(50, 100);
@@ -179,7 +179,7 @@ impl MemoryRange {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryRange;
+    /// use gds::mem::MemoryRange;
     ///
     /// let r1 = MemoryRange::of_range(100, 200);
     /// let r2 = MemoryRange::of_range(150, 300);

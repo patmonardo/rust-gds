@@ -87,7 +87,7 @@ impl ArrayLayout {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::ArrayLayout;
+    /// use gds::core::utils::ArrayLayout;
     ///
     /// let sorted = vec![1, 2, 3, 4, 5, 6, 7];
     /// let layout = ArrayLayout::construct_eytzinger(&sorted);
@@ -261,7 +261,7 @@ impl ArrayLayout {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::ArrayLayout;
+    /// use gds::core::utils::ArrayLayout;
     ///
     /// let sorted = vec![10, 20, 30, 40, 50];
     /// let layout = ArrayLayout::construct_eytzinger(&sorted);

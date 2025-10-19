@@ -11,19 +11,19 @@
 //!   4. Builder pattern enables copy-on-write for PropertyStores
 //!   5. Arc reference counting tracks shared ownership
 
-use rust_gds::projection::{NodeLabel, RelationshipType};
-use rust_gds::types::graph::id_map::SimpleIdMap;
-use rust_gds::types::graph::topology::RelationshipTopology;
-use rust_gds::types::graph::Graph;
-use rust_gds::types::graph_store::{
+use gds::projection::{NodeLabel, RelationshipType};
+use gds::types::graph::id_map::SimpleIdMap;
+use gds::types::graph::topology::RelationshipTopology;
+use gds::types::graph::Graph;
+use gds::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore,
 };
-use rust_gds::types::properties::node::{
+use gds::types::properties::node::{
     DefaultLongNodePropertyValues, NodePropertyContainer, NodePropertyValues,
 };
-use rust_gds::types::properties::relationship::DefaultRelationshipPropertyValues;
-use rust_gds::types::schema::GraphSchema;
+use gds::types::properties::relationship::DefaultRelationshipPropertyValues;
+use gds::types::schema::GraphSchema;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 

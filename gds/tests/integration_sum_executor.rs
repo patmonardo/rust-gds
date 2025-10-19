@@ -6,9 +6,9 @@
 //!
 //! This tests the entire machinery: Storage Pole ↔ Computation Pole via Functor
 
-use rust_gds::procedure::sum::{SumAlgorithmSpec, SumComputationRuntime, SumConfig};
-use rust_gds::projection::eval::procedure::AlgorithmSpec;
-use rust_gds::projection::eval::procedure::ExecutionMode;
+use gds::procedure::sum::{SumAlgorithmSpec, SumComputationRuntime, SumConfig};
+use gds::projection::eval::procedure::AlgorithmSpec;
+use gds::projection::eval::procedure::ExecutionMode;
 use serde_json::json;
 
 // ============================================================================
@@ -282,7 +282,7 @@ fn test_sum_execution_modes() {
     let spec = SumAlgorithmSpec::new("test".to_string(), config);
 
     println!("[1] Testing STREAM mode...");
-    let dummy_result = rust_gds::projection::eval::procedure::ComputationResult::new(
+    let dummy_result = gds::projection::eval::procedure::ComputationResult::new(
         42.0,
         std::time::Duration::from_secs(1),
     );
@@ -294,7 +294,7 @@ fn test_sum_execution_modes() {
     println!("    ✓ STREAM mode: OK");
 
     println!("\n[2] Testing STATS mode...");
-    let dummy_result = rust_gds::projection::eval::procedure::ComputationResult::new(
+    let dummy_result = gds::projection::eval::procedure::ComputationResult::new(
         42.0,
         std::time::Duration::from_secs(1),
     );
@@ -304,7 +304,7 @@ fn test_sum_execution_modes() {
     println!("    ✓ STATS mode: OK");
 
     println!("\n[3] Testing WriteNodeProperty mode (should fail - read-only)...");
-    let dummy_result = rust_gds::projection::eval::procedure::ComputationResult::new(
+    let dummy_result = gds::projection::eval::procedure::ComputationResult::new(
         42.0,
         std::time::Duration::from_secs(1),
     );

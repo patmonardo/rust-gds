@@ -33,7 +33,7 @@
 //! # Example
 //!
 //! ```rust
-//! use rust_gds::core::utils::paged::{PagedDataStructure, PageAllocatorFactory};
+//! use gds::core::utils::paged::{PagedDataStructure, PageAllocatorFactory};
 //! use std::sync::atomic::AtomicUsize;
 //!
 //! // Custom paged structure for demonstration
@@ -150,7 +150,7 @@ impl<T> PagedDataStructure<T> {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::{PagedDataStructure, PageAllocatorFactory};
+    /// use gds::core::utils::paged::{PagedDataStructure, PageAllocatorFactory};
     ///
     /// let factory = PageAllocatorFactory::<Vec<i64>>::for_long_array();
     /// let allocator = factory.new_allocator();

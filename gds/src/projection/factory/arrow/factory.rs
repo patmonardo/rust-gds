@@ -29,7 +29,7 @@ use std::sync::Arc;
 /// # Usage
 ///
 /// ```ignore
-/// use rust_gds::projection::factory::arrow::{ArrowNativeFactory, ArrowProjectionConfig};
+/// use gds::projection::factory::arrow::{ArrowNativeFactory, ArrowProjectionConfig};
 /// use arrow::record_batch::RecordBatch;
 ///
 /// // Assume you have Arrow tables loaded (from Parquet, CSV, etc.)

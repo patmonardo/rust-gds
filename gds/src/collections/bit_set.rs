@@ -32,7 +32,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(128);
     /// bitset.set(42);
@@ -59,7 +59,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(64);
     /// bitset.set(10).set(20).set(30);
@@ -91,7 +91,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(64);
     /// bitset.set(42);
@@ -116,7 +116,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(64);
     /// bitset.set(10).set(20).set(30);
@@ -143,7 +143,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(64);
     /// bitset.set(42);
@@ -160,7 +160,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(64);
     /// bitset.set(1).set(5).set(10);
@@ -188,7 +188,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset = BitSet::new(64);
     /// bitset.set(10).set(20).set(30);
@@ -232,7 +232,7 @@ impl BitSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::BitSet;
+    /// use gds::collections::BitSet;
     ///
     /// let mut bitset1 = BitSet::new(64);
     /// bitset1.set(10).set(20);

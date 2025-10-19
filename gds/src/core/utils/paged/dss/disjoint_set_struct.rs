@@ -35,8 +35,8 @@
 //! # Examples
 //!
 //! ```rust
-//! use rust_gds::core::utils::paged::dss::DisjointSetStruct;
-//! use rust_gds::core::utils::paged::dss::HugeAtomicDisjointSetStruct;
+//! use gds::core::utils::paged::dss::DisjointSetStruct;
+//! use gds::core::utils::paged::dss::HugeAtomicDisjointSetStruct;
 //!
 //! // Create union-find structure for 1000 nodes
 //! let dss = HugeAtomicDisjointSetStruct::new(1000, 4);
@@ -89,7 +89,7 @@ pub trait DisjointSetStruct {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
+    /// use gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
     ///
     /// let dss = HugeAtomicDisjointSetStruct::new(1000);
     ///
@@ -123,7 +123,7 @@ pub trait DisjointSetStruct {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
+    /// use gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
     ///
     /// let dss = HugeAtomicDisjointSetStruct::new(1000);
     ///
@@ -159,7 +159,7 @@ pub trait DisjointSetStruct {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
+    /// use gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
     ///
     /// let dss = HugeAtomicDisjointSetStruct::new(1000);
     ///
@@ -189,7 +189,7 @@ pub trait DisjointSetStruct {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
+    /// use gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
     ///
     /// let dss = HugeAtomicDisjointSetStruct::new(1000);
     /// assert_eq!(dss.size(), 1000);

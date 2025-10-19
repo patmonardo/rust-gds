@@ -5,10 +5,10 @@
 
 #[cfg(test)]
 mod mega_macro_factory_demo {
-    use rust_gds::types::value_type::ValueType;
-    use rust_gds::values::impls::*;
-    use rust_gds::values::primitive_values::PrimitiveValues;
-    use rust_gds::values::traits::*;
+    use gds::types::value_type::ValueType;
+    use gds::values::impls::*;
+    use gds::values::primitive_values::PrimitiveValues;
+    use gds::values::traits::*;
     use serde_json::json;
 
     #[test]

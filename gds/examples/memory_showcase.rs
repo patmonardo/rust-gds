@@ -2,8 +2,8 @@
 //!
 //! Demonstrates memory estimation, tracking, and management capabilities.
 
-use rust_gds::core::graph_dimensions::{ConcreteGraphDimensions, GraphDimensions};
-use rust_gds::mem::*;
+use gds::core::graph_dimensions::{ConcreteGraphDimensions, GraphDimensions};
+use gds::mem::*;
 
 fn main() {
     println!("=== Rust-GDS Memory System Examples ===\n");

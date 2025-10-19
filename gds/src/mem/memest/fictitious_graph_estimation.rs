@@ -16,7 +16,7 @@ use crate::mem::{MemoryRange, MemoryTree};
 /// # Example
 ///
 /// ```rust,ignore
-/// use rust_gds::mem::memest::FictitiousGraphEstimationService;
+/// use gds::mem::memest::FictitiousGraphEstimationService;
 ///
 /// let service = FictitiousGraphEstimationService;
 ///

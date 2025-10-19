@@ -8,7 +8,7 @@ use std::fmt;
 ///
 /// # Examples
 /// ```
-/// use rust_gds::util::optional::Optional;
+/// use gds::util::optional::Optional;
 ///
 /// let some = Optional::of(42);
 /// assert!(some.is_present());

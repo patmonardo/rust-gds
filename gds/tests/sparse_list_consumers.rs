@@ -1,4 +1,4 @@
-use rust_gds::collections::{
+use gds::collections::{
     HugeSparseDoubleArrayList, HugeSparseDoubleList, HugeSparseLongArrayArrayList,
     HugeSparseLongArrayList, HugeSparseLongList,
 };

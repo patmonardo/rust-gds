@@ -12,7 +12,7 @@ use std::fmt;
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::projection::factory::arrow::ArrowProjectionConfig;
+/// use gds::projection::factory::arrow::ArrowProjectionConfig;
 ///
 /// let config = ArrowProjectionConfig::builder()
 ///     .node_table_name("nodes")

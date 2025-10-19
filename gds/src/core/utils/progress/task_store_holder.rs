@@ -44,7 +44,7 @@ use std::sync::{Arc, RwLock};
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// // Get or create store for a database
 /// let store = TaskStoreHolder::get_task_store("neo4j");

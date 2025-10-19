@@ -43,7 +43,7 @@ pub const NO_MESSAGE: MessageFactory = || None;
 /// # Example
 ///
 /// ```rust,ignore
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// struct MyLogger { /* ... */ }
 ///

@@ -28,7 +28,7 @@ use crate::pregel::MessageIterator;
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::SyncDoubleQueues;
+/// use gds::pregel::SyncDoubleQueues;
 ///
 /// let mut queues = SyncDoubleQueues::new(node_count);
 ///
@@ -334,7 +334,7 @@ mod tests {
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::AsyncDoubleQueues;
+/// use gds::pregel::AsyncDoubleQueues;
 ///
 /// let mut queues = AsyncDoubleQueues::new(node_count);
 ///

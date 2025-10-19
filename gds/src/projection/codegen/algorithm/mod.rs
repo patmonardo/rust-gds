@@ -23,7 +23,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::transforms::*;
+//! use gds::projection::codegen::transforms::*;
 //!
 //! // Project property descriptor to storage backend
 //! let projector = HugeArrayProjector::new();

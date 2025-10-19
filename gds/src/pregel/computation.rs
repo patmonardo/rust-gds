@@ -29,7 +29,7 @@ use super::{PregelRuntimeConfig, PregelSchema};
 /// # Example: PageRank
 ///
 /// ```ignore
-/// use rust_gds::pregel::{PregelComputation, ComputeContext, Messages};
+/// use gds::pregel::{PregelComputation, ComputeContext, Messages};
 ///
 /// struct PageRank {
 ///     damping_factor: f64,

@@ -2,9 +2,9 @@
 //!
 //! Run with: `cargo run --example virtual_threads_showcase`
 
-use rust_gds::concurrency::virtual_threads::{Executor, WorkerLocalAggregator};
-use rust_gds::concurrency::Concurrency;
-use rust_gds::termination::TerminationFlag;
+use gds::concurrency::virtual_threads::{Executor, WorkerLocalAggregator};
+use gds::concurrency::Concurrency;
+use gds::termination::TerminationFlag;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 

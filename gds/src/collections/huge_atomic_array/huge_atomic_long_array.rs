@@ -25,7 +25,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeAtomicLongArray;
+/// use gds::collections::HugeAtomicLongArray;
 ///
 /// // Create atomic array
 /// let array = HugeAtomicLongArray::new(1000);

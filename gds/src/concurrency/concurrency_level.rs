@@ -15,7 +15,7 @@ use std::num::NonZeroUsize;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::Concurrency;
+/// use gds::concurrency::Concurrency;
 ///
 /// // Create with specific value
 /// let c = Concurrency::new(4).unwrap();
@@ -42,7 +42,7 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let valid = Concurrency::new(4);
     /// assert!(valid.is_some());
@@ -64,14 +64,14 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::of(4);
     /// assert_eq!(c.value(), 4);
     /// ```
     ///
     /// ```should_panic
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // This will panic
     /// let c = Concurrency::of(0);
@@ -92,7 +92,7 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::of(8);
     /// assert_eq!(c.value(), 8);
@@ -110,7 +110,7 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::of(4);
     /// assert_eq!(c.squared(), 16);
@@ -129,7 +129,7 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::available_cores();
     /// println!("Detected {} CPU cores", c.value());
@@ -148,7 +148,7 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::single_threaded();
     /// assert_eq!(c.value(), 1);
@@ -167,7 +167,7 @@ impl Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::from_usize(0);
     /// assert_eq!(c.value(), 1); // Clamped to 1
@@ -186,7 +186,7 @@ impl Default for Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::default();
     /// assert_eq!(c.value(), 1);
@@ -202,7 +202,7 @@ impl fmt::Display for Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c = Concurrency::of(4);
     /// assert_eq!(c.to_string(), "Concurrency(4)");
@@ -228,7 +228,7 @@ impl TryFrom<usize> for Concurrency {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let c: Result<Concurrency, _> = 4.try_into();
     /// assert!(c.is_ok());

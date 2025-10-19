@@ -2,7 +2,7 @@
 //!
 //! Demonstrates the performance impact of cache line padding in concurrent scenarios.
 
-use rust_gds::core::utils::paged::PaddedAtomicLong;
+use gds::core::utils::paged::PaddedAtomicLong;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::Arc;
 use std::thread;

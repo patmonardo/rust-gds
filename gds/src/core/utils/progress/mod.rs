@@ -36,7 +36,7 @@
 //! # Examples
 //!
 //! ```rust,ignore
-//! use rust_gds::core::utils::progress::*;
+//! use gds::core::utils::progress::*;
 //!
 //! // Create a task store
 //! let store = PerDatabaseTaskStore::new();

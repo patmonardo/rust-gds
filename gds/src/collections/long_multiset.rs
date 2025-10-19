@@ -30,7 +30,7 @@ use std::collections::HashMap;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::LongMultiSet;
+/// use gds::collections::LongMultiSet;
 ///
 /// let mut multiset = LongMultiSet::new();
 /// multiset.add(42);
@@ -56,7 +56,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let multiset = LongMultiSet::new();
     /// assert_eq!(multiset.size(), 0);
@@ -80,7 +80,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// assert_eq!(multiset.add(42), 1);
@@ -104,7 +104,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(42, 5);
@@ -142,7 +142,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(42, 5);
@@ -166,7 +166,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(10, 3);
@@ -189,7 +189,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(10, 3);
@@ -211,7 +211,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(1, 10);
@@ -240,7 +240,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(42, 5);
@@ -261,7 +261,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(10, 3);
@@ -282,7 +282,7 @@ impl LongMultiSet {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::LongMultiSet;
+    /// use gds::collections::LongMultiSet;
     ///
     /// let mut multiset = LongMultiSet::new();
     /// multiset.add_count(42, 5);

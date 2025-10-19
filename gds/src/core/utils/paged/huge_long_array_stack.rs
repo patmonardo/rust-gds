@@ -19,7 +19,7 @@ impl HugeLongArrayStack {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::HugeLongArrayStack;
+    /// use gds::core::utils::paged::HugeLongArrayStack;
     ///
     /// let stack = HugeLongArrayStack::new(1000);
     /// ```

@@ -13,8 +13,8 @@ use crate::collections::bit_set::BitSet;
 /// # Examples
 ///
 /// ```text
-/// use rust_gds::core::utils::SetBitsIterable;
-/// use rust_gds::collections::BitSet;
+/// use gds::core::utils::SetBitsIterable;
+/// use gds::collections::BitSet;
 ///
 /// let mut bitset = BitSet::new(100);
 /// bitset.set(5);

@@ -29,7 +29,7 @@
 //! # Examples
 //!
 //! ```
-//! use rust_gds::core::utils::partition::{PartitionUtils, Partition};
+//! use gds::core::utils::partition::{PartitionUtils, Partition};
 //!
 //! // Range partitioning for 1000 nodes with 4-way concurrency
 //! let partitions = PartitionUtils::range_partition(

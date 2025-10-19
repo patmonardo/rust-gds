@@ -27,7 +27,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28; // ~268 million elements
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::huge_array::HugeIntArray;
+/// use gds::collections::huge_array::HugeIntArray;
 ///
 /// // Create array for 1 million node IDs
 /// let mut node_ids = HugeIntArray::new(1_000_000);
@@ -43,9 +43,9 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28; // ~268 million elements
 /// # Cursor-Based Iteration
 ///
 /// ```
-/// use rust_gds::collections::huge_array::HugeIntArray;
-/// use rust_gds::collections::cursor::{HugeCursor, init_cursor};
-/// use rust_gds::collections::cursor::HugeCursorSupport; // <<-- bring trait into scope so `new_cursor()` is available
+/// use gds::collections::huge_array::HugeIntArray;
+/// use gds::collections::cursor::{HugeCursor, init_cursor};
+/// use gds::collections::cursor::HugeCursorSupport; // <<-- bring trait into scope so `new_cursor()` is available
 ///
 /// let mut array = HugeIntArray::new(10000);
 /// array.set_all(|i| i as i32);
@@ -105,7 +105,7 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
+    /// use gds::collections::huge_array::HugeIntArray;
     ///
     /// // Create pages manually
     /// let page1 = vec![1, 2, 3, 4, 5];
@@ -136,7 +136,7 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
+    /// use gds::collections::huge_array::HugeIntArray;
     ///
     /// let array = HugeIntArray::from_vec(vec![1, 2, 3, 4, 5]);
     /// assert_eq!(array.get(2), 3);
@@ -164,8 +164,8 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::collections::huge_array::HugeIntArray;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Create 1 billion node IDs in parallel
     /// let node_ids = HugeIntArray::with_generator(
@@ -230,7 +230,7 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
+    /// use gds::collections::huge_array::HugeIntArray;
     ///
     /// let mut array = HugeIntArray::new(10);
     /// array.set(0, 10);
@@ -249,7 +249,7 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
+    /// use gds::collections::huge_array::HugeIntArray;
     ///
     /// let mut array = HugeIntArray::new(5);
     /// array.set_all(|i| (i * 2) as i32);
@@ -272,7 +272,7 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
+    /// use gds::collections::huge_array::HugeIntArray;
     ///
     /// let mut array = HugeIntArray::new(100);
     /// array.fill(42);
@@ -354,7 +354,7 @@ impl HugeIntArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeIntArray;
+    /// use gds::collections::huge_array::HugeIntArray;
     ///
     /// let mut array = HugeIntArray::new(5);
     /// array.set_all(|i| i as i32);

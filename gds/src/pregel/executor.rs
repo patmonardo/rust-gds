@@ -28,7 +28,7 @@ use std::sync::Arc;
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::Pregel;
+/// use gds::pregel::Pregel;
 ///
 /// let pregel = Pregel::create(
 ///     graph,

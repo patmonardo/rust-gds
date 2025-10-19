@@ -17,7 +17,7 @@
 //! cargo run --example pregel_connected_components --features core
 //! ```
 
-use rust_gds::pregel::{
+use gds::pregel::{
     ComputeContext, InitContext, MasterComputeContext, MessageIterator, Messages,
     PregelComputation, PregelConfig, PregelSchema,
 };
@@ -43,7 +43,7 @@ impl PregelComputation for ConnectedComponents {
     type Config = PregelConfig;
 
     fn schema(&self, _config: &Self::Config) -> PregelSchema {
-        use rust_gds::types::ValueType;
+        use gds::types::ValueType;
 
         PregelSchema::builder()
             .add_public("component", ValueType::Double)

@@ -7,13 +7,13 @@
 //!
 //! Run: `cargo run --example pregel_propertystore_integration`
 
-use rust_gds::pregel::{
+use gds::pregel::{
     ComputeFn, InitFn, LeafTask, PregelBuilder, PregelConfig, PregelSchema,
     SyncQueueMessageIterator, SyncQueueMessenger, Visibility,
 };
-use rust_gds::types::graph_store::{DefaultGraphStore, GraphStore};
-use rust_gds::types::random::random_graph::RandomGraphConfig;
-use rust_gds::types::ValueType;
+use gds::types::graph_store::{DefaultGraphStore, GraphStore};
+use gds::types::random::random_graph::RandomGraphConfig;
+use gds::types::ValueType;
 use std::sync::Arc;
 
 fn main() {
@@ -40,11 +40,11 @@ fn main() {
     }
 
     // Add property to graph store
-    use rust_gds::projection::NodeLabel;
-    use rust_gds::types::properties::node::DefaultDoubleNodePropertyValues;
+    use gds::projection::NodeLabel;
+    use gds::types::properties::node::DefaultDoubleNodePropertyValues;
     use std::collections::HashSet;
 
-    let property_values: Arc<dyn rust_gds::types::properties::node::NodePropertyValues> = Arc::new(
+    let property_values: Arc<dyn gds::types::properties::node::NodePropertyValues> = Arc::new(
         DefaultDoubleNodePropertyValues::new(seed_values.clone(), node_count),
     );
 
@@ -62,7 +62,7 @@ fn main() {
     println!("  ✓ PropertyStore has 'seed_value' property");
 
     // Verify PropertyStore has the values
-    use rust_gds::types::properties::node::NodePropertyContainer;
+    use gds::types::properties::node::NodePropertyContainer;
     if let Some(props) = graph.node_properties("seed_value") {
         println!("\n  Verifying PropertyStore contents:");
         for i in 0..3.min(node_count) {

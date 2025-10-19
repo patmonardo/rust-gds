@@ -1,9 +1,9 @@
-use rust_gds::types::properties::node::{
+use gds::types::properties::node::{
     node_property_of, DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues,
     DefaultNodePropertyStore, NodePropertyStore, NodePropertyStoreBuilder, NodePropertyValues,
 };
-use rust_gds::types::properties::property_store::PropertyStore as _;
-use rust_gds::types::property_state::PropertyState;
+use gds::types::properties::property_store::PropertyStore as _;
+use gds::types::property_state::PropertyState;
 use std::sync::Arc;
 
 fn main() {

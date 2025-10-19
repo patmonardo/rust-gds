@@ -37,7 +37,7 @@
 //! # Examples
 //!
 //! ```rust
-//! use rust_gds::core::utils::paged::PaddedAtomicLong;
+//! use gds::core::utils::paged::PaddedAtomicLong;
 //! use std::sync::Arc;
 //! use std::thread;
 //!
@@ -106,7 +106,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 ///
 /// ## With Padding (No False Sharing)
 /// ```rust
-/// use rust_gds::core::utils::paged::PaddedAtomicLong;
+/// use gds::core::utils::paged::PaddedAtomicLong;
 ///
 /// struct Counters {
 ///     counter1: PaddedAtomicLong,  // Each on own cache line
@@ -136,7 +136,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(0);
     /// assert_eq!(counter.get(), 0);
@@ -166,7 +166,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(42);
     /// assert_eq!(counter.get(), 42);
@@ -183,7 +183,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(0);
     /// counter.set(42);
@@ -199,7 +199,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// assert_eq!(counter.add_and_get(5), 15);
@@ -215,7 +215,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(0);
     /// assert_eq!(counter.increment_and_get(), 1);
@@ -232,7 +232,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// assert_eq!(counter.decrement_and_get(), 9);
@@ -249,7 +249,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// assert_eq!(counter.get_and_set(42), 10);
@@ -267,7 +267,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     ///
@@ -291,7 +291,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// assert_eq!(counter.get_and_increment(), 10);
@@ -307,7 +307,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// assert_eq!(counter.get_and_decrement(), 10);
@@ -323,7 +323,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// assert_eq!(counter.get_and_add(5), 10);
@@ -341,7 +341,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(10);
     /// counter.fetch_add(5);
@@ -361,7 +361,7 @@ impl PaddedAtomicLong {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::PaddedAtomicLong;
+    /// use gds::core::utils::paged::PaddedAtomicLong;
     ///
     /// let counter = PaddedAtomicLong::new(0);
     /// let padding_sum = counter.sum();

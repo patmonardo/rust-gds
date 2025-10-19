@@ -23,8 +23,8 @@ use std::ops::Range;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::{Concurrency, parallel_for_each_node};
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::{Concurrency, parallel_for_each_node};
+/// use gds::termination::TerminationFlag;
 ///
 /// let node_count = 1000;
 /// let concurrency = Concurrency::available_cores();
@@ -90,8 +90,8 @@ pub fn parallel_for_each_node<F>(
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::{Concurrency, BatchSize, read_parallel};
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::{Concurrency, BatchSize, read_parallel};
+/// use gds::termination::TerminationFlag;
 ///
 /// let concurrency = Concurrency::available_cores();
 /// let batch_size = BatchSize::default();
@@ -170,8 +170,8 @@ pub fn read_parallel<F>(
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::{Concurrency, run};
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::{Concurrency, run};
+/// use gds::termination::TerminationFlag;
 ///
 /// let concurrency = Concurrency::of(4);
 /// let termination = TerminationFlag::running_true();
@@ -212,7 +212,7 @@ where
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::{Concurrency, partition_work};
+/// use gds::concurrency::{Concurrency, partition_work};
 ///
 /// let partitions = partition_work(0, 1000, Concurrency::of(4));
 /// assert_eq!(partitions.len(), 4);
@@ -272,8 +272,8 @@ pub fn partition_work(start: usize, end: usize, concurrency: Concurrency) -> Vec
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::{Concurrency, parallel_reduce};
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::{Concurrency, parallel_reduce};
+/// use gds::termination::TerminationFlag;
 ///
 /// let concurrency = Concurrency::available_cores();
 /// let termination = TerminationFlag::running_true();

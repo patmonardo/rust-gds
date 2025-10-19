@@ -5,10 +5,10 @@
 //! cargo run --example memest_showcase --features core
 //! ```
 
-use rust_gds::mem::memest::{
+use gds::mem::memest::{
     FictitiousGraphEstimationService, MemoryBudgetValidator, MemoryEstimationResultBuilder,
 };
-use rust_gds::mem::Estimate;
+use gds::mem::Estimate;
 
 fn main() {
     println!("=================================================");

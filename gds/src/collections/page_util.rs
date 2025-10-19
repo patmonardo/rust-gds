@@ -107,7 +107,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// // Calculate elements per page for different data types
     /// let doubles_per_page = PageUtil::page_size_for(PageUtil::PAGE_SIZE_32KB, 8);  // 4,096
@@ -155,7 +155,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// // 10,000 elements with 4,096 elements per page = 3 pages
     /// let pages = PageUtil::num_pages_for(10_000, 4_096);
@@ -199,7 +199,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// let page_shift = 12; // 4KB = 2^12
     /// let page_mask = (1 << page_shift) - 1;
@@ -236,7 +236,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// let page_shift = 15; // 32KB pages
     /// let capacity = PageUtil::capacity_for(10, page_shift);
@@ -274,7 +274,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// // With 32KB pages (2^15 elements)
     /// let page_shift = 15;
@@ -308,7 +308,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// // With 32KB pages (2^15 elements)
     /// let page_mask = (1 << 15) - 1;
@@ -349,7 +349,7 @@ impl PageUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::PageUtil;
+    /// use gds::collections::PageUtil;
     ///
     /// // Last element at index 10,000 with 4,096 element pages
     /// let page_mask = 4095; // 4096 - 1

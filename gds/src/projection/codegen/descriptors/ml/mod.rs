@@ -13,7 +13,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::descriptors::ml::*;
+//! use gds::projection::codegen::descriptors::ml::*;
 //!
 //! let pipeline = PipelineDescriptor::new("NodeClassification")
 //!     .with_type(PipelineType::NodeClassification);

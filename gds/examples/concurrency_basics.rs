@@ -1,4 +1,4 @@
-use rust_gds::concurrency::Concurrency;
+use gds::concurrency::Concurrency;
 
 fn main() {
     println!("=== Concurrency Type Examples ===\n");

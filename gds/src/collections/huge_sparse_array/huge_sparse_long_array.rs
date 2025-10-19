@@ -19,7 +19,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeSparseLongArray;
+/// use gds::collections::HugeSparseLongArray;
 ///
 /// // Build sparse array
 /// let mut builder = HugeSparseLongArray::builder(-1); // default value = -1

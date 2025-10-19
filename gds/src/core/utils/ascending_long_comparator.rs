@@ -31,7 +31,7 @@
 //! # Examples
 //!
 //! ```
-//! use rust_gds::core::utils::AscendingLongComparator;
+//! use gds::core::utils::AscendingLongComparator;
 //!
 //! // Sort nodes by PageRank scores using indirect sorting
 //! let pagerank_scores = vec![0.1, 0.4, 0.2, 0.3];
@@ -72,7 +72,7 @@ use std::cmp::Ordering;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::AscendingLongComparator;
+/// use gds::core::utils::AscendingLongComparator;
 /// use std::cmp::Ordering;
 ///
 /// // Graph node degrees for hub analysis
@@ -111,7 +111,7 @@ impl<'a> AscendingLongComparator<'a> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::AscendingLongComparator;
+    /// use gds::core::utils::AscendingLongComparator;
     ///
     /// // Edge weights for MST algorithms
     /// let edge_weights = vec![80, 20, 90, 10, 50, 70];
@@ -152,7 +152,7 @@ impl<'a> AscendingLongComparator<'a> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::AscendingLongComparator;
+    /// use gds::core::utils::AscendingLongComparator;
     /// use std::cmp::Ordering;
     ///
     /// let values = vec![100, 50, 200, 75];
@@ -187,7 +187,7 @@ impl<'a> AscendingLongComparator<'a> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::AscendingLongComparator;
+    /// use gds::core::utils::AscendingLongComparator;
     ///
     /// let scores = vec![10, 40, 20, 30];
     /// let comparator = AscendingLongComparator::new(&scores);

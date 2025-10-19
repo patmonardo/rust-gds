@@ -23,7 +23,7 @@ impl HugeLongArrayQueue {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::HugeLongArrayQueue;
+    /// use gds::core::utils::paged::HugeLongArrayQueue;
     ///
     /// let mut queue = HugeLongArrayQueue::new(1000);
     /// queue.add(42);

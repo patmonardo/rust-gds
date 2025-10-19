@@ -34,7 +34,7 @@
 //! # Examples
 //!
 //! ```
-//! use rust_gds::core::utils::paged::HugeLongArrayBuilder;
+//! use gds::core::utils::paged::HugeLongArrayBuilder;
 //! use std::sync::Arc;
 //! use std::thread;
 //!
@@ -102,7 +102,7 @@ impl HugeLongArrayBuilder {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::HugeLongArrayBuilder;
+    /// use gds::core::utils::paged::HugeLongArrayBuilder;
     ///
     /// let builder = HugeLongArrayBuilder::new();
     /// ```
@@ -127,10 +127,10 @@ impl HugeLongArrayBuilder {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::HugeLongArrayBuilder;
+    /// use gds::core::utils::paged::HugeLongArrayBuilder;
     ///
     /// let builder = HugeLongArrayBuilder::new();
-    /// let mut allocator = rust_gds::core::utils::paged::Allocator::new();
+    /// let mut allocator = gds::core::utils::paged::Allocator::new();
     ///
     /// // Allocate and fill
     /// builder.allocate(0, 1000, &mut allocator);
@@ -183,7 +183,7 @@ impl HugeLongArrayBuilder {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::HugeLongArrayBuilder;
+    /// use gds::core::utils::paged::HugeLongArrayBuilder;
     /// use std::sync::Arc;
     /// use std::thread;
     ///

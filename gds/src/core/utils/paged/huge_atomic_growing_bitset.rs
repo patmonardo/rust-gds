@@ -25,7 +25,7 @@
 //! # Example
 //!
 //! ```rust
-//! use rust_gds::core::utils::paged::HugeAtomicGrowingBitSet;
+//! use gds::core::utils::paged::HugeAtomicGrowingBitSet;
 //! use std::sync::Arc;
 //!
 //! // Start small - will grow as needed
@@ -91,7 +91,7 @@ impl HugeAtomicGrowingBitSet {
     /// # Example
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::HugeAtomicGrowingBitSet;
+    /// use gds::core::utils::paged::HugeAtomicGrowingBitSet;
     ///
     /// let bitset = HugeAtomicGrowingBitSet::create(1_000_000);
     /// bitset.set(999_999);
@@ -135,7 +135,7 @@ impl HugeAtomicGrowingBitSet {
     /// # Example
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::HugeAtomicGrowingBitSet;
+    /// use gds::core::utils::paged::HugeAtomicGrowingBitSet;
     /// use std::sync::Arc;
     ///
     /// let bitset = Arc::new(HugeAtomicGrowingBitSet::create(100));
@@ -214,7 +214,7 @@ impl HugeAtomicGrowingBitSet {
     /// # Example
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::HugeAtomicGrowingBitSet;
+    /// use gds::core::utils::paged::HugeAtomicGrowingBitSet;
     /// use std::sync::Arc;
     ///
     /// let bitset = Arc::new(HugeAtomicGrowingBitSet::create(1000));

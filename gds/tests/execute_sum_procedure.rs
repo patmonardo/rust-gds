@@ -5,8 +5,8 @@
 
 #[cfg(test)]
 mod tests {
-    use rust_gds::procedure::sum::{SumAlgorithmSpec, SumConfig};
-    use rust_gds::projection::eval::procedure::AlgorithmSpec;
+    use gds::procedure::sum::{SumAlgorithmSpec, SumConfig};
+    use gds::projection::eval::procedure::AlgorithmSpec;
     use serde_json::json;
 
     #[test]

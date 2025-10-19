@@ -16,7 +16,7 @@ impl UserMemorySummary {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::UserMemorySummary;
+    /// use gds::mem::UserMemorySummary;
     ///
     /// let summary = UserMemorySummary::new("alice".to_string(), 2 * 1024 * 1024, 512 * 1024);
     /// assert_eq!(summary.user(), "alice");

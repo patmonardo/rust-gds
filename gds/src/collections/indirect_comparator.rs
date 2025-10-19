@@ -42,7 +42,7 @@ use std::cmp::Ordering;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::IndirectComparator;
+/// use gds::collections::IndirectComparator;
 /// use std::cmp::Ordering;
 ///
 /// // Basic numeric comparison by index
@@ -67,7 +67,7 @@ use std::cmp::Ordering;
 /// # Advanced Example: Multi-Criteria Sorting
 ///
 /// ```
-/// use rust_gds::collections::IndirectComparator;
+/// use gds::collections::IndirectComparator;
 /// use std::cmp::Ordering;
 ///
 /// struct NodeRankComparator<'a> {

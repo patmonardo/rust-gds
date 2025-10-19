@@ -62,7 +62,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![1, 3, 5, 7, 9, 11, 13, 15];
     /// assert!(ArrayUtil::binary_search(&arr, arr.len(), 7));
@@ -121,7 +121,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![1, 3, 3, 3, 5, 7, 9];
     /// let idx = ArrayUtil::binary_search_first(&arr, 0, arr.len(), 3);
@@ -178,7 +178,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![1, 3, 3, 3, 5, 7, 9];
     /// let idx = ArrayUtil::binary_search_last(&arr, 0, arr.len(), 3);
@@ -225,7 +225,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![1, 3, 5, 7, 9];
     /// assert_eq!(ArrayUtil::binary_search_index(&arr, arr.len(), 5), 2);
@@ -320,7 +320,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![5, 2, 8, 1, 9, 3, 7, 4];
     /// assert!(ArrayUtil::linear_search(&arr, arr.len(), 7));
@@ -362,7 +362,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![5, 2, 8, 1, 9, 3, 7, 4];
     /// assert_eq!(ArrayUtil::linear_search_index(&arr, arr.len(), 7), 6);
@@ -422,7 +422,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let buckets = vec![0, 10, 20, 30, 40];
     /// assert_eq!(ArrayUtil::binary_lookup(15, &buckets), 1); // Between 10 and 20
@@ -466,7 +466,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = ArrayUtil::fill(42, 5);
     /// assert_eq!(arr, vec![42, 42, 42, 42, 42]);
@@ -492,7 +492,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let arr = vec![1, 5, 3, 9, 2];
     /// assert!(ArrayUtil::contains(&arr, 9));
@@ -540,7 +540,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let new_capacity = ArrayUtil::oversize(1000, 8);
     /// assert!(new_capacity >= 1000);
@@ -619,7 +619,7 @@ impl ArrayUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::ArrayUtil;
+    /// use gds::collections::ArrayUtil;
     ///
     /// let huge_capacity = ArrayUtil::oversize_huge(10_000_000, 8);
     /// assert!(huge_capacity >= 10_000_000);

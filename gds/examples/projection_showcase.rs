@@ -5,7 +5,7 @@
 //! cargo run --example projection_showcase
 //! ```
 
-use rust_gds::projection::{
+use gds::projection::{
     AbstractProjections, Aggregation, NodeLabel, NodeProjection, NodeProjections, Orientation,
     PropertyMappings, RelationshipProjection, RelationshipProjections, RelationshipType,
 };

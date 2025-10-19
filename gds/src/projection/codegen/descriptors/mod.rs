@@ -21,7 +21,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::descriptors::*;
+//! use gds::projection::codegen::descriptors::*;
 //!
 //! // Define a property
 //! let prop_desc = PropertyDescriptor::new(1, "pagerank", ValueType::Double)

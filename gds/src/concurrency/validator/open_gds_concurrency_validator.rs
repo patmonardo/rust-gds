@@ -23,7 +23,7 @@ use super::{ConcurrencyValidator, ConcurrencyValidatorError, LicenseState};
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidator};
+/// use gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidator};
 ///
 /// let validator = OpenGdsConcurrencyValidator;
 ///
@@ -73,7 +73,7 @@ impl ConcurrencyValidator for OpenGdsConcurrencyValidator {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::validator::{OpenGdsConcurrencyValidatorBuilder, LicenseState};
+/// use gds::concurrency::validator::{OpenGdsConcurrencyValidatorBuilder, LicenseState};
 ///
 /// let builder = OpenGdsConcurrencyValidatorBuilder;
 /// let validator = builder.build(LicenseState::Open);
@@ -89,7 +89,7 @@ impl OpenGdsConcurrencyValidatorBuilder {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidatorBuilder, LicenseState};
+    /// use gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidatorBuilder, LicenseState};
     ///
     /// let builder = OpenGdsConcurrencyValidatorBuilder;
     /// let validator = builder.build(LicenseState::Open);
@@ -106,7 +106,7 @@ impl OpenGdsConcurrencyValidatorBuilder {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::validator::OpenGdsConcurrencyValidatorBuilder;
+    /// use gds::concurrency::validator::OpenGdsConcurrencyValidatorBuilder;
     ///
     /// let builder = OpenGdsConcurrencyValidatorBuilder;
     /// assert_eq!(builder.priority(), i32::MIN);

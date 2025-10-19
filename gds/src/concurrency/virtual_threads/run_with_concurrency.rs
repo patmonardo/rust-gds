@@ -19,9 +19,9 @@ use crate::termination::TerminationFlag;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::virtual_threads::RunWithConcurrency;
-/// use rust_gds::concurrency::Concurrency;
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::virtual_threads::RunWithConcurrency;
+/// use gds::concurrency::Concurrency;
+/// use gds::termination::TerminationFlag;
 ///
 /// let tasks: Vec<Box<dyn FnOnce() + Send>> = vec![
 ///     Box::new(|| println!("Task 1")),
@@ -81,8 +81,8 @@ impl Builder {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::virtual_threads::RunWithConcurrency;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::concurrency::virtual_threads::RunWithConcurrency;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let tasks: Vec<Box<dyn FnOnce() + Send>> = vec![
     ///     Box::new(|| println!("Task 1")),

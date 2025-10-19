@@ -14,8 +14,8 @@
 //! - Zero-copy access patterns work at extreme scale
 //! - Graph analytics at planetary scale (8B = population of Earth!)
 
-use rust_gds::collections::huge_array::HugeLongArray;
-use rust_gds::concurrency::Concurrency;
+use gds::collections::huge_array::HugeLongArray;
+use gds::concurrency::Concurrency;
 use std::time::Instant;
 
 /// Format number with thousand separators

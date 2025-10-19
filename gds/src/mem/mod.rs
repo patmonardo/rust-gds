@@ -16,7 +16,7 @@
 //! ## Example Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::mem::*;
+//! use gds::mem::*;
 //!
 //! // Calculate memory for an array
 //! let array_size = Estimate::size_of_long_array(1_000_000);

@@ -21,7 +21,7 @@ impl MemoryReservationExceededException {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::MemoryReservationExceededException;
+    /// use gds::mem::MemoryReservationExceededException;
     ///
     /// let err = MemoryReservationExceededException::new(1024 * 1024 * 100, 1024 * 1024 * 50, None);
     /// assert_eq!(err.bytes_required(), 1024 * 1024 * 100);

@@ -30,7 +30,7 @@
 //! # Examples
 //!
 //! ```
-//! use rust_gds::core::utils::LazyBatchCollection;
+//! use gds::core::utils::LazyBatchCollection;
 //!
 //! // Process 1M nodes in 10K batches
 //! let batches = LazyBatchCollection::of(
@@ -89,7 +89,7 @@ where
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::core::utils::LazyBatchCollection;
+    /// use gds::core::utils::LazyBatchCollection;
     ///
     /// let batches = LazyBatchCollection::of(1_000_000, 10_000, |start, length| {
     ///     // Create batch representation

@@ -25,7 +25,7 @@ impl ExceptionUtil {
     ///
     /// # Examples
     /// ```
-    /// use rust_gds::util::exception_util::ExceptionUtil;
+    /// use gds::util::exception_util::ExceptionUtil;
     /// use std::io;
     ///
     /// let inner = io::Error::new(io::ErrorKind::NotFound, "file not found");

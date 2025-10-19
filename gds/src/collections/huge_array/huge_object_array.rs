@@ -25,7 +25,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::huge_array::HugeObjectArray;
+/// use gds::collections::huge_array::HugeObjectArray;
 ///
 /// // Store message queues
 /// let mut queues: HugeObjectArray<Vec<i64>> = HugeObjectArray::new(1_000_000);
@@ -117,7 +117,7 @@ impl<T: Default + Clone> HugeObjectArray<T> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeObjectArray;
+    /// use gds::collections::huge_array::HugeObjectArray;
     ///
     /// let mut array: HugeObjectArray<Vec<i64>> = HugeObjectArray::new(100);
     /// array.set_all(|i| vec![i as i64]);
@@ -138,7 +138,7 @@ impl<T: Default + Clone> HugeObjectArray<T> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeObjectArray;
+    /// use gds::collections::huge_array::HugeObjectArray;
     ///
     /// let mut array: HugeObjectArray<Vec<i64>> = HugeObjectArray::new(100);
     /// array.fill(vec![1, 2, 3]);
@@ -210,7 +210,7 @@ impl<T: Default + Clone> HugeObjectArray<T> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeObjectArray;
+    /// use gds::collections::huge_array::HugeObjectArray;
     ///
     /// let mut array: HugeObjectArray<Vec<i64>> = HugeObjectArray::new(5);
     /// array.set_all(|i| vec![i as i64]);

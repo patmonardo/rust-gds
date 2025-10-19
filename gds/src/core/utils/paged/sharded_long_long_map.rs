@@ -48,8 +48,8 @@ pub const NOT_FOUND: i64 = -1;
 /// # Examples
 ///
 /// ```text
-/// use rust_gds::core::utils::paged::ShardedLongLongMap;
-/// use rust_gds::core::concurrency::Concurrency;
+/// use gds::core::utils::paged::ShardedLongLongMap;
+/// use gds::core::concurrency::Concurrency;
 ///
 /// // Create builder with 4 threads of concurrency
 /// let builder = ShardedLongLongMap::builder(Concurrency::new(4));

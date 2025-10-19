@@ -1,10 +1,10 @@
 //! Test to verify that the backward pass is computing gradients
 
-use rust_gds::collections::HugeDoubleArray;
-use rust_gds::ml::core::computation_context::ComputationContext;
-use rust_gds::ml::gradient_descent::Objective;
-use rust_gds::ml::models::linear::*;
-use rust_gds::ml::models::{Features};
+use gds::collections::HugeDoubleArray;
+use gds::ml::core::computation_context::ComputationContext;
+use gds::ml::gradient_descent::Objective;
+use gds::ml::models::linear::*;
+use gds::ml::models::{Features};
 
 /// Simple feature store for testing
 #[derive(Debug)]
@@ -52,7 +52,7 @@ mod gradient_tests {
         let objective = LinearRegressionObjective::new(&features, &targets, 0.0);
 
         // Create a simple batch using RangeBatch
-        let batch = rust_gds::ml::core::batch::RangeBatch::new(0, 1, 1);
+        let batch = gds::ml::core::batch::RangeBatch::new(0, 1, 1);
 
         // Create computation context
         let ctx = ComputationContext::new();

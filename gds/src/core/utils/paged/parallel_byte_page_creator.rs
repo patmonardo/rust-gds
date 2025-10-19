@@ -38,8 +38,8 @@ use std::sync::Arc;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::paged::ParallelBytePageCreator;
-/// use rust_gds::concurrency::Concurrency;
+/// use gds::core::utils::paged::ParallelBytePageCreator;
+/// use gds::concurrency::Concurrency;
 ///
 /// // Identity mapping for 1 billion elements
 /// let creator = ParallelBytePageCreator::identity(Concurrency::of(8));
@@ -65,8 +65,8 @@ impl ParallelBytePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelBytePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelBytePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Create pages with alternating 0/1 values
     /// let creator = ParallelBytePageCreator::of(
@@ -100,8 +100,8 @@ impl ParallelBytePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelBytePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelBytePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelBytePageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(10_000);
@@ -125,8 +125,8 @@ impl ParallelBytePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelBytePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelBytePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelBytePageCreator::pass_through(Concurrency::of(4));
     /// let mut pages = creator.create_pages(10_000);
@@ -146,8 +146,8 @@ impl ParallelBytePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelBytePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelBytePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelBytePageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(1_000_000);

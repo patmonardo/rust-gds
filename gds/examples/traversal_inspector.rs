@@ -3,12 +3,12 @@
 //! This example highlights how to navigate relationships, compute degree based
 //! metrics, and materialize filtered sub-graphs using the `Graph` trait.
 
-use rust_gds::projection::RelationshipType;
-use rust_gds::types::graph::id_map::MappedNodeId;
-use rust_gds::types::graph::{Graph, GraphExt, GraphResult};
-use rust_gds::types::graph_store::DefaultGraphStore;
-use rust_gds::types::properties::relationship::PropertyValue;
-use rust_gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
+use gds::projection::RelationshipType;
+use gds::types::graph::id_map::MappedNodeId;
+use gds::types::graph::{Graph, GraphExt, GraphResult};
+use gds::types::graph_store::DefaultGraphStore;
+use gds::types::properties::relationship::PropertyValue;
+use gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use std::collections::HashSet;
 use std::error::Error;
 

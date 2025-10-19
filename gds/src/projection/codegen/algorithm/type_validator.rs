@@ -47,8 +47,8 @@
 //! # Example Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::{TypeValidator, PropertyDescriptor};
-//! use rust_gds::types::ValueType;
+//! use gds::projection::codegen::{TypeValidator, PropertyDescriptor};
+//! use gds::types::ValueType;
 //!
 //! // Infer descriptor from actual values
 //! let values = vec![42i64, 1337i64, 99i64];

@@ -31,7 +31,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::Tasks;
+    /// use gds::core::utils::progress::tasks::Tasks;
     ///
     /// let empty = Tasks::empty();
     /// assert_eq!(empty.description(), "");
@@ -44,7 +44,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Tasks, Task};
+    /// use gds::core::utils::progress::tasks::{Tasks, Task};
     /// use std::sync::Arc;
     ///
     /// let child = Arc::new(Task::new("child".to_string(), vec![]));
@@ -59,7 +59,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Tasks, Task};
+    /// use gds::core::utils::progress::tasks::{Tasks, Task};
     /// use std::sync::Arc;
     ///
     /// let child1 = Arc::new(Task::new("child1".to_string(), vec![]));
@@ -81,7 +81,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Tasks, Task};
+    /// use gds::core::utils::progress::tasks::{Tasks, Task};
     /// use std::sync::Arc;
     ///
     /// let supplier = Arc::new(|| vec![
@@ -108,7 +108,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Tasks, Task};
+    /// use gds::core::utils::progress::tasks::{Tasks, Task};
     /// use std::sync::Arc;
     ///
     /// let supplier = Arc::new(|| vec![
@@ -135,7 +135,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Tasks, Task, IterativeTaskMode};
+    /// use gds::core::utils::progress::tasks::{Tasks, Task, IterativeTaskMode};
     /// use std::sync::Arc;
     ///
     /// let supplier = Arc::new(|| vec![
@@ -160,7 +160,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::{Tasks, UNKNOWN_VOLUME};
+    /// use gds::core::utils::progress::tasks::{Tasks, UNKNOWN_VOLUME};
     ///
     /// let task = Tasks::leaf("process".to_string());
     /// assert_eq!(task.volume(), UNKNOWN_VOLUME);
@@ -173,7 +173,7 @@ impl Tasks {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::progress::tasks::Tasks;
+    /// use gds::core::utils::progress::tasks::Tasks;
     ///
     /// let task = Tasks::leaf_with_volume("process".to_string(), 1000);
     /// assert_eq!(task.volume(), 1000);

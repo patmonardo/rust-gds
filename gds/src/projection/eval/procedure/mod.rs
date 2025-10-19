@@ -39,7 +39,7 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::eval::procedure::*;
+//! use gds::projection::eval::procedure::*;
 //!
 //! // 1. Create execution context
 //! let mut context = ExecutionContext::new("user");

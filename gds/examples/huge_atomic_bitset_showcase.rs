@@ -3,7 +3,7 @@
 //! Demonstrates the thread-safe atomic bitset for billion-scale concurrent processing.
 //! This is a critical component for Pregel executor's vote-to-halt tracking.
 
-use rust_gds::collections::HugeAtomicBitSet;
+use gds::collections::HugeAtomicBitSet;
 use std::sync::Arc;
 use std::thread;
 

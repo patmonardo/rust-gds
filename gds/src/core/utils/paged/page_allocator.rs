@@ -78,7 +78,7 @@ pub trait PageAllocator<T> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::PageAllocatorFactory;
+    /// use gds::core::utils::paged::PageAllocatorFactory;
     ///
     /// let factory = PageAllocatorFactory::<Vec<i64>>::for_long_array();
     /// let allocator = factory.new_allocator();
@@ -110,7 +110,7 @@ pub trait PageAllocator<T> {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::paged::PageAllocatorFactory;
+/// use gds::core::utils::paged::PageAllocatorFactory;
 ///
 /// // Create factory for i64 arrays with 32KB pages
 /// let factory = PageAllocatorFactory::<Vec<i64>>::for_long_array();
@@ -143,8 +143,8 @@ impl<T> PageAllocatorFactory<T> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::PageAllocatorFactory;
-    /// use rust_gds::mem::Estimate;
+    /// use gds::core::utils::paged::PageAllocatorFactory;
+    /// use gds::mem::Estimate;
     ///
     /// let page_size = 4096;
     /// let bytes_per_page = Estimate::size_of_long_array(page_size);
@@ -223,7 +223,7 @@ impl PageAllocatorFactory<Vec<i64>> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::PageAllocatorFactory;
+    /// use gds::core::utils::paged::PageAllocatorFactory;
     ///
     /// let factory = PageAllocatorFactory::<Vec<i64>>::for_long_array();
     /// let allocator = factory.new_allocator();
@@ -272,7 +272,7 @@ impl PageAllocatorFactory<Vec<f64>> {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::PageAllocatorFactory;
+    /// use gds::core::utils::paged::PageAllocatorFactory;
     ///
     /// let factory = PageAllocatorFactory::<Vec<f64>>::for_double_array();
     /// let allocator = factory.new_allocator();

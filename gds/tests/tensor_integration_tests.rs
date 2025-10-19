@@ -10,8 +10,8 @@
 //! - Error handling and edge cases
 //! - Compatibility with Java GDS tensor behavior
 
-use rust_gds::ml::core::dimensions;
-use rust_gds::ml::core::tensor::*;
+use gds::ml::core::dimensions;
+use gds::ml::core::tensor::*;
 
 #[cfg(test)]
 mod basic_operations {

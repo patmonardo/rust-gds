@@ -5,8 +5,8 @@
 //!
 //! Safe for systems with 8GB+ RAM.
 
-use rust_gds::collections::huge_array::HugeLongArray;
-use rust_gds::concurrency::Concurrency;
+use gds::collections::huge_array::HugeLongArray;
+use gds::concurrency::Concurrency;
 use std::time::Instant;
 
 fn format_number(n: usize) -> String {

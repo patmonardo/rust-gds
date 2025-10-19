@@ -1,12 +1,12 @@
-use rust_gds::types::properties::relationship::relationship_property_of;
-use rust_gds::types::properties::relationship::RelationshipPropertyValues;
-use rust_gds::types::properties::relationship::{
+use gds::types::properties::relationship::relationship_property_of;
+use gds::types::properties::relationship::RelationshipPropertyValues;
+use gds::types::properties::relationship::{
     DefaultRelationshipPropertyStore, DefaultRelationshipPropertyValues,
 };
-use rust_gds::types::properties::relationship::{
+use gds::types::properties::relationship::{
     RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
-use rust_gds::types::property_state::PropertyState;
+use gds::types::property_state::PropertyState;
 use std::sync::Arc;
 
 fn main() {

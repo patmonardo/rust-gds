@@ -38,7 +38,7 @@ pub use super::pool::LicenseState;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::validator::ConcurrencyValidatorService;
+/// use gds::concurrency::validator::ConcurrencyValidatorService;
 ///
 /// let validator = ConcurrencyValidatorService::validator();
 /// // validator.validate(8, "concurrency", 4) would return Err(...)
@@ -56,7 +56,7 @@ impl ConcurrencyValidatorService {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::validator::ConcurrencyValidatorService;
+    /// use gds::concurrency::validator::ConcurrencyValidatorService;
     ///
     /// let validator = ConcurrencyValidatorService::validator();
     /// assert!(validator.validate(4, "concurrency", 4).is_ok());
@@ -70,7 +70,7 @@ impl ConcurrencyValidatorService {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::validator::ConcurrencyValidatorService;
+    /// use gds::concurrency::validator::ConcurrencyValidatorService;
     ///
     /// let max = ConcurrencyValidatorService::max_concurrency();
     /// assert_eq!(max, 4);

@@ -2,8 +2,8 @@
 //!
 //! Shows ModelConfig, PregelConfig, and MorphConfig usage.
 
-use rust_gds::config::*;
-use rust_gds::core::utils::partition::Partitioning;
+use gds::config::*;
+use gds::core::utils::partition::Partitioning;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== ML Configuration Showcase ===\n");

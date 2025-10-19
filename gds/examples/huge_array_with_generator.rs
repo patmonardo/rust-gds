@@ -7,8 +7,8 @@
 //! cargo run --example huge_array_with_generator --release
 //! ```
 
-use rust_gds::collections::huge_array::HugeLongArray;
-use rust_gds::concurrency::Concurrency;
+use gds::collections::huge_array::HugeLongArray;
+use gds::concurrency::Concurrency;
 use std::time::Instant;
 
 fn main() {

@@ -92,7 +92,7 @@ pub trait GraphStoreFactoryTyped: Send + Sync {
 ///
 /// Import this to get all factory-related types:
 /// ```
-/// use rust_gds::projection::factory::prelude::*;
+/// use gds::projection::factory::prelude::*;
 /// ```
 pub mod prelude {
     pub use super::GraphStoreFactory;

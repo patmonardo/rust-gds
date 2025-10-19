@@ -40,7 +40,7 @@ impl RawValues {
     ///
     /// # Example
     /// ```
-    /// use rust_gds::core::utils::RawValues;
+    /// use gds::core::utils::RawValues;
     ///
     /// let combined = RawValues::combine_int_int(42, 100);
     /// assert_eq!(RawValues::get_head(combined), 42);

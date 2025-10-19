@@ -2,8 +2,8 @@
 //!
 //! Demonstrates type-safe immutable access patterns for shared data.
 
-use rust_gds::collections::HugeLongArray;
-use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
+use gds::collections::HugeLongArray;
+use gds::core::utils::paged::ReadOnlyHugeLongArray;
 
 fn main() {
     println!("=== ReadOnlyHugeLongArray Showcase ===\n");

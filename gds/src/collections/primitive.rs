@@ -22,7 +22,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::PrimitiveLongIterator;
+/// use gds::collections::primitive::PrimitiveLongIterator;
 ///
 /// // Range iterator for node IDs
 /// let node_ids: Vec<i64> = (0..5).collect();
@@ -35,7 +35,7 @@ pub trait PrimitiveLongIterator: Iterator<Item = i64> + Sized {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::primitive::{PrimitiveLongIterator, range};
+    /// use gds::collections::primitive::{PrimitiveLongIterator, range};
     ///
     /// let values = range(0, 4).to_vec();
     /// assert_eq!(values, vec![0, 1, 2, 3, 4]);
@@ -49,7 +49,7 @@ pub trait PrimitiveLongIterator: Iterator<Item = i64> + Sized {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::primitive::{PrimitiveLongIterator, range};
+    /// use gds::collections::primitive::{PrimitiveLongIterator, range};
     ///
     /// let count = range(0, 9).count_elements();
     /// assert_eq!(count, 10);
@@ -75,7 +75,7 @@ impl<I: Iterator<Item = i64>> PrimitiveLongIterator for I {}
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::range;
+/// use gds::collections::primitive::range;
 ///
 /// let values: Vec<i64> = range(0, 4).collect();
 /// assert_eq!(values, vec![0, 1, 2, 3, 4]);
@@ -89,7 +89,7 @@ pub fn range(start: i64, end: i64) -> impl PrimitiveLongIterator {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::empty;
+/// use gds::collections::primitive::empty;
 ///
 /// let mut iter = empty();
 /// assert_eq!(iter.next(), None);
@@ -103,7 +103,7 @@ pub fn empty() -> impl PrimitiveLongIterator {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::single;
+/// use gds::collections::primitive::single;
 ///
 /// let values: Vec<i64> = single(42).collect();
 /// assert_eq!(values, vec![42]);
@@ -117,7 +117,7 @@ pub fn single(value: i64) -> impl PrimitiveLongIterator {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::of;
+/// use gds::collections::primitive::of;
 ///
 /// let values: Vec<i64> = of(&[1, 2, 3, 4, 5]).collect();
 /// assert_eq!(values, vec![1, 2, 3, 4, 5]);
@@ -139,7 +139,7 @@ pub type LongPredicate = fn(i64) -> bool;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::{PrimitiveLongIterable, PrimitiveLongIterator};
+/// use gds::collections::primitive::{PrimitiveLongIterable, PrimitiveLongIterator};
 ///
 /// struct NodeIdRange {
 ///     start: i64,
@@ -176,7 +176,7 @@ pub trait PrimitiveLongIterable {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::primitive::PrimitiveLongBaseIterator;
+/// use gds::collections::primitive::PrimitiveLongBaseIterator;
 ///
 /// struct FibonacciIterator {
 ///     base: PrimitiveLongBaseIterator,

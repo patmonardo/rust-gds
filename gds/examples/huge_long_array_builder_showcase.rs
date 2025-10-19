@@ -2,7 +2,7 @@
 //!
 //! Demonstrates the simplified, safe API for concurrent array building.
 
-use rust_gds::core::utils::paged::HugeLongArrayBuilder;
+use gds::core::utils::paged::HugeLongArrayBuilder;
 use std::sync::Arc;
 use std::thread;
 use std::time::Instant;

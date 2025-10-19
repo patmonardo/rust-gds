@@ -15,9 +15,9 @@ use rayon::prelude::*;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::virtual_threads::Executor;
-/// use rust_gds::concurrency::Concurrency;
-/// use rust_gds::termination::TerminationFlag;
+/// use gds::concurrency::virtual_threads::Executor;
+/// use gds::concurrency::Concurrency;
+/// use gds::termination::TerminationFlag;
 ///
 /// let executor = Executor::new(Concurrency::of(4));
 /// let termination = TerminationFlag::running_true();
@@ -65,9 +65,9 @@ impl Executor {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::virtual_threads::Executor;
-    /// use rust_gds::concurrency::Concurrency;
-    /// use rust_gds::termination::TerminationFlag;
+    /// use gds::concurrency::virtual_threads::Executor;
+    /// use gds::concurrency::Concurrency;
+    /// use gds::termination::TerminationFlag;
     ///
     /// let executor = Executor::new(Concurrency::of(4));
     /// let termination = TerminationFlag::running_true();
@@ -108,9 +108,9 @@ impl Executor {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::virtual_threads::Executor;
-    /// use rust_gds::concurrency::Concurrency;
-    /// use rust_gds::termination::TerminationFlag;
+    /// use gds::concurrency::virtual_threads::Executor;
+    /// use gds::concurrency::Concurrency;
+    /// use gds::termination::TerminationFlag;
     ///
     /// let executor = Executor::new(Concurrency::of(4));
     /// let termination = TerminationFlag::running_true();
@@ -154,9 +154,9 @@ impl Executor {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::virtual_threads::Executor;
-    /// use rust_gds::concurrency::Concurrency;
-    /// use rust_gds::termination::TerminationFlag;
+    /// use gds::concurrency::virtual_threads::Executor;
+    /// use gds::concurrency::Concurrency;
+    /// use gds::termination::TerminationFlag;
     ///
     /// let executor = Executor::new(Concurrency::of(4));
     /// let termination = TerminationFlag::running_true();
@@ -201,9 +201,9 @@ impl Executor {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::virtual_threads::Executor;
-    /// use rust_gds::concurrency::Concurrency;
-    /// use rust_gds::termination::TerminationFlag;
+    /// use gds::concurrency::virtual_threads::Executor;
+    /// use gds::concurrency::Concurrency;
+    /// use gds::termination::TerminationFlag;
     ///
     /// let executor = Executor::new(Concurrency::of(4));
     /// let termination = TerminationFlag::running_true();

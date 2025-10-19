@@ -16,7 +16,7 @@
 //! # Examples
 //!
 //! ```rust,ignore
-//! use rust_gds::ml::core::samplers::RandomWalkSampler;
+//! use gds::ml::core::samplers::RandomWalkSampler;
 //!
 //! let sampler = RandomWalkSampler::create(
 //!     &graph,

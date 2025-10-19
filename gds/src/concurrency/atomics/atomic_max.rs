@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::atomics::AtomicMax;
+/// use gds::concurrency::atomics::AtomicMax;
 /// use std::sync::atomic::Ordering;
 ///
 /// let max = AtomicMax::new(0);
@@ -28,7 +28,7 @@ impl AtomicMax {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMax;
+    /// use gds::concurrency::atomics::AtomicMax;
     ///
     /// let max = AtomicMax::new(42);
     /// ```
@@ -46,7 +46,7 @@ impl AtomicMax {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMax;
+    /// use gds::concurrency::atomics::AtomicMax;
     /// use std::sync::atomic::Ordering;
     ///
     /// let max = AtomicMax::min_value();
@@ -62,7 +62,7 @@ impl AtomicMax {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMax;
+    /// use gds::concurrency::atomics::AtomicMax;
     /// use std::sync::atomic::Ordering;
     ///
     /// let max = AtomicMax::new(42);
@@ -81,7 +81,7 @@ impl AtomicMax {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMax;
+    /// use gds::concurrency::atomics::AtomicMax;
     /// use std::sync::atomic::Ordering;
     ///
     /// let max = AtomicMax::new(10);
@@ -117,7 +117,7 @@ impl AtomicMax {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMax;
+    /// use gds::concurrency::atomics::AtomicMax;
     /// use std::sync::atomic::Ordering;
     ///
     /// let max = AtomicMax::new(0);

@@ -31,7 +31,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeAtomicDoubleArray;
+/// use gds::collections::HugeAtomicDoubleArray;
 ///
 /// // Create atomic array
 /// let array = HugeAtomicDoubleArray::new(1000);

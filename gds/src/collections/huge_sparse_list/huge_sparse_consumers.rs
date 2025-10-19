@@ -7,7 +7,7 @@
 ///
 /// # Example
 /// ```
-/// use rust_gds::collections::HugeSparseLongList;
+/// use gds::collections::HugeSparseLongList;
 ///
 /// let list = HugeSparseLongList::of(0);
 /// list.set(10, 42);
@@ -23,7 +23,7 @@ pub type LongLongConsumer = fn(usize, i64);
 ///
 /// # Example
 /// ```
-/// use rust_gds::collections::HugeSparseDoubleList;
+/// use gds::collections::HugeSparseDoubleList;
 ///
 /// let list = HugeSparseDoubleList::of(0.0);
 /// list.set(10, 3.14);
@@ -49,7 +49,7 @@ pub type LongIntConsumer = fn(usize, i32);
 ///
 /// # Example
 /// ```
-/// use rust_gds::collections::HugeSparseLongArrayList;
+/// use gds::collections::HugeSparseLongArrayList;
 ///
 /// let list = HugeSparseLongArrayList::of(vec![]);
 /// list.set(10, vec![1, 2, 3]);
@@ -64,7 +64,7 @@ pub type LongLongArrayConsumer = fn(usize, &Vec<i64>);
 ///
 /// # Example
 /// ```
-/// use rust_gds::collections::HugeSparseDoubleArrayList;
+/// use gds::collections::HugeSparseDoubleArrayList;
 ///
 /// let list = HugeSparseDoubleArrayList::of(vec![]);
 /// list.set(10, vec![3.14, 2.71]);
@@ -89,7 +89,7 @@ pub type LongByteArrayConsumer = fn(usize, &Vec<u8>);
 ///
 /// # Example
 /// ```
-/// use rust_gds::collections::HugeSparseLongArrayArrayList;
+/// use gds::collections::HugeSparseLongArrayArrayList;
 ///
 /// let list = HugeSparseLongArrayArrayList::of(vec![]);
 /// list.set(10, vec![vec![1, 2], vec![3, 4]]);

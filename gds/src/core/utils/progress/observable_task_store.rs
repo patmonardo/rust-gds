@@ -35,7 +35,7 @@ use std::sync::{Arc, RwLock};
 /// # Example
 ///
 /// ```rust,ignore
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// pub struct MyTaskStore {
 ///     base: ObservableTaskStore,

@@ -16,7 +16,7 @@
 //! # Examples
 //!
 //! ```rust,ignore
-//! use rust_gds::ml::core::samplers::UniformSampler;
+//! use gds::ml::core::samplers::UniformSampler;
 //!
 //! let sampler = UniformSampler::new(42);
 //!
@@ -44,7 +44,7 @@ impl UniformSampler {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::ml::core::samplers::UniformSampler;
+    /// use gds::ml::core::samplers::UniformSampler;
     ///
     /// let sampler = UniformSampler::new(42);
     /// ```

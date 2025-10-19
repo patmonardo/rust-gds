@@ -38,8 +38,8 @@ use std::sync::Arc;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::paged::ParallelDoublePageCreator;
-/// use rust_gds::concurrency::Concurrency;
+/// use gds::core::utils::paged::ParallelDoublePageCreator;
+/// use gds::concurrency::Concurrency;
 ///
 /// // Identity mapping for 1 billion elements
 /// let creator = ParallelDoublePageCreator::identity(Concurrency::of(8));
@@ -69,8 +69,8 @@ impl ParallelDoublePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelDoublePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelDoublePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Create pages with square root values
     /// let creator = ParallelDoublePageCreator::of(
@@ -108,8 +108,8 @@ impl ParallelDoublePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelDoublePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelDoublePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelDoublePageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(10_000);
@@ -138,8 +138,8 @@ impl ParallelDoublePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelDoublePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelDoublePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelDoublePageCreator::pass_through(Concurrency::of(4));
     /// let mut pages = creator.create_pages(10_000);
@@ -168,8 +168,8 @@ impl ParallelDoublePageCreator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ParallelDoublePageCreator;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::core::utils::paged::ParallelDoublePageCreator;
+    /// use gds::concurrency::Concurrency;
     ///
     /// let creator = ParallelDoublePageCreator::identity(Concurrency::of(8));
     /// let pages = creator.create_pages(1_000_000);

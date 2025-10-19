@@ -16,7 +16,7 @@ use std::fmt;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidator};
+/// use gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidator};
 ///
 /// let validator = OpenGdsConcurrencyValidator;
 /// assert!(validator.validate(4, "concurrency", 4).is_ok());
@@ -38,7 +38,7 @@ pub trait ConcurrencyValidator {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidator};
+    /// use gds::concurrency::validator::{ConcurrencyValidator, OpenGdsConcurrencyValidator};
     ///
     /// let validator = OpenGdsConcurrencyValidator;
     ///

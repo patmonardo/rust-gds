@@ -2,7 +2,7 @@
 //!
 //! Demonstrates wait-free parallel union-find operations for graph algorithms.
 
-use rust_gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
+use gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
 use std::sync::Arc;
 use std::thread;
 use std::time::Instant;

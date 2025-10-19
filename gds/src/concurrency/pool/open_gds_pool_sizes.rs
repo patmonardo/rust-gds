@@ -19,7 +19,7 @@ use super::PoolSizes;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, OpenGdsPoolSizes};
+/// use gds::concurrency::pool::{PoolSizes, OpenGdsPoolSizes};
 ///
 /// let pool = OpenGdsPoolSizes;
 /// assert_eq!(pool.core_pool_size(), 4);

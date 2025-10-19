@@ -21,7 +21,7 @@
 /// # Example: Basic Iteration
 ///
 /// ```text
-/// use rust_gds::collections::cursor::{HugeCursor, SinglePageCursor};
+/// use gds::collections::cursor::{HugeCursor, SinglePageCursor};
 ///
 /// let data = vec![1, 2, 3, 4, 5];
 /// let mut cursor = SinglePageCursor::new(&data);

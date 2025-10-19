@@ -5,7 +5,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::procedure::core::prelude::*;
+//! use gds::procedure::core::prelude::*;
 //! ```
 
 // Re-export result processing when available

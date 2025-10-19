@@ -20,7 +20,7 @@
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeSparseDoubleArray;
+/// use gds::collections::HugeSparseDoubleArray;
 ///
 /// // Build sparse array for scientific data
 /// let mut builder = HugeSparseDoubleArray::builder(0.0); // default = 0.0

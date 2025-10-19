@@ -27,9 +27,9 @@
 //! ## Example: Pregel-Style Iteration
 //!
 //! ```rust
-//! use rust_gds::concurrency::virtual_threads::{Executor, Scope};
-//! use rust_gds::concurrency::Concurrency;
-//! use rust_gds::termination::TerminationFlag;
+//! use gds::concurrency::virtual_threads::{Executor, Scope};
+//! use gds::concurrency::Concurrency;
+//! use gds::termination::TerminationFlag;
 //!
 //! let executor = Executor::new(Concurrency::available_cores());
 //! let termination = TerminationFlag::running_true();

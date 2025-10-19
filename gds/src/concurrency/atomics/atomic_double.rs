@@ -20,7 +20,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::atomics::AtomicDouble;
+/// use gds::concurrency::atomics::AtomicDouble;
 /// use std::sync::atomic::Ordering;
 ///
 /// let atomic = AtomicDouble::new(1.5);
@@ -44,7 +44,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     ///
     /// let atomic = AtomicDouble::new(3.14);
     /// ```
@@ -59,7 +59,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::zero();
@@ -83,7 +83,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);
@@ -107,7 +107,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);
@@ -126,7 +126,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);
@@ -158,7 +158,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);
@@ -204,7 +204,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);
@@ -239,7 +239,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);
@@ -272,7 +272,7 @@ impl AtomicDouble {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicDouble;
+    /// use gds::concurrency::atomics::AtomicDouble;
     /// use std::sync::atomic::Ordering;
     ///
     /// let atomic = AtomicDouble::new(5.0);

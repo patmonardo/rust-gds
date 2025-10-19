@@ -17,7 +17,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::macros::*;
+//! use gds::projection::codegen::macros::*;
 //!
 //! // Use value_type_table! to define property types
 //! value_type_table! {

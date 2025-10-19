@@ -44,7 +44,7 @@ const NUM_BITS: usize = 64; // 64 bits per i64 word
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::collections::HugeAtomicBitSet;
+/// use gds::collections::HugeAtomicBitSet;
 ///
 /// // Bitset for tracking visited nodes in parallel BFS
 /// let node_count = 1_000_000_000;

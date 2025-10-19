@@ -6,7 +6,7 @@
 //! 3. Batched high-throughput operations
 //! 4. Performance comparison: sequential vs batched
 
-use rust_gds::core::utils::paged::ShardedLongLongMap;
+use gds::core::utils::paged::ShardedLongLongMap;
 use std::thread;
 use std::time::Instant;
 

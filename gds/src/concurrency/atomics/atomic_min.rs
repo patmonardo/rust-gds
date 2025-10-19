@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::atomics::AtomicMin;
+/// use gds::concurrency::atomics::AtomicMin;
 /// use std::sync::atomic::Ordering;
 ///
 /// let min = AtomicMin::new(100);
@@ -28,7 +28,7 @@ impl AtomicMin {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMin;
+    /// use gds::concurrency::atomics::AtomicMin;
     ///
     /// let min = AtomicMin::new(42);
     /// ```
@@ -46,7 +46,7 @@ impl AtomicMin {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMin;
+    /// use gds::concurrency::atomics::AtomicMin;
     /// use std::sync::atomic::Ordering;
     ///
     /// let min = AtomicMin::max_value();
@@ -62,7 +62,7 @@ impl AtomicMin {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMin;
+    /// use gds::concurrency::atomics::AtomicMin;
     /// use std::sync::atomic::Ordering;
     ///
     /// let min = AtomicMin::new(42);
@@ -81,7 +81,7 @@ impl AtomicMin {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMin;
+    /// use gds::concurrency::atomics::AtomicMin;
     /// use std::sync::atomic::Ordering;
     ///
     /// let min = AtomicMin::new(100);
@@ -117,7 +117,7 @@ impl AtomicMin {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::atomics::AtomicMin;
+    /// use gds::concurrency::atomics::AtomicMin;
     /// use std::sync::atomic::Ordering;
     ///
     /// let min = AtomicMin::new(100);

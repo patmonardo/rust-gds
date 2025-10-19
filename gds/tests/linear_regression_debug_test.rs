@@ -1,11 +1,11 @@
 //! Debug test for Linear Regression training issues
 
 use parking_lot::RwLock;
-use rust_gds::collections::HugeDoubleArray;
-use rust_gds::ml::core::tensor::Tensor;
-use rust_gds::ml::gradient_descent::GradientDescentConfig;
-use rust_gds::ml::models::linear::*;
-use rust_gds::ml::models::{BaseModelData, Features, Regressor, RegressorTrainer};
+use gds::collections::HugeDoubleArray;
+use gds::ml::core::tensor::Tensor;
+use gds::ml::gradient_descent::GradientDescentConfig;
+use gds::ml::models::linear::*;
+use gds::ml::models::{BaseModelData, Features, Regressor, RegressorTrainer};
 use std::sync::Arc;
 
 /// Simple feature store for testing

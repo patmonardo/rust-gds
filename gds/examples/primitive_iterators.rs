@@ -10,7 +10,7 @@
 //!
 //! This example shows how to use primitive iterators for common graph operations.
 
-use rust_gds::collections::primitive::{
+use gds::collections::primitive::{
     empty, of, range, single, PrimitiveLongIterable, PrimitiveLongIterator,
 };
 

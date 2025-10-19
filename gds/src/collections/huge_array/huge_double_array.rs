@@ -27,7 +27,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 /// # Examples
 ///
 /// ```text
-/// use rust_gds::collections::huge_array::HugeDoubleArray;
+/// use gds::collections::huge_array::HugeDoubleArray;
 ///
 /// // Store PageRank scores
 /// let mut scores = HugeDoubleArray::new(1_000_000);
@@ -39,8 +39,8 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 /// # Cursor-Based Iteration
 ///
 /// ```
-/// use rust_gds::collections::huge_array::HugeDoubleArray;
-/// use rust_gds::collections::cursor::{HugeCursor, init_cursor};
+/// use gds::collections::huge_array::HugeDoubleArray;
+/// use gds::collections::cursor::{HugeCursor, init_cursor};
 ///
 /// let mut array = HugeDoubleArray::new(10000);
 /// array.set_all(|i| i as f64 * 0.5);
@@ -69,7 +69,7 @@ impl HugeDoubleArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeDoubleArray;
+    /// use gds::collections::huge_array::HugeDoubleArray;
     ///
     /// let scores = HugeDoubleArray::new(1_000_000);
     /// assert_eq!(scores.size(), 1_000_000);
@@ -107,8 +107,8 @@ impl HugeDoubleArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeDoubleArray;
-    /// use rust_gds::concurrency::Concurrency;
+    /// use gds::collections::huge_array::HugeDoubleArray;
+    /// use gds::concurrency::Concurrency;
     ///
     /// // Identity mapping
     /// let array = HugeDoubleArray::with_generator(
@@ -172,7 +172,7 @@ impl HugeDoubleArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeDoubleArray;
+    /// use gds::collections::huge_array::HugeDoubleArray;
     ///
     /// let mut array = HugeDoubleArray::new(10);
     /// array.set(0, 1.5);
@@ -191,7 +191,7 @@ impl HugeDoubleArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeDoubleArray;
+    /// use gds::collections::huge_array::HugeDoubleArray;
     ///
     /// let mut array = HugeDoubleArray::new(5);
     /// array.set_all(|i| i as f64 * 0.5);
@@ -214,7 +214,7 @@ impl HugeDoubleArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeDoubleArray;
+    /// use gds::collections::huge_array::HugeDoubleArray;
     ///
     /// let mut array = HugeDoubleArray::new(100);
     /// array.fill(3.14159);
@@ -282,7 +282,7 @@ impl HugeDoubleArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::huge_array::HugeDoubleArray;
+    /// use gds::collections::huge_array::HugeDoubleArray;
     ///
     /// let mut array = HugeDoubleArray::new(5);
     /// array.set_all(|i| i as f64);

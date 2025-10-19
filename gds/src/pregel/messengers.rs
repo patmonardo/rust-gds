@@ -329,7 +329,7 @@ impl MessageIterator for ReducingMessageIterator {
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::{ReducingMessenger, SumReducer};
+/// use gds::pregel::{ReducingMessenger, SumReducer};
 ///
 /// let reducer = Box::new(SumReducer);
 /// let mut messenger = ReducingMessenger::new(node_count, reducer, false);

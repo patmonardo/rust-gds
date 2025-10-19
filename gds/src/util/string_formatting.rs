@@ -8,7 +8,7 @@
 ///
 /// # Examples
 /// ```
-/// use rust_gds::util::string_formatting::format_with_locale;
+/// use gds::util::string_formatting::format_with_locale;
 /// let msg = format_with_locale("Hello %s, you have %s messages", &["Alice", "5"]);
 /// assert_eq!(msg, "Hello Alice, you have 5 messages");
 /// ```
@@ -36,7 +36,7 @@ pub fn format_with_locale(fmt: &str, args: &[impl ToString]) -> String {
 ///
 /// # Examples
 /// ```
-/// use rust_gds::util::string_formatting::format_number;
+/// use gds::util::string_formatting::format_number;
 /// assert_eq!(format_number(1000), "1_000");
 /// assert_eq!(format_number(1234567), "1_234_567");
 /// ```

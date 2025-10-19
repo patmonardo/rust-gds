@@ -39,7 +39,7 @@ use std::sync::Arc;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// // Create service with progress tracking enabled
 /// let service = TaskStoreService::new(true);

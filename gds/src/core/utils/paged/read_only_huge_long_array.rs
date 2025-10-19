@@ -32,8 +32,8 @@
 //! # Examples
 //!
 //! ```
-//! use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
-//! use rust_gds::collections::HugeLongArray;
+//! use gds::core::utils::paged::ReadOnlyHugeLongArray;
+//! use gds::collections::HugeLongArray;
 //!
 //! // Create and populate mutable array
 //! let mut array = HugeLongArray::new(1000);
@@ -68,8 +68,8 @@ use crate::collections::HugeLongArray;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
-/// use rust_gds::collections::HugeLongArray;
+/// use gds::core::utils::paged::ReadOnlyHugeLongArray;
+/// use gds::collections::HugeLongArray;
 ///
 /// fn process_immutable_data(data: &ReadOnlyHugeLongArray) {
 ///     for i in 0..data.size() {
@@ -99,8 +99,8 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
-    /// use rust_gds::collections::HugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::collections::HugeLongArray;
     ///
     /// // Create and populate mutable array
     /// let mut array = HugeLongArray::new(1000000);
@@ -130,7 +130,7 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
     ///
     /// // Create read-only array for testing
     /// let node_ids = ReadOnlyHugeLongArray::of(&[1, 5, 9, 12, 15]);
@@ -166,7 +166,7 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
     ///
     /// let array = ReadOnlyHugeLongArray::of(&[10, 20, 30, 40, 50]);
     /// assert_eq!(array.get(0), 10);
@@ -183,7 +183,7 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
     ///
     /// let array = ReadOnlyHugeLongArray::of(&[1, 2, 3, 4, 5]);
     /// assert_eq!(array.size(), 5);
@@ -205,7 +205,7 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
     ///
     /// let array = ReadOnlyHugeLongArray::of(&[1, 2, 3, 4, 5]);
     /// let vec = array.to_vec();
@@ -224,7 +224,7 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
     ///
     /// let array = ReadOnlyHugeLongArray::of(&[1, 2, 3]);
     /// let inner = array.inner();
@@ -242,8 +242,8 @@ impl ReadOnlyHugeLongArray {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::paged::ReadOnlyHugeLongArray;
-    /// use rust_gds::collections::HugeLongArray;
+    /// use gds::core::utils::paged::ReadOnlyHugeLongArray;
+    /// use gds::collections::HugeLongArray;
     ///
     /// let array = HugeLongArray::from_vec(vec![1, 2, 3]);
     /// let read_only = ReadOnlyHugeLongArray::new(array);

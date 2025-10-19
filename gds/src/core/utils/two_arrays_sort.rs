@@ -32,7 +32,7 @@ use super::AscendingLongComparator;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::sort_double_array_by_long_values;
+/// use gds::core::utils::sort_double_array_by_long_values;
 ///
 /// let mut node_ids = vec![4, 1, 8];
 /// let mut weights = vec![0.5, 1.9, 0.9];
@@ -44,7 +44,7 @@ use super::AscendingLongComparator;
 /// ```
 ///
 /// ```
-/// use rust_gds::core::utils::sort_double_array_by_long_values;
+/// use gds::core::utils::sort_double_array_by_long_values;
 ///
 /// // Sort neighbor list by node IDs while maintaining edge weights
 /// let mut neighbors = vec![100, 50, 200, 75];
@@ -83,7 +83,7 @@ pub fn sort_double_array_by_long_values(
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::sort_long_array_by_double_values;
+/// use gds::core::utils::sort_long_array_by_double_values;
 ///
 /// let mut node_ids = vec![100, 50, 200, 75];
 /// let mut weights = vec![0.8, 0.3, 0.9, 0.1];
@@ -127,7 +127,7 @@ pub fn sort_long_array_by_double_values(
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::sort_double_array_by_long_values_desc;
+/// use gds::core::utils::sort_double_array_by_long_values_desc;
 ///
 /// let mut node_ids = vec![4, 1, 8];
 /// let mut weights = vec![0.5, 1.9, 0.9];
@@ -290,7 +290,7 @@ fn merge(
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::is_correctly_sorted;
+/// use gds::core::utils::is_correctly_sorted;
 ///
 /// let node_ids = vec![1, 4, 8];
 /// let weights = vec![1.9, 0.5, 0.9];

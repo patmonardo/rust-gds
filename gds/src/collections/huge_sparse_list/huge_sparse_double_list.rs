@@ -21,7 +21,7 @@ const PAGE_MASK: usize = PAGE_SIZE - 1;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::collections::HugeSparseDoubleList;
+/// use gds::collections::HugeSparseDoubleList;
 ///
 /// let list = HugeSparseDoubleList::of(0.0);
 ///
@@ -57,7 +57,7 @@ impl HugeSparseDoubleList {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::collections::HugeSparseDoubleList;
+    /// use gds::collections::HugeSparseDoubleList;
     ///
     /// let list = HugeSparseDoubleList::of(0.0);
     /// list.set(42, 3.14);

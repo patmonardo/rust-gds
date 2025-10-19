@@ -5,7 +5,7 @@
 
 #[cfg(feature = "arrow")]
 mod arrow_factory_tests {
-    use rust_gds::projection::factory::prelude::*;
+    use gds::projection::factory::prelude::*;
 
     #[test]
     fn test_factory_creation() {

@@ -14,7 +14,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert!(BitUtil::is_power_of_two(16));
     /// assert!(!BitUtil::is_power_of_two(15));
@@ -29,7 +29,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::previous_power_of_two(17), 16);
     /// assert_eq!(BitUtil::previous_power_of_two(16), 16);
@@ -60,7 +60,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::next_highest_power_of_two(15), 16);
     /// assert_eq!(BitUtil::next_highest_power_of_two(16), 16);
@@ -90,7 +90,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::nearby_power_of_two(10), 8);
     /// assert_eq!(BitUtil::nearby_power_of_two(12), 8);  // Equidistant, prefers lower
@@ -122,7 +122,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::align(10, 8), 16);
     /// assert_eq!(BitUtil::align(16, 8), 16);
@@ -146,7 +146,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::number_of_leading_zeros_32(1), 31);
     /// assert_eq!(BitUtil::number_of_leading_zeros_32(0xFF), 24);
@@ -160,7 +160,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::number_of_leading_zeros(1), usize::BITS - 1);
     /// ```
@@ -173,7 +173,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::number_of_trailing_zeros(8), 3);
     /// assert_eq!(BitUtil::number_of_trailing_zeros(12), 2);
@@ -187,7 +187,7 @@ impl BitUtil {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::BitUtil;
+    /// use gds::mem::BitUtil;
     ///
     /// assert_eq!(BitUtil::ceil_div(10, 3), 4);
     /// assert_eq!(BitUtil::ceil_div(9, 3), 3);

@@ -52,7 +52,7 @@ impl std::error::Error for FormProcessorError {}
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::projection::PropertyProjection;
+/// use gds::pregel::projection::PropertyProjection;
 ///
 /// // Optional: read initial ranks from PropertyStore
 /// if let Some(props) = graph.get_property_values("initial_rank") {

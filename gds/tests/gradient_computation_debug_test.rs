@@ -3,7 +3,7 @@
 //! This test focuses specifically on whether gradients are being computed
 //! correctly for weights during the backward pass.
 
-use rust_gds::ml::{
+use gds::ml::{
     core::{
         batch::{Batch, RangeBatch},
         functions::{

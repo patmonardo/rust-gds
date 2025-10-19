@@ -102,7 +102,7 @@ pub trait TaskStoreProvider: Send + Sync {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// let provider = SimpleTaskStoreProvider;
 /// let store = provider.get_task_store("neo4j");

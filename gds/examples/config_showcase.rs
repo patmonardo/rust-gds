@@ -2,8 +2,8 @@
 //!
 //! Demonstrates how to use the type-safe builder pattern for graph configurations.
 
-use rust_gds::config::*;
-use rust_gds::projection::{NodeLabel, RelationshipType};
+use gds::config::*;
+use gds::projection::{NodeLabel, RelationshipType};
 
 fn main() {
     println!("=== Rust-GDS Configuration System Examples ===\n");
@@ -98,8 +98,8 @@ fn main() {
     // Example 8: Property configuration
     println!("8. Property configuration:");
     let prop_config = PropertyConfig::builder(String::from("pagerank_score"))
-        .aggregation(rust_gds::core::Aggregation::Sum)
-        .property_state(rust_gds::types::PropertyState::Persistent)
+        .aggregation(gds::core::Aggregation::Sum)
+        .property_state(gds::types::PropertyState::Persistent)
         .build()
         .expect("Valid config");
     println!("   Property key: {}", prop_config.property_key);
@@ -108,9 +108,9 @@ fn main() {
     // Example 9: Relationship builder configuration
     println!("9. Relationship builder:");
     let rel_config = RelationshipsBuilderConfig::builder(RelationshipType::of("SIMILAR_TO"))
-        .orientation(rust_gds::projection::Orientation::Undirected)
+        .orientation(gds::projection::Orientation::Undirected)
         .index_inverse(true)
-        .aggregation(rust_gds::core::Aggregation::Max)
+        .aggregation(gds::core::Aggregation::Max)
         .build()
         .expect("Valid config");
     println!("   Relationship type: {}", rel_config.relationship_type);

@@ -8,7 +8,7 @@ use super::OpenGdsPoolSizes;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{LicenseState, PoolSizesProvider};
+/// use gds::concurrency::pool::{LicenseState, PoolSizesProvider};
 ///
 /// let license = LicenseState::Open;
 /// let provider = PoolSizesProvider;
@@ -44,7 +44,7 @@ pub enum LicenseState {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, PoolSizesProvider, LicenseState};
+/// use gds::concurrency::pool::{PoolSizes, PoolSizesProvider, LicenseState};
 ///
 /// let provider = PoolSizesProvider;
 /// let pool = provider.get(LicenseState::Open);
@@ -62,7 +62,7 @@ impl PoolSizesProvider {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::pool::{PoolSizes, PoolSizesProvider, LicenseState};
+    /// use gds::concurrency::pool::{PoolSizes, PoolSizesProvider, LicenseState};
     ///
     /// let provider = PoolSizesProvider;
     /// let pool = provider.get(LicenseState::Open);
@@ -80,7 +80,7 @@ impl PoolSizesProvider {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::pool::PoolSizesProvider;
+    /// use gds::concurrency::pool::PoolSizesProvider;
     ///
     /// let provider = PoolSizesProvider;
     /// assert_eq!(provider.priority(), i32::MIN);
@@ -107,7 +107,7 @@ impl PoolSizesProvider {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::pool::{PoolSizes, PoolSizesService};
+/// use gds::concurrency::pool::{PoolSizes, PoolSizesService};
 ///
 /// let pool = PoolSizesService::pool_sizes();
 /// assert_eq!(pool.core_pool_size(), 4);
@@ -122,7 +122,7 @@ impl PoolSizesService {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::pool::{PoolSizes, PoolSizesService};
+    /// use gds::concurrency::pool::{PoolSizes, PoolSizesService};
     ///
     /// let pool = PoolSizesService::pool_sizes();
     /// assert_eq!(pool.core_pool_size(), 4);

@@ -7,15 +7,15 @@
 
 #[cfg(test)]
 mod tests {
-    use rust_gds::procedure::pagerank::{
+    use gds::procedure::pagerank::{
         PageRankPregelComputation, PageRankMemoryEstimation, estimate_pagerank_memory,
         PageRankConfig, PageRankAlgorithmSpec
     };
-    use rust_gds::pregel::PregelComputation;
-    use rust_gds::config::PregelConfig;
-    use rust_gds::mem::MemoryEstimation;
-    use rust_gds::core::graph_dimensions::ConcreteGraphDimensions;
-    use rust_gds::projection::eval::procedure::AlgorithmSpec;
+    use gds::pregel::PregelComputation;
+    use gds::config::PregelConfig;
+    use gds::mem::MemoryEstimation;
+    use gds::core::graph_dimensions::ConcreteGraphDimensions;
+    use gds::projection::eval::procedure::AlgorithmSpec;
 
     #[test]
     fn test_pagerank_pregel_computation() {

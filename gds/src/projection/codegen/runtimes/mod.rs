@@ -23,7 +23,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::projection::codegen::runtimes::*;
+//! use gds::projection::codegen::runtimes::*;
 //!
 //! // Implement Computer trait for BSP execution
 //! impl Computer for BspComputer {

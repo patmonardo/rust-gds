@@ -15,7 +15,7 @@
 //! # Example (Basic Structure)
 //!
 //! ```ignore
-//! use rust_gds::pregel::{PregelComputation, PregelContext};
+//! use gds::pregel::{PregelComputation, PregelContext};
 //!
 //! struct PageRankComputation {
 //!     damping_factor: f64,

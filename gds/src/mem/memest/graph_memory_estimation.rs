@@ -13,7 +13,7 @@ use crate::mem::{MemoryRange, MemoryTree};
 /// # Example
 ///
 /// ```rust,ignore
-/// use rust_gds::mem::memest::GraphMemoryEstimation;
+/// use gds::mem::memest::GraphMemoryEstimation;
 ///
 /// let estimation = GraphMemoryEstimation::new(dimensions, memory_tree);
 /// println!("Node count: {}", estimation.dimensions().node_count());

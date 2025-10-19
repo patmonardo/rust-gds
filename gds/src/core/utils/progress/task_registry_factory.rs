@@ -54,7 +54,7 @@ impl TaskRegistryFactories {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 ///
 /// let factory = EmptyTaskRegistryFactory;
 /// let job_id = JobId::new();
@@ -82,7 +82,7 @@ impl TaskRegistryFactory for EmptyTaskRegistryFactory {
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 /// use std::sync::Arc;
 ///
 /// let store = Arc::new(EmptyTaskStore);

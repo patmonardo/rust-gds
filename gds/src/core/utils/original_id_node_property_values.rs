@@ -19,8 +19,8 @@ use crate::types::ValueType;
 /// # Examples
 ///
 /// ```ignore
-/// use rust_gds::core::utils::OriginalIdNodePropertyValues;
-/// use rust_gds::types::graph::id_map::IdMap;
+/// use gds::core::utils::OriginalIdNodePropertyValues;
+/// use gds::types::graph::id_map::IdMap;
 ///
 /// let id_map = /* some IdMap implementation */;
 /// let props = OriginalIdNodePropertyValues::from_id_map(&id_map);
@@ -52,8 +52,8 @@ impl OriginalIdNodePropertyValues {
     /// # Examples
     ///
     /// ```ignore
-    /// use rust_gds::core::utils::OriginalIdNodePropertyValues;
-    /// use rust_gds::types::graph::id_map::IdMap;
+    /// use gds::core::utils::OriginalIdNodePropertyValues;
+    /// use gds::types::graph::id_map::IdMap;
     ///
     /// let id_map = /* some IdMap implementation */;
     /// let props = OriginalIdNodePropertyValues::from_id_map(&id_map);
@@ -83,7 +83,7 @@ impl OriginalIdNodePropertyValues {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::core::utils::OriginalIdNodePropertyValues;
+    /// use gds::core::utils::OriginalIdNodePropertyValues;
     ///
     /// // Simple identity mapping (mapped ID = original ID)
     /// let props = OriginalIdNodePropertyValues::new(

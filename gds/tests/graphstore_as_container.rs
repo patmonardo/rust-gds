@@ -17,18 +17,18 @@
 //!   4. Graph as immutable projection of container contents
 //!   5. ResultStore semantics (GraphStore as pipeline output)
 
-use rust_gds::projection::{NodeLabel, RelationshipType};
-use rust_gds::types::graph::id_map::{IdMap, SimpleIdMap};
-use rust_gds::types::graph::topology::RelationshipTopology;
-use rust_gds::types::graph::Graph;
-use rust_gds::types::graph_store::{
+use gds::projection::{NodeLabel, RelationshipType};
+use gds::types::graph::id_map::{IdMap, SimpleIdMap};
+use gds::types::graph::topology::RelationshipTopology;
+use gds::types::graph::Graph;
+use gds::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore,
 };
-use rust_gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
-use rust_gds::types::properties::node::DefaultLongNodePropertyValues;
-use rust_gds::types::properties::relationship::DefaultRelationshipPropertyValues;
-use rust_gds::types::schema::GraphSchema;
+use gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
+use gds::types::properties::node::DefaultLongNodePropertyValues;
+use gds::types::properties::relationship::DefaultRelationshipPropertyValues;
+use gds::types::schema::GraphSchema;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 

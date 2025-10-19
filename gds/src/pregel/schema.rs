@@ -121,8 +121,8 @@ impl Element {
 /// # Example
 ///
 /// ```
-/// use rust_gds::pregel::{PregelSchema, Visibility};
-/// use rust_gds::values::ValueType;
+/// use gds::pregel::{PregelSchema, Visibility};
+/// use gds::values::ValueType;
 ///
 /// let schema = PregelSchema::builder()
 ///     .add("rank", ValueType::Double, Visibility::Public)
@@ -183,8 +183,8 @@ impl Eq for Element {}
 /// # Example
 ///
 /// ```
-/// use rust_gds::pregel::{PregelSchema, Visibility};
-/// use rust_gds::values::ValueType;
+/// use gds::pregel::{PregelSchema, Visibility};
+/// use gds::values::ValueType;
 ///
 /// let schema = PregelSchema::builder()
 ///     .add("score", ValueType::Double, Visibility::Public)

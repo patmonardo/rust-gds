@@ -77,7 +77,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 /// # Examples
 ///
 /// ```rust
-/// use rust_gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
+/// use gds::core::utils::paged::dss::{DisjointSetStruct, HugeAtomicDisjointSetStruct};
 /// use std::sync::Arc;
 /// use std::thread;
 ///
@@ -137,7 +137,7 @@ impl HugeAtomicDisjointSetStruct {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::dss::HugeAtomicDisjointSetStruct;
+    /// use gds::core::utils::paged::dss::HugeAtomicDisjointSetStruct;
     ///
     /// // Create DSS for 1 million nodes
     /// let dss = HugeAtomicDisjointSetStruct::new(1_000_000);
@@ -174,7 +174,7 @@ impl HugeAtomicDisjointSetStruct {
     /// # Examples
     ///
     /// ```rust
-    /// use rust_gds::core::utils::paged::dss::HugeAtomicDisjointSetStruct;
+    /// use gds::core::utils::paged::dss::HugeAtomicDisjointSetStruct;
     ///
     /// // Seed first 100 nodes with community IDs, rest unseeded
     /// let dss = HugeAtomicDisjointSetStruct::with_communities(

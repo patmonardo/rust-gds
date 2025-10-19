@@ -12,7 +12,7 @@
 /// # Usage
 ///
 /// ```ignore
-/// use rust_gds::projection::eval::form::features::*;
+/// use gds::projection::eval::form::features::*;
 ///
 /// // Create assembler
 /// let assembler = DefaultFeatureAssembler::new();

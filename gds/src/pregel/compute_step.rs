@@ -46,7 +46,7 @@ pub type ComputeFn<C, I> = Arc<dyn Fn(&mut ComputeContext<C, I>, &mut Messages<I
 /// # Example
 ///
 /// ```ignore
-/// use rust_gds::pregel::ForkJoinComputeStep;
+/// use gds::pregel::ForkJoinComputeStep;
 ///
 /// let step = ForkJoinComputeStep::new(
 ///     init_fn,

@@ -27,7 +27,7 @@ impl UserEntityMemory {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::UserEntityMemory;
+    /// use gds::mem::UserEntityMemory;
     ///
     /// let graph_mem = UserEntityMemory::create_graph("alice", "my-graph", 1024 * 1024);
     /// assert_eq!(graph_mem.user(), "alice");
@@ -47,7 +47,7 @@ impl UserEntityMemory {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::mem::UserEntityMemory;
+    /// use gds::mem::UserEntityMemory;
     ///
     /// let task_mem = UserEntityMemory::create_task("bob", "pagerank", "job-123", 512 * 1024);
     /// assert_eq!(task_mem.user(), "bob");

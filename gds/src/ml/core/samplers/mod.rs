@@ -11,7 +11,7 @@
 //! # Usage
 //!
 //! ```rust,ignore
-//! use rust_gds::ml::core::samplers::{UniformSampler, RandomWalkSampler};
+//! use gds::ml::core::samplers::{UniformSampler, RandomWalkSampler};
 //!
 //! // Uniform sampling for GraphSAGE aggregation
 //! let sampler = UniformSampler::new(42);

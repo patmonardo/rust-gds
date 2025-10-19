@@ -4,7 +4,7 @@
 //! to configure graph loading. The Projection system is the "Zod for Graphs" -
 //! a runtime configuration layer that describes HOW to materialize a GraphStore.
 
-use rust_gds::projection::{
+use gds::projection::{
     AbstractProjections, Aggregation, NodeLabel, NodeProjection, NodeProjections, Orientation,
     PropertyMapping, PropertyMappings, RelationshipProjection, RelationshipProjections,
     RelationshipType,

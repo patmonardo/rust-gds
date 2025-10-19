@@ -14,7 +14,7 @@ use std::num::NonZeroUsize;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::concurrency::BatchSize;
+/// use gds::concurrency::BatchSize;
 ///
 /// let batch = BatchSize::new(100);
 /// assert_eq!(batch.value(), 100);
@@ -35,7 +35,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::try_new(100);
     /// assert!(batch.is_some());
@@ -56,7 +56,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::new(100);
     /// assert_eq!(batch.value(), 100);
@@ -70,7 +70,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::new(100);
     /// assert_eq!(batch.value(), 100);
@@ -142,7 +142,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::{BatchSize, Concurrency};
+    /// use gds::concurrency::{BatchSize, Concurrency};
     ///
     /// let total_work = 1_000_000;
     /// let concurrency = Concurrency::available_cores();
@@ -170,7 +170,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::cache_friendly();
     /// // Typically returns a few hundred to few thousand
@@ -189,7 +189,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::small();
     /// assert_eq!(batch.value(), 64);
@@ -208,7 +208,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::medium();
     /// assert_eq!(batch.value(), 1024);
@@ -227,7 +227,7 @@ impl BatchSize {
     /// # Examples
     ///
     /// ```
-    /// use rust_gds::concurrency::BatchSize;
+    /// use gds::concurrency::BatchSize;
     ///
     /// let batch = BatchSize::large();
     /// assert_eq!(batch.value(), 10_000);

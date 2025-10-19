@@ -31,7 +31,7 @@ use std::sync::Arc;
 /// # Examples
 ///
 /// ```
-/// use rust_gds::core::utils::progress::*;
+/// use gds::core::utils::progress::*;
 /// use std::sync::Arc;
 ///
 /// let store = Arc::new(EmptyTaskStore);

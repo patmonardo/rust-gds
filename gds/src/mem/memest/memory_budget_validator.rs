@@ -10,7 +10,7 @@ use crate::mem::{Estimate, MemoryRange};
 /// # Example
 ///
 /// ```rust,ignore
-/// use rust_gds::mem::memest::MemoryBudgetValidator;
+/// use gds::mem::memest::MemoryBudgetValidator;
 ///
 /// let validator = MemoryBudgetValidator::new(8 * 1024 * 1024 * 1024); // 8 GiB
 ///

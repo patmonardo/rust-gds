@@ -68,16 +68,16 @@
 //!
 //! ```rust,ignore
 //! // Get descriptors
-//! use rust_gds::projection::codegen::descriptors::*;
+//! use gds::projection::codegen::descriptors::*;
 //!
 //! // Get runtime contracts
-//! use rust_gds::projection::codegen::runtimes::*;
+//! use gds::projection::codegen::runtimes::*;
 //!
 //! // Get omniscience (analyze descriptors)
-//! use rust_gds::projection::codegen::registry::*;
+//! use gds::projection::codegen::registry::*;
 //!
 //! // Get omnipotence (manifest runtimes)
-//! use rust_gds::projection::codegen::catalog::*;
+//! use gds::projection::codegen::catalog::*;
 //!
 //! // Apply the concept
 //! let schema = registry_analyzer.analyze(&descriptor)?;

@@ -3,8 +3,8 @@
 //! This test suite debugs the gradient descent system to identify why
 //! Linear and Logistic Regression models are not learning from training data.
 
-use rust_gds::collections::HugeIntArray;
-use rust_gds::ml::{
+use gds::collections::HugeIntArray;
+use gds::ml::{
     core::{
         batch::{Batch, RangeBatch},
         batch_queue,
