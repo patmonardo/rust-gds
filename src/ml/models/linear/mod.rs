@@ -1,21 +1,22 @@
-//! Linear model implementations
+//! Linear regression model package.
 //!
-//! 1:1 translation of org.neo4j.gds.ml.models.linearregression and logisticregression packages.
+//! 1:1 translation of `org.neo4j.gds.ml.models.linearregression` from Java GDS.
+//! The module is organized exactly like the Java package:
 //!
-//! Contains:
-//! - Linear regression (for continuous targets)
-//! - Logistic regression (for binary/multiclass classification)
-//! - Trainers (TODO: translate from Java - require gradient descent infrastructure)
+//! - `data`       → `LinearRegressionData`
+//! - `regressor`  → `LinearRegressor`
+//! - `objective`  → `LinearRegressionObjective`
+//! - `trainer`    → `LinearRegressionTrainer`
+//! - `config`     → `LinearRegressionTrainConfig`
 
-mod linear_regression;
-mod linear_regression_trainer;
-mod logistic_regression;
-mod logistic_regression_trainer;
+pub mod config;
+pub mod data;
+pub mod objective;
+pub mod regressor;
+pub mod trainer;
 
-pub use linear_regression::*;
-
-pub use logistic_regression::*;
-
-// TODO: Translate trainers from Java GDS:
-// - LinearRegressionTrainer (requires gradient descent + Training infrastructure)
-// - LogisticRegressionTrainer (requires gradient descent + Training infrastructure)
+pub use config::LinearRegressionTrainConfig;
+pub use data::LinearRegressionData;
+pub use objective::LinearRegressionObjective;
+pub use regressor::LinearRegressor;
+pub use trainer::LinearRegressionTrainer;

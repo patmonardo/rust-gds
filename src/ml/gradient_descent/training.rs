@@ -156,7 +156,7 @@ impl<'a, O: Objective> ObjectiveUpdateConsumer<'a, O> {
         let summed_weight_gradients = objective
             .weight_handles()
             .into_iter()
-            .map(|handle| handle.borrow().create_with_same_dimensions())
+            .map(|handle| handle.read().create_with_same_dimensions())
             .collect();
 
         Self {

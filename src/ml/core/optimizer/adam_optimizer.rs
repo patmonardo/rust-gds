@@ -1,7 +1,7 @@
 use super::Updater;
 use crate::ml::core::tensor::Tensor;
-use std::cell::RefCell;
-use std::rc::Rc;
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 const CLIP_MAX: f64 = 5.0;
 const CLIP_MIN: f64 = -5.0;
@@ -14,7 +14,7 @@ pub struct AdamOptimizer {
     beta_1: f64,
     beta_2: f64,
     epsilon: f64,
-    weights: Vec<Rc<RefCell<Box<dyn Tensor>>>>,
+    weights: Vec<Arc<RwLock<Box<dyn Tensor>>>>,
     momentum_terms: Vec<Box<dyn Tensor>>,
     velocity_terms: Vec<Box<dyn Tensor>>,
     iteration: usize,
@@ -30,15 +30,15 @@ impl AdamOptimizer {
     }
 
     /// Create a new Adam optimizer
-    pub fn new(weights: Vec<Rc<RefCell<Box<dyn Tensor>>>>, learning_rate: f64) -> Self {
+    pub fn new(weights: Vec<Arc<RwLock<Box<dyn Tensor>>>>, learning_rate: f64) -> Self {
         let momentum_terms: Vec<Box<dyn Tensor>> = weights
             .iter()
-            .map(|w| w.borrow().create_with_same_dimensions())
+            .map(|w| w.read().create_with_same_dimensions())
             .collect();
         
         let velocity_terms: Vec<Box<dyn Tensor>> = weights
             .iter()
-            .map(|w| w.borrow().create_with_same_dimensions())
+            .map(|w| w.read().create_with_same_dimensions())
             .collect();
 
         Self {
@@ -68,7 +68,7 @@ impl Updater for AdamOptimizer {
         self.iteration += 1;
 
         for i in 0..self.weights.len() {
-            let mut weight = self.weights[i].borrow_mut();
+            let mut weight = self.weights[i].write();
             let gradient = context_local_weight_gradients[i].as_ref();
             let momentum_term = self.momentum_terms[i].as_mut();
             let velocity_term = self.velocity_terms[i].as_mut();

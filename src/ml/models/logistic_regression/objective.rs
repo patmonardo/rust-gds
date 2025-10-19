@@ -1,6 +1,7 @@
 use crate::ml::{
     core::{
         batch::Batch,
+        computation_context::ComputationContext,
         functions::{
             constant::Constant,
             constant_scale::ConstantScale,
@@ -8,11 +9,11 @@ use crate::ml::{
             l2_norm_squared::L2NormSquared,
             reduced_cross_entropy_loss::ReducedCrossEntropyLoss,
             reduced_focal_loss::ReducedFocalLoss,
-            Variable,
         },
-        tensor::{Scalar, Tensor, Vector},
+        tensor::Tensor,
+        variable::Variable,
     },
-    gradient_descent::Objective,
+    gradient_descent::{batch_feature_matrix, Objective},
     models::Features,
 };
 use super::{classifier::LogisticRegressionClassifier, data::LogisticRegressionData};
@@ -20,26 +21,26 @@ use std::sync::Arc;
 use parking_lot::RwLock;
 
 /// Objective function for logistic regression training
-pub struct LogisticRegressionObjective {
+pub struct LogisticRegressionObjective<'a> {
     classifier: LogisticRegressionClassifier,
     penalty: f64,
-    features: Arc<Features>,
+    features: &'a dyn Features,
     labels: Arc<RwLock<Vec<i32>>>,
     focus_weight: f64,
     class_weights: Vec<f64>,
 }
 
-impl LogisticRegressionObjective {
+impl<'a> LogisticRegressionObjective<'a> {
     /// Creates a new LogisticRegressionObjective
     pub fn new(
         classifier: LogisticRegressionClassifier,
         penalty: f64,
-        features: Arc<Features>,
+        features: &'a dyn Features,
         labels: Arc<RwLock<Vec<i32>>>,
         focus_weight: f64,
         class_weights: Vec<f64>,
     ) -> Self {
-        assert!(!features.is_empty(), "Features cannot be empty");
+        assert!(features.size() > 0, "Features cannot be empty");
         
         Self {
             classifier,
@@ -52,62 +53,71 @@ impl LogisticRegressionObjective {
     }
 
     /// Computes the penalty term for the batch
-    fn penalty_for_batch(&self, batch: &Batch, train_size: usize) -> ConstantScale<Scalar> {
-        ConstantScale::new(
-            L2NormSquared::new(self.model_data().weights().clone()),
-            (batch.size() as f64) * self.penalty / (train_size as f64),
-        )
+    fn penalty_for_batch<B: Batch>(&self, batch: &B, train_size: usize) -> ConstantScale {
+        let penalty_variable = L2NormSquared::new(Box::new(self.classifier.data().weights().clone()));
+        let scale = (batch.size() as f64) * self.penalty / (train_size as f64);
+        ConstantScale::new(Box::new(penalty_variable), scale)
     }
 
     /// Computes the cross-entropy loss for the batch
-    fn cross_entropy_loss(&self, batch: &Batch) -> Variable<Scalar> {
+    fn cross_entropy_loss<B: Batch>(&self, batch: &B) -> Box<dyn crate::ml::core::variable::Variable> {
         let batch_labels = self.batch_label_vector(batch);
-        let batch_features = self.batch_feature_matrix(batch, &self.features);
+        let batch_features = batch_feature_matrix(batch, self.features);
+        let ctx = ComputationContext::new();
+        let tensor_data = batch_features.apply(&ctx);
+        let batch_features_clone = Constant::new(tensor_data);
         let predictions = self.classifier.predictions_variable(batch_features);
 
         if self.focus_weight == 0.0 {
-            ReducedCrossEntropyLoss::new(
+            Box::new(ReducedCrossEntropyLoss::new(
                 predictions,
-                self.classifier.data().weights().clone(),
-                self.classifier.data().bias().clone(),
-                batch_features,
-                batch_labels,
+                Box::new(self.classifier.data().weights().clone()),
+                Box::new(self.classifier.data().bias().clone()),
+                Box::new(batch_features_clone),
+                Box::new(batch_labels),
                 self.class_weights.clone(),
-            )
+            ))
         } else {
-            ReducedFocalLoss::new(
+            Box::new(ReducedFocalLoss::new(
                 predictions,
-                self.classifier.data().weights().clone(),
-                self.classifier.data().bias().clone(),
-                batch_features,
-                batch_labels,
+                Box::new(self.classifier.data().weights().clone()),
+                Box::new(self.classifier.data().bias().clone()),
+                Box::new(batch_features_clone),
+                Box::new(batch_labels),
                 self.focus_weight,
                 self.class_weights.clone(),
-            )
+            ))
         }
     }
 
     /// Creates a vector of labels for the batch
-    fn batch_label_vector(&self, batch: &Batch) -> Constant<Vector> {
+    fn batch_label_vector<B: Batch>(&self, batch: &B) -> Constant {
         let labels = self.labels.read();
-        let mut batched_targets = Vector::zeros(batch.size());
+        let mut batched_targets = Vec::with_capacity(batch.size());
         
-        for (i, &id) in batch.element_ids().iter().enumerate() {
-            batched_targets.set(i, labels[id] as f64);
+        for element_id in batch.element_ids() {
+            batched_targets.push(labels[element_id as usize] as f64);
         }
 
         Constant::vector(batched_targets)
     }
 }
 
-impl Objective for LogisticRegressionObjective {
+impl<'a> Objective for LogisticRegressionObjective<'a> {
     type ModelData = LogisticRegressionData;
 
-    fn loss(&self, batch: &Batch, train_size: usize) -> Variable<Scalar> {
+    fn weight_handles(&self) -> Vec<Arc<RwLock<Box<dyn Tensor>>>> {
+        vec![
+            self.classifier.data().weights().handle(),
+            self.classifier.data().bias().handle(),
+        ]
+    }
+
+    fn loss<B: Batch>(&self, batch: &B, train_size: usize) -> Box<dyn crate::ml::core::variable::Variable> {
         let unpenalized_loss = self.cross_entropy_loss(batch);
         let penalty_variable = self.penalty_for_batch(batch, train_size);
         
-        ElementSum::new(vec![unpenalized_loss, penalty_variable])
+        Box::new(ElementSum::new(vec![unpenalized_loss, Box::new(penalty_variable)]))
     }
 
     fn model_data(&self) -> &Self::ModelData {

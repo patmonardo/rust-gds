@@ -16,15 +16,20 @@ use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
 use crate::ml::core::variable_base::VariableBase;
+use parking_lot::{
+    MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
+};
 use std::fmt;
+use std::sync::Arc;
 
 /// Trainable weights that require gradient computation.
 ///
 /// This corresponds to Weights<T> in Java GDS.
-/// Uses type erasure - stores a boxed Tensor.
+/// Uses type erasure - stores a boxed Tensor protected by an `Arc<RwLock<…>>`
+/// so that gradients can update the value concurrently.
 pub struct Weights {
-    base: VariableBase, // COMPOSITION: wraps shared Variable logic
-    data: Box<dyn Tensor>,
+    base: VariableBase,                 // COMPOSITION: shared Variable behaviour
+    data: Arc<RwLock<Box<dyn Tensor>>>, // Shared trainable tensor
 }
 
 impl Weights {
@@ -35,13 +40,7 @@ impl Weights {
     /// Create weights from any tensor.
     /// Java: `public Weights(T data) { super(List.of(), data.dimensions()); this.data = data; }`
     pub fn new(data: Box<dyn Tensor>) -> Self {
-        let dimensions = data.dimensions().to_vec();
-        let base = VariableBase::with_gradient_requirement(
-            vec![], // Weights have no parents (leaf variables)
-            dimensions,
-            true, // Weights ALWAYS require gradients (trainable)
-        );
-        Self { base, data }
+        Self::from_tensor(data)
     }
 
     // ========================================================================
@@ -66,20 +65,105 @@ impl Weights {
         Self::new(Box::new(Scalar::new(value)))
     }
 
+    /// Construct weights from any tensor. Convenience for serialization paths.
+    pub fn from_tensor(data: Box<dyn Tensor>) -> Self {
+        let dimensions = data.dimensions().to_vec();
+        let base = VariableBase::with_gradient_requirement(vec![], dimensions, true);
+        Self {
+            base,
+            data: Arc::new(RwLock::new(data)),
+        }
+    }
+
     // ========================================================================
     // Accessors
     // ========================================================================
 
-    /// Get the underlying data.
-    /// Java: `public T data() { return data; }`
-    pub fn data(&self) -> &dyn Tensor {
-        self.data.as_ref()
+    /// Clone of internal tensor (read-only snapshot).
+    pub fn snapshot(&self) -> Box<dyn Tensor> {
+        self.data.read().clone_box()
     }
 
     /// Calculate size in bytes for matrix weights.
     /// Java: `public static long sizeInBytes(int rows, int cols)`
     pub fn size_in_bytes(rows: usize, cols: usize) -> usize {
         crate::ml::core::tensor::size_in_bytes(&[rows, cols])
+    }
+
+    /// Shared handle to the underlying tensor used by optimizers.
+    pub fn handle(&self) -> Arc<RwLock<Box<dyn Tensor>>> {
+        self.data.clone()
+    }
+
+    /// Borrow the tensor immutably.
+    pub fn borrow(&self) -> RwLockReadGuard<'_, Box<dyn Tensor>> {
+        self.data.read()
+    }
+
+    /// Borrow the tensor mutably.
+    pub fn borrow_mut(&self) -> RwLockWriteGuard<'_, Box<dyn Tensor>> {
+        self.data.write()
+    }
+
+    /// Borrow as matrix (panic if underlying tensor is not a Matrix).
+    pub fn borrow_matrix(&self) -> MappedRwLockReadGuard<'_, Matrix> {
+        RwLockReadGuard::map(self.data.read(), |tensor| {
+            tensor
+                .as_any()
+                .downcast_ref::<Matrix>()
+                .expect("Weights tensor is not Matrix")
+        })
+    }
+
+    /// Borrow as mutable matrix.
+    pub fn borrow_matrix_mut(&self) -> MappedRwLockWriteGuard<'_, Matrix> {
+        RwLockWriteGuard::map(self.data.write(), |tensor| {
+            tensor
+                .as_any_mut()
+                .downcast_mut::<Matrix>()
+                .expect("Weights tensor is not Matrix")
+        })
+    }
+
+    /// Borrow as scalar (panic if not Scalar).
+    pub fn borrow_scalar(&self) -> MappedRwLockReadGuard<'_, Scalar> {
+        RwLockReadGuard::map(self.data.read(), |tensor| {
+            tensor
+                .as_any()
+                .downcast_ref::<Scalar>()
+                .expect("Weights tensor is not Scalar")
+        })
+    }
+
+    /// Borrow as mutable scalar (panic if not Scalar).
+    pub fn borrow_scalar_mut(&self) -> MappedRwLockWriteGuard<'_, Scalar> {
+        RwLockWriteGuard::map(self.data.write(), |tensor| {
+            tensor
+                .as_any_mut()
+                .downcast_mut::<Scalar>()
+                .expect("Weights tensor is not Scalar")
+        })
+    }
+
+    /// Borrow as vector (panic if not Vector).
+    pub fn borrow_vector(&self) -> MappedRwLockReadGuard<'_, Vector> {
+        RwLockReadGuard::map(self.data.read(), |tensor| {
+            tensor
+                .as_any()
+                .downcast_ref::<Vector>()
+                .expect("Weights tensor is not Vector")
+        })
+    }
+}
+
+impl Clone for Weights {
+    fn clone(&self) -> Self {
+        let base =
+            VariableBase::with_gradient_requirement(vec![], self.base.dimensions().to_vec(), true);
+        Self {
+            base,
+            data: self.data.clone(),
+        }
     }
 }
 
@@ -96,7 +180,7 @@ impl Variable for Weights {
     /// Return the stored data.
     /// Java: `public T apply(ComputationContext ctx) { return data; }`
     fn apply(&self, _ctx: &ComputationContext) -> Box<dyn Tensor> {
-        self.data.clone_box()
+        self.data.read().clone_box()
     }
 
     /// Weights are leaf variables - gradient() should never be called.
@@ -137,11 +221,14 @@ impl fmt::Display for Weights {
         write!(
             f,
             "Weights: {}, requireGradient: {}",
-            self.data,
+            self.base.render_dimensions(),
             self.require_gradient()
         )
     }
 }
+
+unsafe impl Send for Weights {}
+unsafe impl Sync for Weights {}
 
 // ============================================================================
 // Tests

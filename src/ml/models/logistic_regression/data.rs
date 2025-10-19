@@ -1,19 +1,23 @@
 use crate::ml::{
-    core::{
-        dimensions::Dimensions,
-        functions::weights::Weights,
-        tensor::{Matrix, Vector},
-    },
+    core::functions::weights::Weights,
+    models::{BaseModelData, ClassifierData},
     TrainingMethod,
 };
-use serde::{Deserialize, Serialize};
 
 /// Data structure holding the parameters of a logistic regression model
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct LogisticRegressionData {
-    weights: Weights<Matrix>,
-    bias: Weights<Vector>,
+    weights: Weights,
+    bias: Weights,
     number_of_classes: usize,
+}
+
+impl std::fmt::Debug for LogisticRegressionData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LogisticRegressionData")
+            .field("number_of_classes", &self.number_of_classes)
+            .finish()
+    }
 }
 
 impl LogisticRegressionData {
@@ -36,7 +40,7 @@ impl LogisticRegressionData {
         };
 
         let weights = Weights::of_matrix(rows, feature_count);
-        let bias = Weights::new(Vector::zeros(rows));
+        let bias = Weights::of_vector(vec![0.0; rows]);
 
         Self {
             weights,
@@ -46,12 +50,12 @@ impl LogisticRegressionData {
     }
 
     /// Returns the weights matrix
-    pub fn weights(&self) -> &Weights<Matrix> {
+    pub fn weights(&self) -> &Weights {
         &self.weights
     }
 
     /// Returns the bias vector
-    pub fn bias(&self) -> &Weights<Vector> {
+    pub fn bias(&self) -> &Weights {
         &self.bias
     }
 
@@ -62,11 +66,27 @@ impl LogisticRegressionData {
 
     /// Returns the feature dimension
     pub fn feature_dimension(&self) -> usize {
-        self.weights.dimension(Dimensions::COLUMNS_INDEX)
+        self.weights.borrow_matrix().cols()
     }
 
     /// Returns the training method
     pub fn trainer_method(&self) -> TrainingMethod {
         TrainingMethod::LogisticRegression
+    }
+}
+
+impl BaseModelData for LogisticRegressionData {
+    fn trainer_method(&self) -> TrainingMethod {
+        TrainingMethod::LogisticRegression
+    }
+
+    fn feature_dimension(&self) -> usize {
+        self.feature_dimension()
+    }
+}
+
+impl ClassifierData for LogisticRegressionData {
+    fn number_of_classes(&self) -> usize {
+        self.number_of_classes
     }
 }

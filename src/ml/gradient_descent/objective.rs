@@ -5,8 +5,8 @@ use crate::ml::core::{
     variable::Variable,
 };
 use crate::ml::models::Features;
-use std::cell::RefCell;
-use std::rc::Rc;
+use parking_lot::RwLock;
+use std::sync::Arc;
 
 /// A training objective that computes a loss over a batch of nodes
 pub trait Objective {
@@ -14,7 +14,7 @@ pub trait Objective {
 
     /// Handles to trainable weight tensors used by the objective.
     /// Each handle should point to shared tensor storage so optimizers can update in-place.
-    fn weight_handles(&self) -> Vec<Rc<RefCell<Box<dyn Tensor>>>>;
+    fn weight_handles(&self) -> Vec<Arc<RwLock<Box<dyn Tensor>>>>;
 
     /// Computes the loss for a batch
     fn loss<B: Batch>(&self, batch: &B, train_size: usize) -> Box<dyn Variable>;

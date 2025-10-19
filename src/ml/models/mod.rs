@@ -17,6 +17,7 @@ pub mod base;
 pub mod config;
 pub mod features;
 pub mod linear;
+pub mod logistic_regression;
 pub mod training_method;
 pub mod trees;
 
@@ -30,9 +31,8 @@ pub use features::{DenseFeatures, FeaturesFactory, LazyFeatures};
 pub use training_method::TrainingMethod;
 
 // Model implementations
-pub use linear::{
-    LinearRegressionData, LinearRegressor, LogisticRegressionClassifier, LogisticRegressionData,
-};
+pub use linear::{LinearRegressionData, LinearRegressor};
+pub use logistic_regression::{LogisticRegressionClassifier, LogisticRegressionData};
 pub use trees::{
     DatasetBootstrapper, DecisionTreePredictor, RandomForestClassifier,
     RandomForestClassifierConfig, RandomForestClassifierData, RandomForestClassifierTrainerConfig,
