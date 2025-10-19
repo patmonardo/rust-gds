@@ -67,7 +67,7 @@ impl Updater for AdamOptimizer {
     fn update(&mut self, context_local_weight_gradients: &[Box<dyn Tensor>]) {
         self.iteration += 1;
 
-        for i in 0..self.weights.len() {
+        for (i, _gradient) in context_local_weight_gradients.iter().enumerate().take(self.weights.len()) {
             let mut weight = self.weights[i].write();
             let gradient = context_local_weight_gradients[i].as_ref();
             let momentum_term = self.momentum_terms[i].as_mut();

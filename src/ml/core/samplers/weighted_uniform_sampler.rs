@@ -29,13 +29,14 @@ impl Eq for WeightedEntry {}
 impl PartialOrd for WeightedEntry {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // Reverse ordering for max-heap (BinaryHeap is max-heap by default)
-        other.priority.partial_cmp(&self.priority)
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for WeightedEntry {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap_or(Ordering::Equal)
+        // Reverse ordering for max-heap (BinaryHeap is max-heap by default)
+        other.priority.partial_cmp(&self.priority).unwrap_or(Ordering::Equal)
     }
 }
 

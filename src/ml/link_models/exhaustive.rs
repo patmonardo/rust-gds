@@ -22,12 +22,12 @@ impl ExhaustiveLinkPredictionResult {
         self.prediction_queue.size()
     }
 
-    pub fn for_each<F>(&self, mut consumer: F)
+    pub fn for_each<F>(&self, consumer: F)
     where
         F: FnMut(i64, i64, f64),
     {
         self.prediction_queue
-            .for_each(|e1, e2, p| consumer(e1, e2, p));
+            .for_each(consumer);
     }
 }
 

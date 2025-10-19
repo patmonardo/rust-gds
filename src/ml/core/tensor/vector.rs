@@ -57,6 +57,10 @@ impl Vector {
         self.length()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.length() == 0
+    }
+
     /// DELEGATION: Get value at index (convenience wrapper).
     pub fn data_at(&self, index: usize) -> f64 {
         self.tensor.data_at(index)

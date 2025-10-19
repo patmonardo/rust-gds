@@ -103,7 +103,7 @@ impl NodeClassificationPredict {
         let predicted_classes =
             parallel_classifier.predict_with_probabilities(predicted_probabilities.as_mut());
 
-        let predicted_probabilities = predicted_probabilities.map(|array| Arc::new(array));
+        let predicted_probabilities = predicted_probabilities.map(Arc::new);
 
         NodeClassificationPredictResult::new(Arc::new(predicted_classes), predicted_probabilities)
     }

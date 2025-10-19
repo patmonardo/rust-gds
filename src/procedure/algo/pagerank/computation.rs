@@ -112,7 +112,7 @@ impl PregelComputation for PageRankComputation {
             delta = self.damping_factor * sum;
 
             // Java: context.setNodeValue(PAGE_RANK, rank + delta);
-            rank = rank + delta;
+            rank += delta;
             context.set_node_value("pagerank", rank);
         }
 

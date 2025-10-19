@@ -229,7 +229,7 @@ impl AlgorithmSpec for SumAlgorithmSpec {
             }
             other => {
                 // Sum is read-only, doesn't support other modes
-                Err(ConsumerError::UnsupportedMode(other.clone()))
+                Err(ConsumerError::UnsupportedMode(*other))
             }
         }
     }

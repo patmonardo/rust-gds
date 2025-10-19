@@ -32,6 +32,12 @@ impl CatalogEntry {
     }
 }
 
+impl Default for UserCatalog {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UserCatalog {
     pub fn new() -> Self {
         Self {

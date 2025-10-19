@@ -27,10 +27,10 @@ pub fn batch_feature_matrix<B: Batch>(batch: &B, features: &dyn Features) -> Con
     let rows = batch.size();
     let cols = features.feature_dimension();
     let mut batch_features = Matrix::zeros(rows, cols);
-    let mut batch_iterator = batch.element_ids();
+    let batch_iterator = batch.element_ids();
     let mut current_row = 0;
 
-    while let Some(element_id) = batch_iterator.next() {
+    for element_id in batch_iterator {
         let feature_vec = features.get(element_id as usize);
         for col in 0..cols {
             batch_features[(current_row, col)] = feature_vec[col];

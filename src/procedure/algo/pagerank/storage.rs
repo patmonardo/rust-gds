@@ -53,7 +53,7 @@ where
     /// This is the **Validator** recognizing the form:
     /// "Are these scores in the right shape for this graph?"
     pub fn validate_scores(&self, scores: &[f64]) -> Result<bool, AlgorithmError> {
-        if scores.len() != self.graph.node_count() as usize {
+        if scores.len() != self.graph.node_count() {
             return Err(AlgorithmError::Execution(format!(
                 "Score array size {} != node count {}",
                 scores.len(),
@@ -91,11 +91,11 @@ where
         &self,
         deltas: &[f64],
     ) -> Result<Vec<Vec<EdgeMessage>>, AlgorithmError> {
-        let node_count = self.graph.node_count() as usize;
+        let node_count = self.graph.node_count();
         let mut incoming_messages: Vec<Vec<EdgeMessage>> = vec![Vec::new(); node_count];
 
         // For each source node
-        for source_id in 0..node_count {
+        for (source_id, _delta) in deltas.iter().enumerate().take(node_count) {
             let source_mapped = source_id as u64;
             let delta = deltas[source_id];
 

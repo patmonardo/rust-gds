@@ -65,6 +65,12 @@ impl ClassificationMetric for Accuracy {
 #[derive(Debug, Clone)]
 pub struct GlobalAccuracy;
 
+impl Default for GlobalAccuracy {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GlobalAccuracy {
     pub const NAME: &'static str = "ACCURACY";
 

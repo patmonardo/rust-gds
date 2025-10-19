@@ -224,12 +224,11 @@ impl Matrix {
     pub fn sum_per_column(&self) -> Box<dyn Tensor> {
         let mut column_sums = vec![0.0; self.cols];
 
-        for col in 0..self.cols {
-            let mut sum = 0.0;
+        for (col, sum) in column_sums.iter_mut().enumerate().take(self.cols) {
+            *sum = 0.0;
             for row in 0..self.rows {
-                sum += self.data_at(row, col);
+                *sum += self.data_at(row, col);
             }
-            column_sums[col] = sum;
         }
 
         Box::new(Vector::new(column_sums))
