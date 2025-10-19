@@ -1,11 +1,11 @@
-//! Integration test: Execute Sum Algorithm through ProcedureExecutor
+//! Integration test: Execute Sum Procedure through ProcedureExecutor
 //!
 //! This demonstrates the complete flow:
 //! User Code → ProcedureExecutor → SumAlgorithmSpec → Result
 
 #[cfg(test)]
 mod tests {
-    use rust_gds::procedure::algo::sum::{SumAlgorithmSpec, SumConfig};
+    use rust_gds::procedure::sum::{SumAlgorithmSpec, SumConfig};
     use rust_gds::projection::eval::procedure::AlgorithmSpec;
     use serde_json::json;
 

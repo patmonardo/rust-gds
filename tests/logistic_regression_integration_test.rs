@@ -4,7 +4,6 @@
 
 use parking_lot::RwLock;
 use rust_gds::collections::HugeIntArray;
-use rust_gds::ml::core::tensor::Matrix;
 use rust_gds::ml::models::logistic_regression::*;
 use rust_gds::ml::models::{Classifier, ClassifierTrainer, Features};
 use std::sync::Arc;

@@ -23,10 +23,12 @@ use rust_gds::ml::{
 use std::sync::Arc;
 
 /// Simple test features for gradient descent testing
+#[allow(dead_code)]
 struct TestFeatures {
     features: Vec<Vec<f64>>,
 }
 
+#[allow(dead_code)]
 impl TestFeatures {
     fn new(features: Vec<Vec<f64>>) -> Self {
         Self { features }
@@ -209,7 +211,7 @@ fn test_gradient_descent_loss_computation() {
     // Test loss computation
     let loss_var = objective.loss(&batch, 5);
     let ctx = ComputationContext::new();
-    let loss_value = ctx.forward(loss_var.as_ref());
+    let _loss_value = ctx.forward(loss_var.as_ref());
 
     let loss_scalar = if let Some(scalar) = (loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>() {
         scalar
@@ -399,7 +401,7 @@ fn test_gradient_descent_with_huge_int_array() {
 
     // Test that gradient descent works with HugeIntArray labels
     let labels = HugeIntArray::from_vec(vec![0, 1, 0, 1, 0, 1, 0, 1, 0, 1]);
-    let train_set: Arc<Vec<usize>> = Arc::new((0..10).collect());
+    let _train_set: Arc<Vec<usize>> = Arc::new((0..10).collect());
 
     println!("  Created HugeIntArray with {} labels", labels.size());
     println!(
@@ -433,7 +435,7 @@ fn test_gradient_descent_batch_processing() {
         let loss_var = objective.loss(&batch, batch_size.try_into().unwrap());
 
         let ctx = ComputationContext::new();
-        let loss_value = ctx.forward(loss_var.as_ref());
+        let _loss_value = ctx.forward(loss_var.as_ref());
 
         let loss_scalar = (loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
         println!(
@@ -475,7 +477,7 @@ fn test_gradient_descent_convergence() {
         let batch = RangeBatch::new(0, 10, 10);
         let initial_loss_var = objective.loss(&batch, 10);
         let ctx = ComputationContext::new();
-        let initial_loss = ctx.forward(initial_loss_var.as_ref());
+        let _initial_loss = ctx.forward(initial_loss_var.as_ref());
         let initial_loss_scalar = (initial_loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
 
         println!("    Initial loss: {}", initial_loss_scalar.value());
@@ -486,7 +488,7 @@ fn test_gradient_descent_convergence() {
         // Record final loss
         let final_loss_var = objective.loss(&batch, 10);
         let ctx = ComputationContext::new();
-        let final_loss = ctx.forward(final_loss_var.as_ref());
+        let _final_loss = ctx.forward(final_loss_var.as_ref());
         let final_loss_scalar = (final_loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
 
         println!("    Final loss: {}", final_loss_scalar.value());

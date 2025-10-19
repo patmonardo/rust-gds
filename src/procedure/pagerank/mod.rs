@@ -31,5 +31,9 @@
 pub mod computation;
 pub mod spec;
 pub mod storage;
+pub mod pregel_computation;
+pub mod memory_estimation;
 
-pub use spec::{PageRankAlgorithmSpec, PageRankComputationResult};
+pub use spec::{PageRankAlgorithmSpec, PageRankComputationResult, PageRankConfig};
+pub use pregel_computation::PageRankPregelComputation;
+pub use memory_estimation::{PageRankMemoryEstimation, estimate_pagerank_memory};

@@ -79,29 +79,26 @@
 //! layer which provides projection-aware algorithm specifications.
 //!
 //! See: `src/projection/eval/procedure/` for the consciousness layer.
-
-// Module structure
-
-/// Algorithm implementations
-///
-/// Each algorithm implements the `AlgorithmSpec` trait and provides
-/// specific computation logic. Examples:
-/// - `algo::sum` - Sum aggregation
-/// - `algo::pagerank` - PageRank centrality (future)
-/// - `algo::louvain` - Louvain community detection (future)
-pub mod algo;
-
 /// Core utilities from Java GDS algo-common
 /// - Result builders and statistics (centrality, community, similarity)
 /// - Feature scaling for ML pipelines
 /// - Common algorithm utilities
 pub mod core;
 
+
+// Module structure
+// pub mod algorithms; // Temporarily disabled due to compilation errors
+
+pub mod sum;
+pub mod pagerank;
+
+
 // Future modules (to be implemented)
 // pub mod facade;      // Public API facades
 
 // Re-export commonly used types
-pub use algo::{SumAlgorithmSpec, SumConfig};
+pub use sum::{SumComputationRuntime, SumAlgorithmSpec, SumConfig, SumStorageRuntime};
+pub use pagerank::{PageRankAlgorithmSpec, PageRankComputationResult, PageRankConfig, PageRankPregelComputation, PageRankMemoryEstimation, estimate_pagerank_memory};
 
-// Note: Code generation macros live in src/projection/codegen/procedure/
-// This keeps codegen infrastructure centralized with ML codegen
+// pub use algorithms::*;
+pub use core::*;

@@ -5,7 +5,7 @@ use super::{
 use crate::projection::{NodeLabel, RelationshipType};
 use crate::types::graph::{
     id_map::{IdMap, SimpleIdMap},
-    DefaultGraph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
+    DefaultGraph, Graph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
 };
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::ValueType;
@@ -94,7 +94,9 @@ impl DefaultGraphStore {
     }
 
     /// Builds a [`DefaultGraph`] view over the current store contents.
+    /// Returns the concrete DefaultGraph type for backwards compatibility.
     pub fn graph(&self) -> Arc<DefaultGraph> {
+        // Create DefaultGraph directly for backwards compatibility
         let topologies = self
             .relationship_topologies
             .iter()
@@ -527,6 +529,28 @@ impl GraphStore for DefaultGraphStore {
                 relationship_type.name().to_string(),
             ))
         }
+    }
+
+    fn get_graph(&self) -> Arc<dyn Graph> {
+        let topologies = self
+            .relationship_topologies
+            .iter()
+            .map(|(rel_type, topology)| (rel_type.clone(), Arc::clone(topology)))
+            .collect::<HashMap<_, _>>();
+
+        Arc::new(DefaultGraph::new(
+            Arc::clone(&self.schema),
+            Arc::clone(&self.id_map),
+            self.graph_characteristics,
+            topologies,
+            self.ordered_relationship_types.clone(),
+            self.inverse_indexed_relationship_types.clone(),
+            self.relationship_count,
+            self.has_parallel_relationships,
+            self.node_properties.clone(),
+            self.relationship_property_stores.clone(),
+            HashMap::new(),
+        ))
     }
 }
 

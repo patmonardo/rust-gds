@@ -2,6 +2,7 @@
 
 use super::{Capabilities, DatabaseInfo, DeletionResult};
 use crate::projection::{NodeLabel, RelationshipType};
+use crate::types::graph::Graph;
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::node::NodePropertyValues;
 use crate::types::properties::relationship::RelationshipPropertyValues;
@@ -225,8 +226,13 @@ pub trait GraphStore: Send + Sync {
         relationship_type: &RelationshipType,
     ) -> GraphStoreResult<DeletionResult>;
 
-    // Note: Graph filtering methods omitted for now as they require Graph trait
-    // These would be added once Graph trait is defined
+    // =============================================================================
+    // Graph Views
+    // =============================================================================
+
+    /// Returns an unfiltered graph view over all nodes and relationships.
+    /// This is the primary method for obtaining a Graph instance from the store.
+    fn get_graph(&self) -> Arc<dyn Graph>;
 }
 
 /// Base implementation for GraphStore adapters.
@@ -495,6 +501,10 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
         Err(GraphStoreError::InvalidOperation(
             "Cannot mutate through adapter".to_string(),
         ))
+    }
+
+    fn get_graph(&self) -> Arc<dyn Graph> {
+        self.graph_store.get_graph()
     }
 }
 

@@ -6,7 +6,7 @@
 //!
 //! This tests the entire machinery: Storage Pole ↔ Computation Pole via Functor
 
-use rust_gds::procedure::algo::sum::{SumAlgorithmSpec, SumComputationRuntime, SumConfig};
+use rust_gds::procedure::sum::{SumAlgorithmSpec, SumComputationRuntime, SumConfig};
 use rust_gds::projection::eval::procedure::AlgorithmSpec;
 use rust_gds::projection::eval::procedure::ExecutionMode;
 use serde_json::json;
