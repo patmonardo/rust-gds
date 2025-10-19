@@ -61,11 +61,14 @@ impl ClassificationMetricComputer {
     }
 }
 
-// Simple parallel classifier stub (minimal implementation)
+/// Simple parallel classifier stub (minimal implementation)
+/// 
+/// Note: Currently processes nodes one-by-one for simplicity.
+/// The `_batch_size` field is reserved for future batch processing optimization.
 struct ParallelNodeClassifier {
     classifier: Arc<dyn Classifier>,
     features: Arc<dyn Features>,
-    batch_size: usize,
+    _batch_size: usize, // Reserved for future batch processing implementation
 }
 
 impl ParallelNodeClassifier {
@@ -77,13 +80,15 @@ impl ParallelNodeClassifier {
         Self {
             classifier,
             features,
-            batch_size,
+            _batch_size: batch_size,
         }
     }
 
     fn predict(&self, evaluation_set: &[u64]) -> HugeLongArray {
         let mut predictions = HugeLongArray::new(evaluation_set.len());
 
+        // TODO: Implement batch processing using self._batch_size for better performance
+        // Currently processing nodes one-by-one for simplicity
         for (i, &node_id) in evaluation_set.iter().enumerate() {
             let feature_vec = self.features.get(node_id as usize);
             let probs = self.classifier.predict_probabilities(feature_vec);

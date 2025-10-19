@@ -1,11 +1,29 @@
-//! Mean square error function for ML in GDS.
+//! Mean Square Error (MSE) loss function for ML in GDS.
 //!
-//! Translated from Java GDS ml-core functions MeanSquareError.java.
-//! This is a literal 1:1 translation following repository translation policy.
+//! ## What is MSE?
+//! **Mean Square Error** is one of the most fundamental loss functions in machine learning!
+//!
+//! - **Formula**: `MSE = (1/n) * Σ(prediction - target)²`
+//! - **Why Important**: Measures average squared difference between predicted and actual values
+//! - **Used For**: Regression problems, neural network training, model evaluation
+//! - **Gradient**: `∇MSE = (2/n) * (prediction - target)` (scaled by self gradient)
+//!
+//! ## Mathematical Properties
+//! - **Always Non-Negative**: MSE ≥ 0 (squared differences)
+//! - **Penalizes Large Errors**: Quadratic penalty grows faster than linear
+//! - **Differentiable**: Smooth gradient everywhere
+//! - **Scale Sensitive**: Units are squared (e.g., if targets are in meters, MSE is in m²)
+//!
+//! ## Usage
+//! ```rust
+//! let mse = MeanSquareError::new(predictions, targets);
+//! let loss = ctx.forward(&mse);
+//! ctx.backward(&mse);
+//! ```
 
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
-use crate::ml::core::tensor::{Scalar, Tensor};
+use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
 use crate::ml::core::abstract_variable::AbstractVariable;
 use std::fmt;
@@ -107,12 +125,12 @@ impl Variable for MeanSquareError {
         }
 
         // Create gradient tensor based on parent type
-        if let Some(matrix) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Matrix>() {
-            Box::new(crate::ml::core::tensor::Matrix::new(gradient_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
-        } else if let Some(vector) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Vector>() {
-            Box::new(crate::ml::core::tensor::Vector::new(gradient_data)) as Box<dyn Tensor>
-        } else if let Some(scalar) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Scalar>() {
-            Box::new(crate::ml::core::tensor::Scalar::new(gradient_data[0])) as Box<dyn Tensor>
+        if let Some(matrix) = parent_data.as_any().downcast_ref::<Matrix>() {
+            Box::new(Matrix::new(gradient_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
+        } else if let Some(_vector) = parent_data.as_any().downcast_ref::<Vector>() {
+            Box::new(Vector::new(gradient_data)) as Box<dyn Tensor>
+        } else if let Some(_scalar) = parent_data.as_any().downcast_ref::<Scalar>() {
+            Box::new(Scalar::new(gradient_data[0])) as Box<dyn Tensor>
         } else {
             panic!("Unknown tensor type");
         }

@@ -91,7 +91,8 @@ impl LogisticRegressionClassifier {
     }
 
     /// Creates batch feature matrix from batch and features
-    fn batch_feature_matrix<B: Batch>(&self, batch: &B, features: &dyn Features) -> Constant {
+    /// Reserved for future generic batch processing optimization
+    fn _batch_feature_matrix<B: Batch>(&self, batch: &B, features: &dyn Features) -> Constant {
         let rows = batch.size();
         let cols = features.feature_dimension();
         let mut batch_features = Matrix::zeros(rows, cols);

@@ -1,19 +1,26 @@
 //! ReLU activation function for ML in GDS.
 //!
-//! Translated from Java GDS ml-core functions Relu.java.
+//! ## What is ReLU?
+//! **Rectified Linear Unit (ReLU)** is the most famous activation function in deep learning!
+//! 
+//! - **Formula**: `f(x) = max(0, x)` (standard) or `f(x) = x if x > 0, else α·x` (leaky)
+//! - **Why Famous**: Solves the vanishing gradient problem, computationally efficient
+//! - **Used Everywhere**: CNNs, Transformers, ResNets - you name it!
+//!
+//! ## Implementation
+//! This implements **Leaky ReLU** with configurable α (default 0.01):
+//! - **Positive values**: Pass through unchanged (`x`)
+//! - **Negative values**: Scaled by α (`α·x`)
+//! - **Gradient**: `1` for positive, `α` for negative
 //!
 //! ## Design Pattern: Composition + Delegation
-//!
-//! This function wraps an AbstractVariable (composition) to share dimension/parent tracking.
-//! This matches Java's inheritance: Relu<T> extends SingleParentVariable<T, T>
-//!
-//! - AbstractVariable provides: dimensions, parents, require_gradient tracking
-//! - Relu adds: leaky ReLU activation logic with configurable alpha
-//! - Delegates Variable trait methods to inner AbstractVariable
+//! - Wraps `AbstractVariable` for shared dimension/parent tracking
+//! - Delegates `Variable` trait methods to inner `AbstractVariable`
+//! - Adds ReLU-specific activation logic
 
 use crate::ml::core::abstract_variable::AbstractVariable;
 use crate::ml::core::computation_context::ComputationContext;
-use crate::ml::core::tensor::Tensor;
+use crate::ml::core::tensor::{Matrix, Scalar, Tensor, Vector};
 use crate::ml::core::variable::Variable;
 use std::fmt;
 
@@ -21,8 +28,20 @@ const ALPHA: f64 = 0.01;
 
 /// Leaky ReLU activation function: f(x) = x if x > 0, else α·x
 ///
-/// Corresponds to Relu<T> in Java GDS.
-/// Single-parent activation with configurable leak factor α (default 0.01).
+/// ## The Famous Activation Function! 🚀
+/// ReLU is the **workhorse of deep learning** - used in virtually every modern neural network.
+/// This implementation provides **Leaky ReLU** with configurable leak factor α.
+///
+/// ## Mathematical Properties
+/// - **Forward**: `f(x) = x` if `x > 0`, else `α·x`
+/// - **Gradient**: `f'(x) = 1` if `x > 0`, else `α`
+/// - **Default α**: 0.01 (prevents "dead neurons")
+///
+/// ## Usage
+/// ```rust
+/// let relu = Relu::new(parent_variable, 0.01);  // Custom alpha
+/// let relu_default = Relu::with_default_alpha(parent_variable);  // α = 0.01
+/// ```
 pub struct Relu {
     base: AbstractVariable, // COMPOSITION: wraps shared Variable logic
     parent: Box<dyn Variable>,
@@ -73,12 +92,12 @@ impl Relu {
         }
         
         // Create gradient tensor based on parent type
-        let gradient = if let Some(matrix) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Matrix>() {
-            Box::new(crate::ml::core::tensor::Matrix::new(gradient_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
-        } else if let Some(vector) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Vector>() {
-            Box::new(crate::ml::core::tensor::Vector::new(gradient_data)) as Box<dyn Tensor>
-        } else if let Some(scalar) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Scalar>() {
-            Box::new(crate::ml::core::tensor::Scalar::new(gradient_data[0])) as Box<dyn Tensor>
+        let gradient = if let Some(matrix) = parent_data.as_any().downcast_ref::<Matrix>() {
+            Box::new(Matrix::new(gradient_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
+        } else if let Some(_vector) = parent_data.as_any().downcast_ref::<Vector>() {
+            Box::new(Vector::new(gradient_data)) as Box<dyn Tensor>
+        } else if let Some(_scalar) = parent_data.as_any().downcast_ref::<Scalar>() {
+            Box::new(Scalar::new(gradient_data[0])) as Box<dyn Tensor>
         } else {
             panic!("Unknown tensor type");
         };
@@ -111,12 +130,12 @@ impl Variable for Relu {
         }
         
         // Create result tensor based on parent type
-        if let Some(matrix) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Matrix>() {
-            Box::new(crate::ml::core::tensor::Matrix::new(result_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
-        } else if let Some(vector) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Vector>() {
-            Box::new(crate::ml::core::tensor::Vector::new(result_data)) as Box<dyn Tensor>
-        } else if let Some(scalar) = parent_data.as_any().downcast_ref::<crate::ml::core::tensor::Scalar>() {
-            Box::new(crate::ml::core::tensor::Scalar::new(result_data[0])) as Box<dyn Tensor>
+        if let Some(matrix) = parent_data.as_any().downcast_ref::<Matrix>() {
+            Box::new(Matrix::new(result_data, matrix.rows(), matrix.cols())) as Box<dyn Tensor>
+        } else if let Some(_vector) = parent_data.as_any().downcast_ref::<Vector>() {
+            Box::new(Vector::new(result_data)) as Box<dyn Tensor>
+        } else if let Some(_scalar) = parent_data.as_any().downcast_ref::<Scalar>() {
+            Box::new(Scalar::new(result_data[0])) as Box<dyn Tensor>
         } else {
             panic!("Unknown tensor type");
         }

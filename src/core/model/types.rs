@@ -6,7 +6,7 @@ use std::fmt::Debug;
 use std::path::PathBuf;
 
 pub const ALL_USERS: &str = "*";
-pub const PUBLIC_MODEL_SUFFIX: &str = "_public";
+// pub const PUBLIC_MODEL_SUFFIX: &str = "_public";
 
 /// Core model trait for serializable model data
 pub trait ModelData: Send + Sync + Debug + Serialize {

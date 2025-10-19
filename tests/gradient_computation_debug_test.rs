@@ -9,10 +9,10 @@ use rust_gds::ml::{
         functions::{
             constant::Constant, ewise_add_matrix_scalar::EWiseAddMatrixScalar,
             matrix_multiply_with_transposed_second_operand::MatrixMultiplyWithTransposedSecondOperand,
-            mean_square_error::MeanSquareError, passthrough_variable::PassThroughVariable,
+            mean_square_error::MeanSquareError,
             weights::Weights,
         },
-        tensor::{tensor::AsAny, Matrix, Scalar, Vector},
+        tensor::{Matrix, Scalar, Vector, Tensor},
         variable::Variable,
         ComputationContext,
     },
@@ -70,7 +70,7 @@ impl Objective for GradientTestObjective {
 
         // Create batch feature matrix
         let mut batch_features = Matrix::zeros(batch_size, feature_count);
-        let mut batch_labels = Vector::zeros(batch_size);
+        let mut batch_labels = Vector::with_size(batch_size);
 
         let mut idx = 0;
         for element_id in batch.element_ids() {
@@ -126,14 +126,9 @@ fn test_gradient_computation_debug() {
     println!("  Loss value: {:?}", loss_value);
     println!("  Computed variables: {}", ctx.computed_variables_count());
 
-    // Create PassThroughVariable and compute it
-    let passthrough = PassThroughVariable::new(loss_var);
-    let passthrough_value = ctx.forward(&passthrough);
-    println!("  PassThrough value: {:?}", passthrough_value);
-
-    // Backward pass using PassThroughVariable
+    // Backward pass using loss variable directly
     println!("  Starting backward pass...");
-    ctx.backward(&passthrough);
+    ctx.backward(loss_var.as_ref());
     println!("  Backward pass completed");
 
     // Check gradients for weights

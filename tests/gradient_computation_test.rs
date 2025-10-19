@@ -2,11 +2,9 @@
 
 use rust_gds::collections::HugeDoubleArray;
 use rust_gds::ml::core::computation_context::ComputationContext;
-use rust_gds::ml::core::functions::weights::Weights;
-use rust_gds::ml::core::tensor::Tensor;
 use rust_gds::ml::gradient_descent::Objective;
 use rust_gds::ml::models::linear::*;
-use rust_gds::ml::models::{Features, Regressor};
+use rust_gds::ml::models::{Features};
 
 /// Simple feature store for testing
 #[derive(Debug)]

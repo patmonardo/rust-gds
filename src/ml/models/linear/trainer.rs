@@ -25,7 +25,7 @@ use super::{
 /// 4. Returning a trained LinearRegressor
 pub struct LinearRegressionTrainer {
     concurrency: usize,
-    termination_flag: Arc<RwLock<bool>>,
+    _termination_flag: Arc<RwLock<bool>>, // Reserved for future early termination support
     train_config: LinearRegressionTrainConfig,
 }
 
@@ -44,7 +44,7 @@ impl LinearRegressionTrainer {
         Self {
             concurrency,
             train_config: config,
-            termination_flag,
+            _termination_flag: termination_flag,
         }
     }
 }

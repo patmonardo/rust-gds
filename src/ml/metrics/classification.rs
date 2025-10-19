@@ -9,7 +9,7 @@ pub trait ClassificationMetric: Metric {
 
 #[derive(Debug, Clone)]
 pub struct Accuracy {
-    original_target: i64,
+    _original_target: i64, // Reserved for future debugging/tracing functionality
     internal_target: i64,
 }
 
@@ -18,7 +18,7 @@ impl Accuracy {
 
     pub fn new(original_target: i64, internal_target: i64) -> Self {
         Self {
-            original_target,
+            _original_target: original_target,
             internal_target,
         }
     }
@@ -110,7 +110,7 @@ impl ClassificationMetric for GlobalAccuracy {
 
 #[derive(Debug, Clone)]
 pub struct F1Score {
-    original_target: i64,
+    _original_target: i64, // Reserved for future debugging/tracing functionality
     internal_target: i64,
 }
 
@@ -119,7 +119,7 @@ impl F1Score {
 
     pub fn new(original_target: i64, internal_target: i64) -> Self {
         Self {
-            original_target,
+            _original_target: original_target,
             internal_target,
         }
     }

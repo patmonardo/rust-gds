@@ -122,7 +122,7 @@ impl Variable for EWiseAddMatrixScalar {
             .data(self.matrix_variable())
             .expect("Matrix data not computed");
 
-        let _scalar = ctx
+        let scalar = ctx
             .data(self.scalar_variable())
             .expect("Scalar data not computed");
 
@@ -139,7 +139,12 @@ impl Variable for EWiseAddMatrixScalar {
             let scalar_ref = weights.borrow_scalar();
             scalar_ref.value()
         } else {
-            panic!("Expected Weights type for scalar variable, got: {}", std::any::type_name_of_val(scalar_var));
+            // Try to extract from the tensor data directly
+            if let Some(scalar_tensor) = scalar.as_any().downcast_ref::<Scalar>() {
+                scalar_tensor.value()
+            } else {
+                panic!("Expected Weights or Scalar type for scalar variable, got: {}", std::any::type_name_of_val(scalar_var));
+            }
         };
 
         // Map: add scalar to each element

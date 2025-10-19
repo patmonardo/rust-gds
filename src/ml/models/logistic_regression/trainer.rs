@@ -15,7 +15,7 @@ use std::sync::Arc;
 pub struct LogisticRegressionTrainer {
     train_config: LogisticRegressionTrainConfig,
     number_of_classes: usize,
-    termination_flag: Arc<RwLock<bool>>,
+    _termination_flag: Arc<RwLock<bool>>, // Reserved for future early termination support
     reduce_class_count: bool,
     concurrency: usize,
 }
@@ -32,7 +32,7 @@ impl LogisticRegressionTrainer {
         Self {
             train_config,
             number_of_classes,
-            termination_flag,
+            _termination_flag: termination_flag,
             reduce_class_count,
             concurrency,
         }

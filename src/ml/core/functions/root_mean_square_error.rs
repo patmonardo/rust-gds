@@ -1,7 +1,29 @@
-//! Root mean square error function for ML in GDS.
+//! Root Mean Square Error (RMSE) loss function for ML in GDS.
 //!
-//! Translated from Java GDS ml-core functions RootMeanSquareError.java.
-//! This is a literal 1:1 translation following repository translation policy.
+//! ## What is RMSE?
+//! **Root Mean Square Error** is MSE with a square root - making it interpretable!
+//!
+//! - **Formula**: `RMSE = √((1/n) * Σ(prediction - target)²)`
+//! - **Why Important**: Same units as target variable, easier to interpret than MSE
+//! - **Used For**: Regression evaluation, model comparison, error analysis
+//! - **Gradient**: `∇RMSE = (1/n) * (prediction - target) / RMSE` (scaled by self gradient)
+//!
+//! ## Mathematical Properties
+//! - **Same Units as Target**: If targets are in meters, RMSE is in meters
+//! - **Always Non-Negative**: RMSE ≥ 0 (square root of non-negative MSE)
+//! - **Penalizes Large Errors**: Quadratic penalty like MSE
+//! - **Interpretable**: "Average error magnitude" - intuitive to understand
+//!
+//! ## MSE vs RMSE
+//! - **MSE**: Units are squared, larger values, used for optimization
+//! - **RMSE**: Same units as target, smaller values, used for evaluation
+//!
+//! ## Usage
+//! ```rust
+//! let rmse = RootMeanSquareError::new(predictions, targets);
+//! let loss = ctx.forward(&rmse);
+//! ctx.backward(&rmse);
+//! ```
 
 use crate::ml::core::computation_context::ComputationContext;
 use crate::ml::core::dimensions;
@@ -105,7 +127,7 @@ impl Variable for RootMeanSquareError {
                 .downcast_ref::<Scalar>()
                 .expect("Self data must be Scalar");
 
-            let parent_data = ctx.data(parent).expect("Parent data not computed");
+            let _parent_data = ctx.data(parent).expect("Parent data not computed");
 
             if root_of_sum_of_square_error_over_n.value() == 0.0 {
                 return Box::new(Vector::with_size(number_of_examples));

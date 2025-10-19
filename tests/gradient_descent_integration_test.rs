@@ -13,7 +13,7 @@ use rust_gds::ml::{
             matrix_multiply_with_transposed_second_operand::MatrixMultiplyWithTransposedSecondOperand,
             mean_square_error::MeanSquareError, weights::Weights,
         },
-        tensor::{tensor::AsAny, Matrix, Scalar, Vector},
+        tensor::{Matrix, Scalar, Vector, Tensor},
         variable::Variable,
         ComputationContext,
     },
@@ -138,7 +138,7 @@ impl Objective for TestObjective {
 
         // Create batch feature matrix
         let mut batch_features = Matrix::zeros(batch_size, feature_count);
-        let mut batch_labels = Vector::zeros(batch_size);
+        let mut batch_labels = Vector::with_size(batch_size);
 
         let mut idx = 0;
         for element_id in batch.element_ids() {
@@ -212,7 +212,7 @@ fn test_gradient_descent_loss_computation() {
     let ctx = ComputationContext::new();
     let loss_value = ctx.forward(loss_var.as_ref());
 
-    let loss_scalar = if let Some(scalar) = loss_var.as_any().downcast_ref::<Scalar>() {
+    let loss_scalar = if let Some(scalar) = (loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>() {
         scalar
     } else {
         println!("  Failed to downcast loss to Scalar");
@@ -436,7 +436,7 @@ fn test_gradient_descent_batch_processing() {
         let ctx = ComputationContext::new();
         let loss_value = ctx.forward(loss_var.as_ref());
 
-        let loss_scalar = loss_var.as_any().downcast_ref::<Scalar>().unwrap();
+        let loss_scalar = (loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
         println!(
             "    Loss for batch size {}: {}",
             batch_size,
@@ -477,7 +477,7 @@ fn test_gradient_descent_convergence() {
         let initial_loss_var = objective.loss(&batch, 10);
         let ctx = ComputationContext::new();
         let initial_loss = ctx.forward(initial_loss_var.as_ref());
-        let initial_loss_scalar = initial_loss_var.as_any().downcast_ref::<Scalar>().unwrap();
+        let initial_loss_scalar = (initial_loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
 
         println!("    Initial loss: {}", initial_loss_scalar.value());
 
@@ -488,7 +488,7 @@ fn test_gradient_descent_convergence() {
         let final_loss_var = objective.loss(&batch, 10);
         let ctx = ComputationContext::new();
         let final_loss = ctx.forward(final_loss_var.as_ref());
-        let final_loss_scalar = final_loss_var.as_any().downcast_ref::<Scalar>().unwrap();
+        let final_loss_scalar = (final_loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
 
         println!("    Final loss: {}", final_loss_scalar.value());
 
