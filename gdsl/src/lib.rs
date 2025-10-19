@@ -1,41 +1,35 @@
-//! GDSL Runtime - Triadic-Pentadic Generator of Empirical Forms
+//! GDSL Runtime - SystemD Shell Language
 //!
-//! This crate implements the GDSL Runtime as a proc-macro system that generates
-//! Triadic-Pentadic structures (Empirical Forms) for the Projection System.
+//! This crate implements the GDSL Runtime as a TS-JSON messaging language
+//! that connects the Kernel (Pure Form Processor) to UserLand (Given Form Processor).
 //!
 //! ## Architecture
 //!
-//! The GDSL Runtime serves as the connection between GDS Kernel and SystemD,
-//! implementing the Organic Unity between Container and Contained through the
-//! Projection System.
+//! ```
+//! Kernel (Pure Form Processor) <- GDSL -> UserLand (Given Form Processor)
+//! ```
 //!
-//! ## The Triadic-Pentadic Generator
+//! - **Kernel**: Pure Form Processor (GDS crate)
+//! - **GDSL**: TS-JSON messaging language (this crate)
+//! - **UserLand**: Given Form Processor (Logic package)
 //!
-//! - **Triadic (Conceptual)**: Container ←→ Contained ←→ Container+Contained (Organic Unity)
-//! - **Pentadic (Objective)**: Five-fold mapping between Computation and Storage
+//! ## The GDSL Messaging Language
 //!
-//! ## The Empirical Forms
+//! GDSL is the shell language that:
+//! - Translates between Pure Forms and Given Forms
+//! - Provides TS-JSON interface for UserLand
+//! - Manages communication between Kernel and UserLand
+//! - Implements the Container-Contained messaging protocol
 //!
-//! Everything is Empirical Forms:
-//! - Computation = Empirical Form
-//! - Storage = Empirical Form  
-//! - Algorithms = Empirical Forms
-//! - Data Structures = Empirical Forms
-//! - The Projection System = Generator of Empirical Forms
+//! ## TS-JSON Interface
 //!
-//! ## Projection System Focus
-//!
-//! The macro system focuses exclusively on the Projection System:
-//! - ProjectionFactory forms
-//! - Eval/Form system structures
-//! - Container-Contained Organic Unity
-//! - Pure Form Processor generation
+//! The GDSL Runtime provides:
+//! - TS-JSON serialization/deserialization
+//! - Message passing between Kernel and UserLand
+//! - Form translation and transformation
+//! - UserLand API surface
 
-pub mod triadic;
-pub mod pentadic;
-pub mod empirical_forms;
-pub mod organic_unity;
-pub mod projection_system;
-
-// Re-export the main derive macro
-pub use gds_macros::EmpiricalForm;
+pub mod messaging;
+pub mod ts_json;
+pub mod shell_language;
+pub mod userland_interface;
