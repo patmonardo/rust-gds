@@ -1,20 +1,18 @@
 use crate::ml::core::{
     batch::Batch,
-    functions::Constant,
-    tensor::{Matrix, Tensor},
+    functions::{Constant, weights::Weights},
+    tensor::Matrix,
     variable::Variable,
 };
 use crate::ml::models::Features;
-use parking_lot::RwLock;
-use std::sync::Arc;
 
 /// A training objective that computes a loss over a batch of nodes
 pub trait Objective {
     type ModelData;
 
-    /// Handles to trainable weight tensors used by the objective.
-    /// Each handle should point to shared tensor storage so optimizers can update in-place.
-    fn weight_handles(&self) -> Vec<Arc<RwLock<Box<dyn Tensor>>>>;
+    /// Returns the Weights variables used in the computation graph.
+    /// These are the actual Variable objects that can be used with ctx.gradient().
+    fn weights(&self) -> Vec<Weights>;
 
     /// Computes the loss for a batch
     fn loss<B: Batch>(&self, batch: &B, train_size: usize) -> Box<dyn Variable>;

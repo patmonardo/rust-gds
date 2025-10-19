@@ -9,8 +9,8 @@ use crate::ml::{
             l2_norm_squared::L2NormSquared,
             reduced_cross_entropy_loss::ReducedCrossEntropyLoss,
             reduced_focal_loss::ReducedFocalLoss,
+            weights::Weights,
         },
-        tensor::Tensor,
         variable::Variable,
     },
     gradient_descent::{batch_feature_matrix, Objective},
@@ -106,10 +106,10 @@ impl<'a> LogisticRegressionObjective<'a> {
 impl<'a> Objective for LogisticRegressionObjective<'a> {
     type ModelData = LogisticRegressionData;
 
-    fn weight_handles(&self) -> Vec<Arc<RwLock<Box<dyn Tensor>>>> {
+    fn weights(&self) -> Vec<Weights> {
         vec![
-            self.classifier.data().weights().handle(),
-            self.classifier.data().bias().handle(),
+            self.classifier.data().weights().clone(),
+            self.classifier.data().bias().clone(),
         ]
     }
 

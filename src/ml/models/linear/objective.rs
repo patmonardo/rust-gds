@@ -5,14 +5,11 @@
 use crate::collections::HugeDoubleArray;
 use crate::ml::core::functions::{
     constant::Constant, constant_scale::ConstantScale, element_sum::ElementSum,
-    l2_norm_squared::L2NormSquared, mean_square_error::MeanSquareError,
+    l2_norm_squared::L2NormSquared, mean_square_error::MeanSquareError, weights::Weights,
 };
-use crate::ml::core::tensor::Tensor;
 use crate::ml::gradient_descent::{batch_feature_matrix, Objective};
 use crate::ml::models::linear::{data::LinearRegressionData, regressor::LinearRegressor};
 use crate::ml::models::Features;
-use parking_lot::RwLock;
-use std::sync::Arc;
 
 /// Objective used by gradient descent training of linear regression.
 pub struct LinearRegressionObjective<'a> {
@@ -60,10 +57,10 @@ impl<'a> LinearRegressionObjective<'a> {
 impl<'a> Objective for LinearRegressionObjective<'a> {
     type ModelData = LinearRegressionData;
 
-    fn weight_handles(&self) -> Vec<Arc<RwLock<Box<dyn Tensor>>>> {
+    fn weights(&self) -> Vec<Weights> {
         vec![
-            self.model_data.weights().handle(),
-            self.model_data.bias().handle(),
+            self.model_data.weights().clone(),
+            self.model_data.bias().clone(),
         ]
     }
 
@@ -74,7 +71,16 @@ impl<'a> Objective for LinearRegressionObjective<'a> {
     ) -> Box<dyn crate::ml::core::variable::Variable> {
         let batch_features = batch_feature_matrix(batch, self.features);
         let regressor = LinearRegressor::new(self.model_data.clone());
-        let predictions = regressor.predictions_variable(Box::new(batch_features));
+        
+        // Use the same Weights instances that are returned by weights() method
+        let weights_var = self.model_data.weights().clone();
+        let bias_var = self.model_data.bias().clone();
+        let predictions = regressor.predictions_variable_with_weights(
+            Box::new(batch_features),
+            Box::new(weights_var),
+            Box::new(bias_var),
+        );
+        
         let targets = self.batch_targets(batch);
 
         let mse = MeanSquareError::new(predictions, Box::new(targets));

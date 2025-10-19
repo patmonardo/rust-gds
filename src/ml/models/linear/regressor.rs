@@ -42,6 +42,24 @@ impl LinearRegressor {
             Box::new(self.data.bias().clone()),
         ))
     }
+
+    /// Build predictions using provided weight variables (for gradient computation)
+    pub fn predictions_variable_with_weights(
+        &self, 
+        features: Box<dyn Variable>,
+        weights_var: Box<dyn Variable>,
+        bias_var: Box<dyn Variable>
+    ) -> Box<dyn Variable> {
+        let weighted_features = MatrixMultiplyWithTransposedSecondOperand::new(
+            features,
+            weights_var,
+        );
+
+        Box::new(EWiseAddMatrixScalar::new(
+            Box::new(weighted_features),
+            bias_var,
+        ))
+    }
 }
 
 impl Regressor for LinearRegressor {
