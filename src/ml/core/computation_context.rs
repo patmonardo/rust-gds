@@ -145,7 +145,7 @@ impl ComputationContext {
         self.collect_variables_topological(function, &mut execution_order);
 
         // Process variables in multiple passes until all gradients are computed
-        let max_passes = execution_order.len(); // Safety limit
+        let max_passes = execution_order.len() * 2; // Safety limit - allow extra passes for leaf variables
         for _pass in 0..max_passes {
             let mut progress_made = false;
             

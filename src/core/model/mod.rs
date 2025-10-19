@@ -1,10 +1,14 @@
 mod catalog;
 mod types;
 mod user_catalog;
+mod model;
+mod model_metadata;
 
 pub use catalog::{EmptyModelCatalog, ModelCatalog, ModelCatalogListener};
-pub use types::{CustomInfo, Model, ModelConfig, ModelData};
+pub use types::{CustomInfo as ModelCatalogCustomInfo, ModelConfig, ModelData};
 pub use user_catalog::UserCatalog;
+pub use model::Model as MLModel;
+pub use model_metadata::ModelMetaData;
 
 // Constants
 pub const MODEL_NAME_KEY: &str = "modelName";
