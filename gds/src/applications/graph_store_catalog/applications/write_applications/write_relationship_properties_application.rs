@@ -1,0 +1,2 @@
+/// Placeholder for WriteRelationshipPropertiesApplication
+pub struct WriteRelationshipPropertiesApplication;

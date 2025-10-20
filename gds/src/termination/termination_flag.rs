@@ -29,6 +29,19 @@ pub struct TerminationFlag {
     interval: Duration,
 }
 
+impl Clone for TerminationFlag {
+    fn clone(&self) -> Self {
+        // Create a new TerminationFlag with the same monitor and interval
+        // The cached state will be reset to the default (running)
+        Self {
+            monitor: self.monitor.clone(),
+            last_check: parking_lot::Mutex::new(Instant::now()),
+            cached_running: AtomicBool::new(true),
+            interval: self.interval,
+        }
+    }
+}
+
 impl TerminationFlag {
     /// Default check interval: 10 seconds.
     pub const DEFAULT_INTERVAL: Duration = Duration::from_secs(10);

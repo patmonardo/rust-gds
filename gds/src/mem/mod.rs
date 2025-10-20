@@ -52,6 +52,7 @@ pub use graph_store_memory_container::{
     GraphStoreAddedEvent, GraphStoreMemoryContainer, GraphStoreRemovedEvent,
 };
 pub use huge_arrays::HugeArrays;
+pub use memest::MemoryEstimationResult;
 pub use memory_estimation::{MemoryEstimation, MemoryEstimationWithDimensions};
 pub use memory_range::MemoryRange;
 pub use memory_reservation_exception::MemoryReservationExceededException;
@@ -60,6 +61,9 @@ pub use memory_tree::{MemoryTree, MemoryTreeWithDimensions};
 pub use task_memory_container::TaskMemoryContainer;
 pub use user_entity_memory::UserEntityMemory;
 pub use user_memory_summary::UserMemorySummary;
+
+// Alias for applications system
+pub type MemoryEstimateResult = MemoryEstimationResult;
 
 #[cfg(test)]
 mod tests {

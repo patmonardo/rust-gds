@@ -1,0 +1,2 @@
+/// Placeholder for EstimateCommonNeighbourAwareRandomWalkApplication
+pub struct EstimateCommonNeighbourAwareRandomWalkApplication;

@@ -85,3 +85,33 @@ pub use task_store_listener::TaskStoreListener;
 pub use task_store_provider::{SimpleTaskStoreProvider, TaskStoreProvider, TaskStoreProviders};
 pub use task_store_service::TaskStoreService;
 pub use user_task::UserTask;
+
+// Placeholder types for Applications system
+/// Placeholder for ProgressTracker - tracks progress of algorithm execution.
+#[derive(Debug, Clone)]
+pub struct ProgressTracker {
+    // TODO: Implement actual progress tracking
+}
+
+impl ProgressTracker {
+    pub fn new(_task: Tasks) -> Self {
+        Self {}
+    }
+}
+
+/// Placeholder for Tasks - defines work to be done.
+#[derive(Debug, Clone)]
+pub enum Tasks {
+    Leaf(String, usize),
+    Task(String, Vec<Tasks>),
+}
+
+impl Tasks {
+    pub fn leaf(_name: &str, _count: usize) -> Self {
+        Tasks::Leaf("".to_string(), 0)
+    }
+
+    pub fn task(_name: &str, _tasks: Tasks, _tasks2: Tasks) -> Self {
+        Tasks::Task("".to_string(), vec![])
+    }
+}
