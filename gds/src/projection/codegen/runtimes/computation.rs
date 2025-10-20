@@ -166,6 +166,19 @@ mod tests {
     use crate::types::graph_store::DefaultGraphStore;
     use crate::types::random::RandomGraphConfig;
 
+    // Serialize registry mutations across tests touching global registries
+    lazy_static::lazy_static! {
+        static ref TEST_REGISTRY_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    }
+
+    // Helper to clear computer factory registry (test-only)
+    fn clear_factory_registry() {
+        let mut factories = super::COMPUTER_FACTORIES
+            .write()
+            .expect("factory registry poisoned");
+        factories.clear();
+    }
+
     struct DummyStep {
         iteration: std::sync::atomic::AtomicUsize,
     }
@@ -264,7 +277,9 @@ mod tests {
 
     #[test]
     fn register_and_instantiate_computer() {
+        let _guard = TEST_REGISTRY_GUARD.lock().unwrap();
         clear_computation_registry();
+        clear_factory_registry();
 
         // Register descriptor
         let desc = ComputationDescriptor::new(
@@ -319,7 +334,9 @@ mod tests {
 
     #[test]
     fn missing_factory_error() {
+        let _guard = TEST_REGISTRY_GUARD.lock().unwrap();
         clear_computation_registry();
+        clear_factory_registry();
 
         // Register descriptor but no factory
         let desc = ComputationDescriptor::new(

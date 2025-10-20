@@ -1,28 +1,29 @@
 //! Pregel execution configuration
 //!
-//! Macro-generated demo of PregelConfig using the in-repo `generate_config!` macro.
+//! Macro-generated demo of PregelConfig using the in-repo `define_config!` macro.
 
-// The demo macro is defined in `projection::codegen::config_macro.rs` and exported
-// as `generate_config!`. This file invokes that macro at crate level to produce
+// The demo macro is defined in `projection::codegen::config::define_config.rs` and exported
+// as `define_config!`. This file invokes that macro at crate level to produce
 // a struct, builder, Default, and validation bridge.
 
-crate::generate_config!(
-    PregelConfig, PregelConfigBuilder,
-    validate = |cfg: &PregelConfig| {
-        crate::config::validation::ConfigValidation::validate_positive(cfg.base.concurrency as f64, "concurrency")?;
-        crate::config::validation::ConfigValidation::validate_positive(cfg.max_iterations as f64, "maxIterations")?;
-        if let Some(tol) = cfg.tolerance {
-            crate::config::validation::ConfigValidation::validate_positive(tol, "tolerance")?;
-        }
-        Ok(())
-    },
-    {
-        base: crate::config::base_types::AlgoBaseConfig = crate::config::base_types::AlgoBaseConfig::default();
-        max_iterations: usize = 20;
-        tolerance: Option<f64> = None;
-        is_asynchronous: bool = false;
-        partitioning: crate::core::utils::partition::Partitioning = crate::core::utils::partition::Partitioning::Range;
-        track_sender: bool = false;
+use crate::define_config;
+
+define_config!(
+    pub struct PregelConfig {
+        validate = |cfg: &PregelConfig| {
+            crate::config::validation::ConfigValidation::validate_positive(cfg.base.concurrency as f64, "concurrency")?;
+            crate::config::validation::ConfigValidation::validate_positive(cfg.max_iterations as f64, "maxIterations")?;
+            if let Some(tol) = cfg.tolerance {
+                crate::config::validation::ConfigValidation::validate_positive(tol, "tolerance")?;
+            }
+            Ok(())
+        },
+        base: crate::config::base_types::AlgoBaseConfig = crate::config::base_types::AlgoBaseConfig::default(),
+        max_iterations: usize = 20,
+        tolerance: Option<f64> = None,
+        is_asynchronous: bool = false,
+        partitioning: crate::core::utils::partition::Partitioning = crate::core::utils::partition::Partitioning::Range,
+        track_sender: bool = false,
     }
 );
 

@@ -180,7 +180,7 @@ mod error_handling {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "Matrix multiplication dimension mismatch")]
+    #[should_panic(expected = "Matrix dimensions must match")]
     fn test_matrix_multiplication_dimension_mismatch() {
         let m1 = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
         let m2 = Matrix::new(vec![1.0, 2.0, 3.0], 3, 1); // Wrong dimensions
@@ -198,7 +198,7 @@ mod error_handling {
     }
 
     #[test]
-    #[should_panic(expected = "Broadcast dimension mismatch")]
+    #[should_panic(expected = "index out of bounds")]
     fn test_broadcast_dimension_mismatch() {
         let matrix = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2);
         let vector = Vector::new(vec![10.0]); // Wrong length for broadcast

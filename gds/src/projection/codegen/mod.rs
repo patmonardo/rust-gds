@@ -92,6 +92,8 @@
 pub mod macros;
 pub mod algorithm;
 pub mod catalog;
+#[macro_use]
+pub mod config;
 pub mod consequence;
 pub mod descriptors;
 pub mod inherence;

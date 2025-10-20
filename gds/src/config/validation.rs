@@ -232,3 +232,41 @@ mod tests {
         );
     }
 }
+
+// Direct imports for validation methods - no more ConfigValidation:: prefix needed!
+// Re-export the validation methods directly from the ConfigValidation impl
+pub fn validate_required<T>(value: Option<T>, name: &str) -> Result<T, ConfigError> {
+    ConfigValidation::validate_required(value, name)
+}
+
+pub fn validate_positive(value: f64, name: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_positive(value, name)
+}
+
+pub fn validate_range(value: f64, min: f64, max: f64, name: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_range(value, min, max, name)
+}
+
+pub fn validate_path(path: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_path(path)
+}
+
+pub fn validate_database_name(name: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_database_name(name)
+}
+
+pub fn validate_property_key(key: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_property_key(key)
+}
+
+pub fn validate_node_properties(properties: &[String]) -> Result<(), ConfigError> {
+    ConfigValidation::validate_node_properties(properties)
+}
+
+pub fn validate_model_name(name: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_model_name(name)
+}
+
+pub fn validate_non_empty_string(value: &str, parameter: &str) -> Result<(), ConfigError> {
+    ConfigValidation::validate_non_empty_string(value, parameter)
+}

@@ -5,6 +5,7 @@ use super::validation::{ConfigError, ConfigValidation};
 use crate::core::Aggregation;
 use crate::projection::{NodeLabel, Orientation, RelationshipType};
 use crate::types::{DefaultValue, PropertyState};
+use crate::define_config;
 
 /// Property configuration for graph construction
 #[derive(Debug, Clone)]
@@ -231,112 +232,22 @@ impl GraphCreateConfigBuilder {
     }
 }
 
-/// Random graph generator configuration
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct RandomGraphGeneratorConfig {
-    pub node_count: usize,
-    pub average_degree: f64,
-    pub relationship_type: RelationshipType,
-    pub seed: Option<u64>,
-    pub allow_self_loops: bool,
-    pub force_dag: bool,
-    pub inverse_index: bool,
-}
-
-impl Default for RandomGraphGeneratorConfig {
-    fn default() -> Self {
-        Self {
-            node_count: 100,
-            average_degree: 10.0,
-            relationship_type: RelationshipType::of("REL"),
-            seed: None,
-            allow_self_loops: false,
-            force_dag: false,
-            inverse_index: false,
-        }
+define_config!(
+    pub struct RandomGraphGeneratorConfig {
+        validate = |cfg: &RandomGraphGeneratorConfig| {
+            ConfigValidation::validate_positive(cfg.node_count as f64, "nodeCount")?;
+            ConfigValidation::validate_positive(cfg.average_degree, "averageDegree")?;
+            Ok(())
+        },
+        node_count: usize = 100,
+        average_degree: f64 = 10.0,
+        relationship_type: RelationshipType = RelationshipType::of("REL"),
+        seed: Option<u64> = None,
+        allow_self_loops: bool = false,
+        force_dag: bool = false,
+        inverse_index: bool = false,
     }
-}
-
-impl Config for RandomGraphGeneratorConfig {}
-
-impl RandomGraphGeneratorConfig {
-    pub fn builder() -> RandomGraphGeneratorConfigBuilder {
-        RandomGraphGeneratorConfigBuilder::default()
-    }
-
-    pub fn validate(&self) -> Result<(), ConfigError> {
-        ConfigValidation::validate_positive(self.node_count as f64, "nodeCount")?;
-        ConfigValidation::validate_positive(self.average_degree, "averageDegree")?;
-        Ok(())
-    }
-}
-
-/// Builder for RandomGraphGeneratorConfig
-#[derive(Debug, Default)]
-pub struct RandomGraphGeneratorConfigBuilder {
-    node_count: Option<usize>,
-    average_degree: Option<f64>,
-    relationship_type: Option<RelationshipType>,
-    seed: Option<u64>,
-    allow_self_loops: Option<bool>,
-    force_dag: Option<bool>,
-    inverse_index: Option<bool>,
-}
-
-impl RandomGraphGeneratorConfigBuilder {
-    pub fn node_count(mut self, count: usize) -> Self {
-        self.node_count = Some(count);
-        self
-    }
-
-    pub fn average_degree(mut self, degree: f64) -> Self {
-        self.average_degree = Some(degree);
-        self
-    }
-
-    pub fn relationship_type(mut self, rel_type: RelationshipType) -> Self {
-        self.relationship_type = Some(rel_type);
-        self
-    }
-
-    pub fn seed(mut self, seed: u64) -> Self {
-        self.seed = Some(seed);
-        self
-    }
-
-    pub fn allow_self_loops(mut self, allow: bool) -> Self {
-        self.allow_self_loops = Some(allow);
-        self
-    }
-
-    pub fn force_dag(mut self, force: bool) -> Self {
-        self.force_dag = Some(force);
-        self
-    }
-
-    pub fn inverse_index(mut self, index: bool) -> Self {
-        self.inverse_index = Some(index);
-        self
-    }
-
-    pub fn build(self) -> Result<RandomGraphGeneratorConfig, ConfigError> {
-        let defaults = RandomGraphGeneratorConfig::default();
-
-        let config = RandomGraphGeneratorConfig {
-            node_count: self.node_count.unwrap_or(defaults.node_count),
-            average_degree: self.average_degree.unwrap_or(defaults.average_degree),
-            relationship_type: self.relationship_type.unwrap_or(defaults.relationship_type),
-            seed: self.seed.or(defaults.seed),
-            allow_self_loops: self.allow_self_loops.unwrap_or(defaults.allow_self_loops),
-            force_dag: self.force_dag.unwrap_or(defaults.force_dag),
-            inverse_index: self.inverse_index.unwrap_or(defaults.inverse_index),
-        };
-
-        config.validate()?;
-        Ok(config)
-    }
-}
+);
 
 /// Relationships builder configuration
 #[derive(Debug, Clone)]
@@ -529,7 +440,7 @@ mod tests {
         let config = RandomGraphGeneratorConfig::builder()
             .node_count(1000)
             .average_degree(5.0)
-            .seed(42)
+            .seed(Some(42))
             .build()
             .unwrap();
 

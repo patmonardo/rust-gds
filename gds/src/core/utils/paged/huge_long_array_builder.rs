@@ -225,7 +225,12 @@ impl HugeLongArrayBuilder {
         // Ensure we have enough pages (with lock for thread safety)
         self.ensure_pages(end_page);
 
-        // Get pages for writing
+        // Serialize writes to avoid undefined behavior from concurrent &mut access.
+        // This keeps growth granular while ensuring soundness for concurrent writers
+        // targeting disjoint ranges.
+        let _guard = self.lock.lock().unwrap();
+
+        // Get pages for writing (mutable access under lock)
         let pages_ptr = self.pages.load(Ordering::Acquire);
         let pages = unsafe {
             if pages_ptr.is_null() {

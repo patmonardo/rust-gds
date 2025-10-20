@@ -21,9 +21,11 @@ fn main() {
         .max_iterations(50)
         .damping_factor(0.9)
         .tolerance(0.00001)
-        .concurrency(8)
-        .node_labels(vec![NodeLabel::of("Person"), NodeLabel::of("Movie")])
-        .relationship_types(vec![RelationshipType::of("RATED")])
+        .base(AlgoBaseConfig {
+            concurrency: 8,
+            node_labels: vec![NodeLabel::of("Person"), NodeLabel::of("Movie")],
+            relationship_types: vec![RelationshipType::of("RATED")],
+        })
         .build()
         .expect("Valid config");
     println!("   Max iterations: {}", custom_pagerank.max_iterations);
@@ -72,7 +74,7 @@ fn main() {
     let random_config = RandomGraphGeneratorConfig::builder()
         .node_count(10000)
         .average_degree(15.0)
-        .seed(42)
+        .seed(Some(42))
         .inverse_index(true)
         .build()
         .expect("Valid config");
@@ -119,7 +121,7 @@ fn main() {
     // Example 10: GraphStore memory configuration
     println!("10. GraphStore memory configuration:");
     let memory_config = GraphStoreMemoryConfig::builder()
-        .max_memory_gb(16)
+        .max_memory_bytes(16 * 1024 * 1024 * 1024)
         .gc_threshold_ratio(0.85)
         .allow_disk_offload(true)
         .build()

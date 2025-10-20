@@ -1,0 +1,101 @@
+//! Validation - Pure FormShape Validation System
+//!
+//! This module implements the validation system for Pure FormShapes,
+//! ensuring that the Container-Level configurations are valid and
+//! consistent with the Organic Unity principles.
+
+/// Validation error for Pure FormShapes
+#[derive(Debug, thiserror::Error)]
+pub enum ConfigError {
+    /// Field validation failed
+    #[error("Field validation failed: {field} - {message}")]
+    FieldValidation { field: String, message: String },
+    
+    /// Required field is missing
+    #[error("Required field missing: {field}")]
+    RequiredFieldMissing { field: String },
+    
+    /// Type validation failed
+    #[error("Type validation failed: {field} - expected {expected}, got {actual}")]
+    TypeValidation { 
+        field: String, 
+        expected: String, 
+        actual: String 
+    },
+    
+    /// Container validation failed
+    #[error("Container validation failed: {message}")]
+    ContainerValidation { message: String },
+}
+
+/// Validator trait for Pure FormShapes
+pub trait Validator {
+    /// Validate a field value
+    fn validate_field(&self, field_name: &str, value: &str) -> Result<(), ConfigError>;
+    
+    /// Validate the entire configuration
+    fn validate_config(&self) -> Result<(), ConfigError>;
+}
+
+/// Default validator for Pure FormShapes
+pub struct DefaultValidator;
+
+impl Validator for DefaultValidator {
+    fn validate_field(&self, field_name: &str, value: &str) -> Result<(), ConfigError> {
+        // Basic validation - ensure field is not empty
+        if value.is_empty() {
+            return Err(ConfigError::FieldValidation {
+                field: field_name.to_string(),
+                message: "Field cannot be empty".to_string(),
+            });
+        }
+        
+        Ok(())
+    }
+    
+    fn validate_config(&self) -> Result<(), ConfigError> {
+        // Basic config validation
+        Ok(())
+    }
+}
+
+/// Validation utilities for Pure FormShapes
+pub struct ValidationUtils;
+
+impl ValidationUtils {
+    /// Validate a string field
+    pub fn validate_string(field_name: &str, value: &str) -> Result<(), ConfigError> {
+        if value.is_empty() {
+            Err(ConfigError::FieldValidation {
+                field: field_name.to_string(),
+                message: "String field cannot be empty".to_string(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+    
+    /// Validate a numeric field
+    pub fn validate_number(field_name: &str, value: &str) -> Result<(), ConfigError> {
+        if value.parse::<f64>().is_err() {
+            Err(ConfigError::FieldValidation {
+                field: field_name.to_string(),
+                message: "Field must be a valid number".to_string(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+    
+    /// Validate a boolean field
+    pub fn validate_boolean(field_name: &str, value: &str) -> Result<(), ConfigError> {
+        if value != "true" && value != "false" {
+            Err(ConfigError::FieldValidation {
+                field: field_name.to_string(),
+                message: "Field must be 'true' or 'false'".to_string(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+}

@@ -3,24 +3,25 @@
 //! Translated from Java GDS ModelConfig.java in model-catalog-api.
 //! Adapted to Rust config system following repository patterns.
 
-crate::generate_config!(
-    ModelConfig, ModelConfigBuilder,
-    validate = |cfg: &ModelConfig| {
-        crate::config::validation::ConfigValidation::validate_non_empty_string(&cfg.model_name, "modelName")?;
-        crate::config::validation::ConfigValidation::validate_non_empty_string(&cfg.model_user, "modelUser")?;
-        // Model name cannot contain whitespace
-        if cfg.model_name.chars().any(|c| c.is_whitespace()) {
-            return Err(crate::config::validation::ConfigError::InvalidParameter {
-                parameter: "modelName".to_string(),
-                reason: "Model name cannot contain whitespace".to_string(),
-            });
-        }
-        Ok(())
-    },
-    {
-        model_name: String = String::from("default_model");
-        model_user: String = String::from("default_user");
-        username_override: Option<String> = None;
+use crate::define_config;
+
+define_config!(
+    pub struct ModelConfig {
+        validate = |cfg: &ModelConfig| {
+            crate::config::validation::ConfigValidation::validate_non_empty_string(&cfg.model_name, "modelName")?;
+            crate::config::validation::ConfigValidation::validate_non_empty_string(&cfg.model_user, "modelUser")?;
+            // Model name cannot contain whitespace
+            if cfg.model_name.chars().any(|c| c.is_whitespace()) {
+                return Err(crate::config::validation::ConfigError::InvalidParameter {
+                    parameter: "modelName".to_string(),
+                    reason: "Model name cannot contain whitespace".to_string(),
+                });
+            }
+            Ok(())
+        },
+        model_name: String = String::from("default_model"),
+        model_user: String = String::from("default_user"),
+        username_override: Option<String> = None,
     }
 );
 

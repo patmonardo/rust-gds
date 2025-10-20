@@ -206,21 +206,49 @@ impl<'a, O: Objective> ObjectiveUpdateConsumer<'a, O> {
         // Java: ctx.backward(loss);
         ctx.backward(loss_variable.as_ref());
 
-        // Java: List<? extends Tensor<?>> localWeightGradient = objective
-        //     .weights()
-        //     .stream()
-        //     .map(ctx::gradient)
-        //     .collect(Collectors.toList());
+        // For each expected weight from Objective, find its corresponding in-graph Weights
+        // by matching the underlying data pointer, then fetch its gradient.
+        use crate::ml::core::functions::weights::Weights as WeightsType;
+        fn find_matching_in_graph<'v>(root: &'v dyn crate::ml::core::variable::Variable, target: &WeightsType) -> Option<&'v dyn crate::ml::core::variable::Variable> {
+            // Compare by underlying tensor data address inside Weights
+            let target_data_ptr: *const () = {
+                let guard = target.borrow();
+                (&*guard.as_ref() as *const dyn crate::ml::core::tensor::Tensor) as *const ()
+            };
+
+            fn dfs<'a>(node: &'a dyn crate::ml::core::variable::Variable, target_ptr: *const ()) -> Option<&'a dyn crate::ml::core::variable::Variable> {
+                // Try downcast to Weights to compare underlying data
+                if let Some(w) = (node as &dyn std::any::Any).downcast_ref::<WeightsType>() {
+                    let node_ptr: *const () = {
+                        let g = w.borrow();
+                        (&*g.as_ref() as *const dyn crate::ml::core::tensor::Tensor) as *const ()
+                    };
+                    if node_ptr == target_ptr {
+                        return Some(node);
+                    }
+                }
+                for p in node.parents() {
+                    if let Some(found) = dfs(p.as_ref(), target_ptr) {
+                        return Some(found);
+                    }
+                }
+                None
+            }
+
+            dfs(root, target_data_ptr)
+        }
+
         let local_weight_gradients: Vec<Box<dyn Tensor>> = self
             .objective
             .weights()
             .iter()
             .map(|weights| {
-                // Try to get gradient from context
-                ctx.gradient(weights).unwrap_or_else(|| {
-                    // Fallback: create zero gradient with same dimensions
-                    weights.snapshot().create_with_same_dimensions()
-                })
+                if let Some(in_graph_var) = find_matching_in_graph(loss_variable.as_ref(), weights) {
+                    ctx.gradient(in_graph_var).unwrap_or_else(|| weights.snapshot().create_with_same_dimensions())
+                } else {
+                    // Fallback to objective identity (may be None if identity mismatch persists)
+                    ctx.gradient(weights).unwrap_or_else(|| weights.snapshot().create_with_same_dimensions())
+                }
             })
             .collect();
 

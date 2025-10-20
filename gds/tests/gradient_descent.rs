@@ -95,9 +95,7 @@ impl TestObjective {
 
         let prediction = EWiseAddMatrixScalar::new(
             Box::new(weighted),
-            Box::new(Constant::new(Box::new(Scalar::new(
-                self.bias.borrow_scalar().value(),
-            )))) as Box<dyn Variable>,
+            Box::new(self.bias.clone()) as Box<dyn Variable>,
         );
 
         let result = ctx.forward(&prediction);
@@ -162,9 +160,7 @@ impl Objective for TestObjective {
 
         let prediction = EWiseAddMatrixScalar::new(
             Box::new(weighted),
-            Box::new(Constant::new(Box::new(Scalar::new(
-                self.bias.borrow_scalar().value(),
-            )))) as Box<dyn Variable>,
+            Box::new(self.bias.clone()) as Box<dyn Variable>,
         );
 
         // Compute MSE loss
@@ -213,10 +209,11 @@ fn test_gradient_descent_loss_computation() {
     let ctx = ComputationContext::new();
     let _loss_value = ctx.forward(loss_var.as_ref());
 
-    let loss_scalar = if let Some(scalar) = (loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>() {
+    let loss_tensor = ctx.forward(loss_var.as_ref());
+    let loss_scalar = if let Some(scalar) = loss_tensor.as_any().downcast_ref::<Scalar>() {
         scalar
     } else {
-        println!("  Failed to downcast loss to Scalar");
+        println!("  Failed to downcast computed loss to Scalar");
         return; // Skip this test
     };
     println!("  Loss value: {}", loss_scalar.value());
@@ -376,8 +373,8 @@ fn test_gradient_descent_learning_verification() {
     println!("  Final prediction: {}", final_prediction);
     println!("  Final error: {}", final_error);
 
-    // Check if the model learned
-    if final_error < initial_prediction.abs() {
+    // Check if the model learned (final error must be less than initial error)
+    if final_error < (initial_prediction - true_value).abs() {
         println!("✓ Gradient descent learning verification successful - model learned!");
         println!(
             "  Error reduced from {} to {}",
@@ -435,9 +432,8 @@ fn test_gradient_descent_batch_processing() {
         let loss_var = objective.loss(&batch, batch_size.try_into().unwrap());
 
         let ctx = ComputationContext::new();
-        let _loss_value = ctx.forward(loss_var.as_ref());
-
-        let loss_scalar = (loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
+        let loss_value = ctx.forward(loss_var.as_ref());
+        let loss_scalar = loss_value.as_any().downcast_ref::<Scalar>().unwrap();
         println!(
             "    Loss for batch size {}: {}",
             batch_size,
@@ -477,8 +473,8 @@ fn test_gradient_descent_convergence() {
         let batch = RangeBatch::new(0, 10, 10);
         let initial_loss_var = objective.loss(&batch, 10);
         let ctx = ComputationContext::new();
-        let _initial_loss = ctx.forward(initial_loss_var.as_ref());
-        let initial_loss_scalar = (initial_loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
+        let initial_loss_value = ctx.forward(initial_loss_var.as_ref());
+        let initial_loss_scalar = initial_loss_value.as_any().downcast_ref::<Scalar>().unwrap();
 
         println!("    Initial loss: {}", initial_loss_scalar.value());
 
@@ -488,8 +484,8 @@ fn test_gradient_descent_convergence() {
         // Record final loss
         let final_loss_var = objective.loss(&batch, 10);
         let ctx = ComputationContext::new();
-        let _final_loss = ctx.forward(final_loss_var.as_ref());
-        let final_loss_scalar = (final_loss_var.as_ref() as &dyn std::any::Any).downcast_ref::<Scalar>().unwrap();
+        let final_loss_value = ctx.forward(final_loss_var.as_ref());
+        let final_loss_scalar = final_loss_value.as_any().downcast_ref::<Scalar>().unwrap();
 
         println!("    Final loss: {}", final_loss_scalar.value());
 
