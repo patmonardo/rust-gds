@@ -40,3 +40,9 @@ impl TSJsonInterface {
         Ok(format!("PureForm: {}", given_form))
     }
 }
+
+impl Default for TSJsonInterface {
+    fn default() -> Self {
+        Self::new()
+    }
+}

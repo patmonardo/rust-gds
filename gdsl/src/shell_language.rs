@@ -44,3 +44,9 @@ impl ShellLanguage {
         self.ts_json_interface.receive_from_kernel(response)
     }
 }
+
+impl Default for ShellLanguage {
+    fn default() -> Self {
+        Self::new()
+    }
+}

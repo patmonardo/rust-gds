@@ -1,35 +1,38 @@
-//! GDSL Runtime - SystemD Shell Language
+//! GDSL Runtime - Graph DSL Shell Language
 //!
 //! This crate implements the GDSL Runtime as a TS-JSON messaging language
-//! that connects the Kernel (Pure Form Processor) to UserLand (Given Form Processor).
+//! that connects the Kernel (Pure Form Processor) to the Model (SDSL) to UserLand (Given Form Processor).
 //!
 //! ## Architecture
 //!
-//! ```
-//! Kernel (Pure Form Processor) <- GDSL -> UserLand (Given Form Processor)
-//! ```
+//! The GDSL Runtime acts as a messaging bridge:
+//! 
+//! Kernel (Pure Form Processor) ← GDSL → Model (SDSL) → TaskProcessor → UserLand (Given Form Processor)
 //!
 //! - **Kernel**: Pure Form Processor (GDS crate)
 //! - **GDSL**: TS-JSON messaging language (this crate)
+//! - **Model**: SDSL (Species-Specific DSL) - Middleware communication language for View/Representations
+//! - **TaskProcessor**: The unity of Kernel Pure Form Processor and UserLand Given Form Processor
 //! - **UserLand**: Given Form Processor (Logic package)
 //!
 //! ## The GDSL Messaging Language
 //!
 //! GDSL is the shell language that:
-//! - Translates between Pure Forms and Given Forms
-//! - Provides TS-JSON interface for UserLand
-//! - Manages communication between Kernel and UserLand
+//! - Translates between Pure Forms and SDSL representations
+//! - Provides TS-JSON interface for Model communication
+//! - Manages communication between Kernel and Model
 //! - Implements the Container-Contained messaging protocol
 //!
 //! ## TS-JSON Interface
 //!
 //! The GDSL Runtime provides:
 //! - TS-JSON serialization/deserialization
-//! - Message passing between Kernel and UserLand
+//! - Message passing between Kernel and Model
 //! - Form translation and transformation
-//! - UserLand API surface
+//! - SDSL representation interface
 
 pub mod messaging;
 pub mod ts_json;
 pub mod shell_language;
-pub mod userland_interface;
+pub mod model_interface;
+pub mod sdsl_interface;
