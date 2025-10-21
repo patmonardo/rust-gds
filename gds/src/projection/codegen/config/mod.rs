@@ -1,27 +1,32 @@
-//! Config - Pure FormShape Configuration System
+//! Config - Configuration System
 //!
-//! This module implements the Container-Level FormShape configuration system
-//! that defines Pure Forms in anticipation of transcendent proc-macro evolution.
+//! This module provides the `define_config!` macro for generating configuration
+//! structs with builders, validation, and JSON parsing.
 //!
-//! ## Architecture
+//! ## Usage
 //!
-//! The Config system operates at the Container Level, defining FormShapes that
-//! represent the essential structure of configuration objects. These FormShapes
-//! are Pure Forms that can be projected into various concrete implementations.
-//!
-//! ## Pure FormShapes
-//!
-//! A FormShape is the essential structure of a configuration:
-//! - **Container**: The configuration struct itself
-//! - **Contained**: The individual fields and their types
-//! - **Container+Contained**: The builder pattern and validation
-//!
-//! This represents the Triadic structure at the heart of the Organic Unity.
+//! ```rust
+//! define_config! {
+//!     name: MyConfig,
+//!     fields: {
+//!         value: f64 = 1.0,
+//!         enabled: bool = true,
+//!     },
+//!     validation: |cfg| {
+//!         if cfg.value <= 0.0 {
+//!             return Err(ConfigError::FieldValidation { 
+//!                 field: "value".to_string(), 
+//!                 message: "Must be positive".to_string() 
+//!             });
+//!         }
+//!         Ok(())
+//!     }
+//! }
+//! ```
 
+pub mod config;
 pub mod define_config;
-pub mod form_shape;
-pub mod container;
 pub mod validation;
 
-// The define_config macro is exported at crate root via #[macro_export]
-// so we don't need to re-export it here
+// Re-export the macros
+pub use crate::generate_config;

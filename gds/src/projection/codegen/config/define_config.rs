@@ -1,30 +1,27 @@
-//! Define Config - Pure FormShape Definition Macro
+//! Define Config Macro
 //!
-//! This macro defines Container-Level FormShapes that represent the essential
-//! structure of configuration objects. The macro operates on Pure Forms that
-//! can be projected into various concrete implementations.
+//! Generates configuration structs with builders, validation, and JSON parsing.
 //!
 //! ## Usage
 //!
 //! ```rust
 //! define_config! {
-//!     pub struct MyConfig {
-//!         validate = |cfg| {
-//!             ConfigValidation::validate_positive(cfg.count as f64, "count")?;
-//!             Ok(())
-//!         },
-//!         name: String = "default".to_string(),
-//!         count: usize = 42,
+//!     name: MyConfig,
+//!     fields: {
+//!         value: f64 = 1.0,
 //!         enabled: bool = true,
+//!     },
+//!     validation: |cfg| {
+//!         if cfg.value <= 0.0 {
+//!             return Err(ConfigError::FieldValidation { 
+//!                 field: "value".to_string(), 
+//!                 message: "Must be positive".to_string() 
+//!             });
+//!         }
+//!         Ok(())
 //!     }
 //! }
 //! ```
-//!
-//! This generates:
-//! - The config struct with Pure FormShape
-//! - Builder pattern for Container+Contained unity
-//! - Validation system
-//! - Default implementations
 
 #[macro_export]
 macro_rules! define_config {
@@ -59,7 +56,7 @@ macro_rules! define_config {
         define_config!(@generate $name, { $($(#[$field_attr])* $field : $ty = $default;)* });
         
         impl $name {
-            // Validate the Pure FormShape (no custom validation)
+            // Validate the config (no custom validation)
             pub fn validate(&self) -> Result<(), $crate::config::validation::ConfigError> {
                 Ok(())
             }
@@ -70,7 +67,7 @@ macro_rules! define_config {
         define_config!(@generate $name, { $($(#[$field_attr])* $field : $ty = $default;)* });
         
         impl $name {
-            // Validate the Pure FormShape (with custom validation)
+            // Validate the config (with custom validation)
             pub fn validate(&self) -> Result<(), $crate::config::validation::ConfigError> {
                 $validator(self)?;
                 Ok(())
@@ -79,7 +76,7 @@ macro_rules! define_config {
     };
     
     (@generate $name:ident, { $($(#[$field_attr:meta])* $field:ident : $ty:ty = $default:expr;)* }) => {
-        // Container: The Pure FormShape struct
+        // Config struct
         #[derive(Debug, Clone)]
         pub struct $name {
             $(
@@ -88,7 +85,7 @@ macro_rules! define_config {
             )*
         }
 
-        // Default implementation for Pure FormShape
+        // Default implementation
         impl Default for $name {
             fn default() -> Self {
                 Self {
@@ -99,8 +96,7 @@ macro_rules! define_config {
             }
         }
 
-        // Container+Contained: Builder pattern for Organic Unity
-        // Use paste crate to generate builder name
+        // Builder pattern
         paste::paste! {
             #[derive(Debug, Default)]
             pub struct [<$name Builder>] {
@@ -115,7 +111,7 @@ macro_rules! define_config {
                     define_config!(@builder_method $field, $ty, $(#[$field_attr])*);
                 )*
 
-                // Build the Pure FormShape
+                // Build the config
                 pub fn build(self) -> Result<$name, $crate::config::validation::ConfigError> {
                     let defaults = $name::default();
                     let config = $name {
@@ -124,21 +120,21 @@ macro_rules! define_config {
                         )*
                     };
                     
-                    // Validate the Pure FormShape
+                    // Validate the config
                     config.validate()?;
                     Ok(config)
                 }
             }
 
             impl $name {
-                // Create a new builder for the Pure FormShape
+                // Create a new builder
                 pub fn builder() -> [<$name Builder>] {
                     [<$name Builder>]::default()
                 }
             }
         }
 
-        // Implement Config trait for the Pure FormShape
+        // Implement Config trait
         impl $crate::config::base_types::Config for $name {}
     };
     

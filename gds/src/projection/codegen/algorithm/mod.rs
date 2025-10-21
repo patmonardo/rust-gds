@@ -1,51 +1,32 @@
-//! Algorithm Genetic Constituents
+//! Algorithm Code Generation
 //!
-//! This module contains the genetic constituents that give rise to Algorithms:
-//! the logical structures that determine how a concept unfolds from thought into
-//! concrete Storage + Computation manifestation.
-//!
-//! - `type_projector.rs` - Maya as Dialectical Absolute (PropertyDescriptor → Storage/Computation)
-//! - `type_validator.rs` - Inference as Brahman-Knowing (Values → PropertyDescriptor)
-//! - `functors.rs` - Gross ↔ Subtle conversions (Form Processor dependency)
-//!
-//! ## The Genetic Process
-//!
-//! An Algorithm is the Concept that subsumes:
-//! - **Storage Runtime** (Being There - what persists)
-//! - **Computation Runtime** (Ephemeral Nothing - what transforms)
-//!
-//! These genetic constituents extract and validate the essence:
-//!
-//! - **TypeProjector**: Maps Form (PropertyDescriptor) → Manifestations (Storage, Computation)
-//! - **TypeValidator**: Maps Values → Form (inference, validation)
-//! - **Functors**: Maps Gross (PropertyValues) ↔ Subtle (GdsValue)
+//! This module contains macros and utilities for generating algorithm infrastructure:
+//! - `define_algorithm!` - Generate complete algorithm specifications
+//! - `algorithm_config!` - Generate configuration structs + builders
+//! - Test utilities for algorithm generation
 //!
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use gds::projection::codegen::transforms::*;
+//! use gds::projection::codegen::algorithm::*;
 //!
-//! // Project property descriptor to storage backend
-//! let projector = HugeArrayProjector::new();
-//! let storage_desc = projector.project_to_storage(&property_desc)?;
-//!
-//! // Infer descriptor from values
-//! let inferred = TypeValidator::infer_from_values(&values)?;
+//! // Define a complete algorithm
+//! define_algorithm! {
+//!     name: "pagerank",
+//!     category: Centrality,
+//!     config: { ... },
+//!     result: PageRankResult { ... },
+//!     projection_hint: Dense,
+//!     modes: [Stream, Stats],
+//!     execute: |graph_store, config, context| { ... }
+//! }
 //! ```
 
-pub mod sum_aggregation;
-pub mod type_projector;
-pub mod type_validator;
-// pub mod functors;  // Form processor dependency - commented out
+// Import the macros
+#[macro_use]
+mod define_algorithm;
+#[macro_use]
+mod test_algorithm;
 
-// Re-exports
-pub use sum_aggregation::{
-    AggregationError, AggregationResult, AggregationSource, AggregationType, SumAggregation,
-    SumAggregationMembership, SumAggregationProcedure,
-};
-pub use type_projector::{
-    AdaptiveProjector, ArrowProjector, HugeArrayProjector, PregelProjector, ProjectionError,
-    TypeProjector,
-};
-pub use type_validator::{TypeValidator, ValidationError};
-// pub use functors::*;  // Form processor dependency - commented out
+// Re-export the main macros
+pub use crate::define_algorithm;

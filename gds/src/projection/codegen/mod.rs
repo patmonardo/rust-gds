@@ -89,43 +89,21 @@
 // ============================================================================
 
 #[macro_use]
-pub mod macros;
 pub mod algorithm;
-pub mod catalog;
 #[macro_use]
 pub mod config;
-pub mod consequence;
-pub mod descriptors;
-pub mod inherence;
-pub mod membership;
-pub mod registry;
-pub mod runtimes;
+#[macro_use]
+pub mod eval;
 
 // ============================================================================
 // RE-EXPORTS
 // ============================================================================
 
-// Macros (re-exported at crate root via #[macro_export])
-pub use macros::*;
+// Algorithm macros (re-exported at crate root via #[macro_export])
+pub use algorithm::*;
 
-// Descriptors
-pub use descriptors::{
-    ComputationDescriptor, ComputationPattern, ComputationSpecies, FieldDescriptor,
-    PropertyDescriptor, PropertyId, StorageHint, StructDescriptor, StructId,
-};
+// Config macros (re-exported at crate root via #[macro_export])
+pub use config::*;
 
-// ML Pipeline is THE pipeline (re-export for convenience)
-pub use descriptors::PipelineDescriptor;
-
-// Runtimes
-pub use runtimes::{
-    instantiate_computer_from_descriptor, register_computer_factory, AccessMode, ComputeContext,
-    ComputeError, ComputeStep, Computer, ComputerFactory, Messages, StorageAccessor,
-    StorageContext, StorageError, StorageRuntime, StorageRuntimeFactory, StorageValue,
-};
-
-// Algorithm (genetic constituents)
-pub use algorithm::{
-    AdaptiveProjector, ArrowProjector, HugeArrayProjector, PregelProjector, ProjectionError,
-    TypeProjector, TypeValidator, ValidationError,
-};
+// Eval macros (re-exported at crate root via #[macro_export])
+pub use eval::*;

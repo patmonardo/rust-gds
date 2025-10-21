@@ -54,7 +54,7 @@ pub mod codegen;
 
 // Re-export commonly used codegen types
 // pub use codegen::functors::{GrossSubtleFunctor, GrossToSubtle, SubtleToGross};  // Form processor dependency
-pub use codegen::descriptors::property;
+// pub use codegen::descriptors::property;  // Moved to Reality
 
 // That's it! Everything else stays under codegen::, factory::, or eval::.
 // If you need ComputationDescriptor, use: crate::projection::codegen::descriptors::computation::ComputationDescriptor

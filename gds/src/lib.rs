@@ -49,6 +49,7 @@ pub mod yens_k_shortest_paths;
 pub mod config;
 pub mod core;
 pub mod errors;
+pub mod form;
 pub mod mem;
 pub mod ml;
 pub mod pregel;

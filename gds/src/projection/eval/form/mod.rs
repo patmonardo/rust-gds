@@ -1,33 +1,28 @@
-//! ML runtime execution.
+//! Form Evaluator - Fixed Singularity
 //!
-//! This module contains runtime executors for ML pipelines.
-//! Descriptors are in codegen/ml/, runtime is here.
+//! This module implements the **Form Evaluator** as a **fixed singularity** that executes
+//! the **Form infrastructure**. It's the **third ISA** consisting of the **Triads of Hegel**.
+//!
+//! ## Architecture
+//!
+//! The Form Evaluator executes the **Form infrastructure**:
+//! - **Thesis** = Procedure (Immediate)
+//! - **Antithesis** = ML (Mediate)
+//! - **Synthesis** = Form (Sublates both)
+//!
+//! ## The Three ISA
+//!
+//! ```
+//! eval/procedure (Computation ISA)  ← AlgorithmSpec implementations
+//! eval/ml (ML ISA)                 ← Pipeline implementations  
+//! eval/form (Form ISA)             ← FormSpec implementations
+//! ```
 
-pub mod features;
-pub mod graph_procedure;
-pub mod mock_property_values;
-pub mod models;
-pub mod pipeline_executor;
-pub mod pipeline_state;
-pub mod step_executor;
-pub mod training_executor;
+pub mod form_spec;
+pub mod executor;
+pub mod triadic_cycle;
 
-// Re-exports for convenience
-pub use features::{
-    DefaultFeatureAssembler, FeatureAssembler, IdentityTransformation, NormalizeTransformation,
-    Transformation,
-};
-pub use graph_procedure::{
-    create_mock_registry, GraphProcedure, GraphProcedureRegistry, MockFastRPProcedure,
-    MockLouvainProcedure, MockPageRankProcedure,
-};
-pub use mock_property_values::{
-    MockDoublePropertyValues, MockEmbeddingPropertyValues, MockLongPropertyValues,
-};
-pub use models::{DecisionTreeClassifier, Model, ModelError, ModelMetadata};
-pub use pipeline_executor::{PipelineExecutor, PipelineResult};
-pub use pipeline_state::{DatasetSplits, ExecutionPhase, PipelineState};
-pub use step_executor::{
-    create_step_executor, FeatureStepExecutor, NodePropertyStepExecutor, StepExecutor, StepResult,
-};
-pub use training_executor::{TrainingError, TrainingExecutor, TrainingResult, TrainingStatistics};
+// Re-export the core concepts
+pub use form_spec::*;
+pub use executor::*;
+pub use triadic_cycle::*;
