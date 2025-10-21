@@ -7,7 +7,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use gds::projection::codegen::macros::procedure::*;
+//! use gds::projection::codegen::macros::procedures::*;
 //!
 //! // 1. Define configuration
 //! algorithm_config! {

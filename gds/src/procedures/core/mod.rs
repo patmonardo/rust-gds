@@ -69,7 +69,7 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use gds::procedure::core::prelude::*;
+//! use gds::procedures::core::prelude::*;
 //!
 //! // Use result statistics
 //! let stats = CentralityStatistics::compute(

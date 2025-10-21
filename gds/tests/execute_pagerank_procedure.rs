@@ -5,7 +5,7 @@
 
 #[cfg(test)]
 mod tests {
-    use gds::procedure::pagerank::{PageRankAlgorithmSpec, PageRankConfig};
+    use gds::procedures::pagerank::{PageRankAlgorithmSpec, PageRankConfig};
     use gds::projection::eval::procedure::AlgorithmSpec;
     use serde_json::json;
 

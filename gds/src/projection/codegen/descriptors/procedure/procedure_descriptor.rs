@@ -192,7 +192,7 @@ impl ProcedureParameterDescriptor {
 /// Facade metadata for generated bindings.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProcedureFacadeDescriptor {
-    /// Rust module path (e.g. `crate::procedure::algo::pagerank`).
+    /// Rust module path (e.g. `crate::procedures::algo::pagerank`).
     pub rust_module: String,
     /// Symbol exported to the binding surface (e.g. `page_rank`).
     pub rust_symbol: String,

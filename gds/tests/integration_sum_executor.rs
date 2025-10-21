@@ -6,7 +6,7 @@
 //!
 //! This tests the entire machinery: Storage Pole ↔ Computation Pole via Functor
 
-use gds::procedure::sum::{SumAlgorithmSpec, SumComputationRuntime, SumConfig};
+use gds::procedures::sum::{SumAlgorithmSpec, SumComputationRuntime, SumConfig};
 use gds::projection::eval::procedure::AlgorithmSpec;
 use gds::projection::eval::procedure::ExecutionMode;
 use serde_json::json;

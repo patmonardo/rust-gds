@@ -7,7 +7,7 @@
 
 #[cfg(test)]
 mod tests {
-    use gds::procedure::pagerank::{
+    use gds::procedures::pagerank::{
         PageRankPregelComputation, PageRankMemoryEstimation, estimate_pagerank_memory,
         PageRankConfig, PageRankAlgorithmSpec
     };

@@ -3,7 +3,7 @@
 //! A modular graph data structure and algorithms library.
 #![allow(ambiguous_wide_pointer_comparisons)]
 
-pub mod applications;
+// pub mod applications;
 pub mod all_pairs_shortest_path;
 pub mod approx_max_k_cut;
 pub mod articulationpoints;
@@ -52,7 +52,7 @@ pub mod errors;
 pub mod mem;
 pub mod ml;
 pub mod pregel;
-pub mod procedure; // Infrastructure layer - The Machine
+pub mod procedures;
 pub mod projection;
 pub mod termination;
 pub mod types;
