@@ -85,12 +85,27 @@
 /// - Common algorithm utilities
 pub mod core;
 
+/// Algorithm infrastructure (Genera)
+/// - Centrality algorithm utilities
+/// - Community detection utilities
+/// - Algorithm-specific result types and transformations
+pub mod algorithms;
 
 // Module structure
-// pub mod algorithms; // Temporarily disabled due to compilation errors
 
 pub mod sum;
 pub mod pagerank;
+pub mod degree_centrality;
+pub mod all_shortest_paths;
+pub mod astar;
+pub mod bellman_ford;
+pub mod delta_stepping;
+pub mod dijkstra;
+pub mod bfs;
+pub mod dfs;
+pub mod yens;
+pub mod traversal;
+pub mod spanning_tree;
 
 
 // Future modules (to be implemented)
@@ -99,6 +114,17 @@ pub mod pagerank;
 // Re-export commonly used types
 pub use sum::{SumComputationRuntime, SumAlgorithmSpec, SumConfig, SumStorageRuntime};
 pub use pagerank::{PageRankAlgorithmSpec, PageRankComputationResult, PageRankConfig, PageRankPregelComputation, PageRankMemoryEstimation, estimate_pagerank_memory};
+pub use degree_centrality::{DEGREE_CENTRALITYAlgorithmSpec, DegreeCentralityConfig, DegreeCentralityResult, DegreeCentralityStorageRuntime, DegreeCentralityComputationRuntime};
+pub use all_shortest_paths::{ALL_SHORTEST_PATHSAlgorithmSpec, AllShortestPathsConfig, AllShortestPathsResult, AllShortestPathsStorageRuntime, AllShortestPathsComputationRuntime};
+pub use astar::{ASTARAlgorithmSpec, AStarConfig, AStarResult, AStarStorageRuntime, AStarComputationRuntime};
+pub use bellman_ford::{BELLMAN_FORDAlgorithmSpec, BellmanFordConfig, BellmanFordResult, BellmanFordStorageRuntime, BellmanFordComputationRuntime};
+pub use delta_stepping::{DELTA_STEPPINGAlgorithmSpec, DeltaSteppingConfig, DeltaSteppingResult, DeltaSteppingStorageRuntime, DeltaSteppingComputationRuntime};
+pub use dijkstra::{DIJKSTRAAlgorithmSpec, DijkstraConfig, DijkstraResult, DijkstraStorageRuntime, DijkstraComputationRuntime, Targets, SingleTarget, ManyTargets, AllTargets, TraversalState, PathFindingResult};
+pub use bfs::{BFSAlgorithmSpec, BfsConfig, BfsResult, BfsStorageRuntime, BfsComputationRuntime};
+pub use dfs::{DFSAlgorithmSpec, DfsConfig, DfsResult, DfsStorageRuntime, DfsComputationRuntime};
+pub use yens::{YENSAlgorithmSpec, YensConfig, YensResult, YensStorageRuntime, YensComputationRuntime, MutablePathResult, CandidatePathsPriorityQueue, RelationshipFilterer};
+pub use traversal::{ExitPredicate, Aggregator, ExitPredicateResult, FollowExitPredicate, OneHopAggregator, TargetExitPredicate};
+pub use spanning_tree::{SPANNING_TREEAlgorithmSpec, SpanningTreeConfig, SpanningTreeResult, SpanningTreeStorageRuntime, SpanningTreeComputationRuntime, SpanningTree, SpanningGraph};
 
 // pub use algorithms::*;
 pub use core::*;

@@ -29,26 +29,10 @@ define_algorithm! {
     modes: [Stream, Stats],
     
     execute: {
-        // Simulate PageRank computation
-        let node_count = 1000; // Mock node count
-        let mut scores = vec![1.0 / node_count as f64; node_count];
-        
-        // Simple PageRank simulation (not real algorithm)
-        for iteration in 0..100 { // Use fixed number for now
-            // Simulate convergence check
-            if iteration > 10 {
-                break;
-            }
-            
-            // Update scores (simplified)
-            for i in 0..node_count {
-                scores[i] = scores[i] * 0.85 + (1.0 - 0.85) / node_count as f64;
-            }
-        }
-
+        // Simple placeholder implementation
         Ok(PageRankResult {
-            scores,
-            iterations: 100,
+            scores: vec![0.1, 0.2, 0.3],
+            iterations: 10,
             converged: true,
             execution_time: Duration::from_millis(100),
         })

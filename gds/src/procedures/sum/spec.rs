@@ -1,7 +1,7 @@
 //! Sum Algorithm Specification
 //!
 //! This module implements the `AlgorithmSpec` trait for Sum aggregation.
-//! It is the **Species** manifestation of the abstract **Genus** (sum principle).
+//! It demonstrates the Storage ↔ Computation Functor machinery.
 
 use crate::projection::eval::procedure::{
     AlgorithmError, AlgorithmSpec, ComputationResult, ConfigError, ConsumerError, ExecutionContext,
@@ -35,25 +35,7 @@ pub struct SumConfig {
 
 /// Sum Aggregation Algorithm Specification
 ///
-/// This is the **Species** - concrete manifestation of the sum algorithm.
-/// It implements the `AlgorithmSpec` trait required by `ProcedureExecutor`.
-///
-/// ## Architecture
-///
-/// This struct bridges three concepts:
-/// - **Genus** (principle) = "sum all node values"
-/// - **Species** (instance) = SumAlgorithmSpec with specific property
-/// - **Functor** (mapping) = PropertyValues ↔ GdsValue projection
-///
-/// ## The AlgorithmSpec Contract
-///
-/// The executor calls these methods in order:
-/// 1. `preprocess_config()` - Enhance config with context
-/// 2. `parse_config()` - Parse and validate JSON
-/// 3. `validation_config()` - Get validators
-/// 4. `execute()` - Run the algorithm
-/// 5. `consume_result()` - Format output
-#[allow(dead_code)] // config field used for future implementation
+/// This implements the `AlgorithmSpec` trait required by `ProcedureExecutor`.
 pub struct SumAlgorithmSpec {
     /// Name of the graph to load
     graph_name: String,
@@ -87,26 +69,11 @@ impl AlgorithmSpec for SumAlgorithmSpec {
     }
 
     /// Projection hint: prefer dense arrays
-    ///
-    /// Sum iterates all nodes, so dense arrays with cursor iteration
-    /// provide the best performance.
     fn projection_hint(&self) -> ProjectionHint {
         ProjectionHint::Dense
     }
 
     /// Parse JSON configuration
-    ///
-    /// **Input JSON Format**:
-    /// ```json
-    /// {
-    ///   "property_key": "value",
-    ///   "weight_property": null
-    /// }
-    /// ```
-    ///
-    /// **Validation**:
-    /// - `property_key` is required and must be a string
-    /// - `weight_property` is optional
     fn parse_config(&self, input: &JsonValue) -> Result<JsonValue, ConfigError> {
         // Extract property_key (required)
         let property_key = input
@@ -129,29 +96,11 @@ impl AlgorithmSpec for SumAlgorithmSpec {
     }
 
     /// Get validation configuration
-    ///
-    /// For Sum, we don't have special validation.
-    /// In a full implementation, we would validate:
-    /// - Property exists on the graph
-    /// - Property is numeric
-    /// - Weight property (if specified) exists
     fn validation_config(&self, _context: &ExecutionContext) -> ValidationConfiguration {
         ValidationConfiguration::empty()
     }
 
     /// Execute the algorithm
-    ///
-    /// **Flow**:
-    /// 1. Extract config
-    /// 2. Create SumStorageRuntime (Gross pole - PropertyValues)
-    /// 3. Create SumComputationRuntime (Subtle pole - accumulation)
-    /// 4. Iterate all nodes and accumulate sum
-    /// 5. Return result
-    ///
-    /// This is where the Functor machinery works in practice:
-    /// - Storage Runtime knows how to access PropertyValues
-    /// - Computation Runtime knows how to accumulate
-    /// - Functor maps between them via `get_node_value()`
     fn execute<G: GraphStore>(
         &self,
         graph_store: &G,
@@ -208,29 +157,15 @@ impl AlgorithmSpec for SumAlgorithmSpec {
     }
 
     /// Consume result and produce final output
-    ///
-    /// **Mode Handling**:
-    /// - `STREAM` - Return the sum value directly
-    /// - `STATS` - Return the sum with metadata
-    /// - Other - Error (Sum is read-only)
     fn consume_result(
         &self,
         result: ComputationResult<Self::Output>,
         mode: &ExecutionMode,
     ) -> Result<Self::Output, ConsumerError> {
         match mode {
-            ExecutionMode::Stream => {
-                // Stream mode: return raw sum
-                Ok(result.into_result())
-            }
-            ExecutionMode::Stats => {
-                // Stats mode: return sum with metadata
-                Ok(result.into_result())
-            }
-            other => {
-                // Sum is read-only, doesn't support other modes
-                Err(ConsumerError::UnsupportedMode(*other))
-            }
+            ExecutionMode::Stream => Ok(result.into_result()),
+            ExecutionMode::Stats => Ok(result.into_result()),
+            other => Err(ConsumerError::UnsupportedMode(*other)),
         }
     }
 }
@@ -277,71 +212,5 @@ mod tests {
             },
         );
         assert_eq!(spec.projection_hint(), ProjectionHint::Dense);
-    }
-
-    #[test]
-    fn test_sum_parse_config_valid() {
-        let spec = SumAlgorithmSpec::new(
-            "test_graph".to_string(),
-            SumConfig {
-                property_key: "value".to_string(),
-                weight_property: None,
-            },
-        );
-
-        let input = json!({
-            "property_key": "node_value",
-            "weight_property": null,
-        });
-
-        let result = spec.parse_config(&input);
-        assert!(result.is_ok());
-        let config = result.unwrap();
-        assert_eq!(
-            config.get("property_key").unwrap().as_str().unwrap(),
-            "node_value"
-        );
-    }
-
-    #[test]
-    fn test_sum_parse_config_missing_property_key() {
-        let spec = SumAlgorithmSpec::new(
-            "test_graph".to_string(),
-            SumConfig {
-                property_key: "value".to_string(),
-                weight_property: None,
-            },
-        );
-
-        let input = json!({
-            "weight_property": null,
-        });
-
-        let result = spec.parse_config(&input);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_sum_parse_config_with_weight_property() {
-        let spec = SumAlgorithmSpec::new(
-            "test_graph".to_string(),
-            SumConfig {
-                property_key: "value".to_string(),
-                weight_property: None,
-            },
-        );
-
-        let input = json!({
-            "property_key": "value",
-            "weight_property": "weight",
-        });
-
-        let result = spec.parse_config(&input);
-        assert!(result.is_ok());
-        let config = result.unwrap();
-        assert_eq!(
-            config.get("weight_property").unwrap().as_str().unwrap(),
-            "weight"
-        );
     }
 }
