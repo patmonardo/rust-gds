@@ -6,7 +6,6 @@
 // pub mod applications;
 pub mod all_pairs_shortest_path;
 pub mod approx_max_k_cut;
-pub mod articulationpoints;
 pub mod betweenness;
 pub mod bridges;
 pub mod closeness;

@@ -106,6 +106,22 @@ pub mod dfs;
 pub mod yens;
 pub mod traversal;
 pub mod spanning_tree;
+// pub mod scc;  // TODO: Fix trait bounds and private module issues
+pub mod articulation_points;
+pub mod bridges;
+pub mod wcc;
+pub mod msbfs;
+pub mod harmonic;
+pub mod closeness;
+pub mod betweenness;
+pub mod triangle_count;
+pub mod louvain;
+pub mod label_propagation;
+pub mod kcore;
+pub mod k1coloring;
+pub mod kspanningtree;
+pub mod local_clustering_coefficient;
+pub mod hits;
 
 
 // Future modules (to be implemented)
@@ -125,6 +141,22 @@ pub use dfs::{DFSAlgorithmSpec, DfsConfig, DfsResult, DfsStorageRuntime, DfsComp
 pub use yens::{YENSAlgorithmSpec, YensConfig, YensResult, YensStorageRuntime, YensComputationRuntime, MutablePathResult, CandidatePathsPriorityQueue, RelationshipFilterer};
 pub use traversal::{ExitPredicate, Aggregator, ExitPredicateResult, FollowExitPredicate, OneHopAggregator, TargetExitPredicate};
 pub use spanning_tree::{SPANNING_TREEAlgorithmSpec, SpanningTreeConfig, SpanningTreeResult, SpanningTreeStorageRuntime, SpanningTreeComputationRuntime, SpanningTree, SpanningGraph};
+// pub use scc::{SCCAlgorithmSpec, SccConfig, SccResult, SccStorageRuntime, SccComputationRuntime};
+pub use articulation_points::{ArticulationPointsAlgorithmSpec, ArticulationPointsConfig, ArticulationPointsResult, ArticulationPointsStorageRuntime, ArticulationPointsComputationRuntime};
+pub use bridges::{BridgesAlgorithmSpec, BridgesConfig, BridgesResult, BridgesStorageRuntime, BridgesComputationRuntime};
+pub use wcc::{WccAlgorithmSpec, WccConfig, WccResult, WccStorageRuntime, WccComputationRuntime};
+pub use msbfs::SimpleMSBFS;
+pub use harmonic::{HarmonicAlgorithmSpec, HarmonicConfig, HarmonicResult, HarmonicStorageRuntime, HarmonicComputationRuntime};
+pub use closeness::{ClosenessCentralityAlgorithmSpec, ClosenessCentralityConfig, ClosenessCentralityResult, ClosenessCentralityStorageRuntime, ClosenessCentralityComputationRuntime};
+pub use betweenness::{BetweennessCentralityAlgorithmSpec, BetweennessCentralityConfig, BetweennessCentralityResult, BetweennessCentralityStorageRuntime, BetweennessCentralityComputationRuntime};
+pub use triangle_count::{TriangleCountAlgorithmSpec, TriangleCountConfig, TriangleCountResult, TriangleCountStorageRuntime, TriangleCountComputationRuntime};
+pub use louvain::{LouvainAlgorithmSpec, LouvainConfig, LouvainResult, LouvainStorageRuntime, LouvainComputationRuntime};
+pub use label_propagation::{LabelPropAlgorithmSpec, LabelPropConfig, LabelPropResult, LabelPropStorageRuntime, LabelPropComputationRuntime};
+pub use kcore::{KCoreAlgorithmSpec, KCoreConfig, KCoreResult, KCoreStorageRuntime, KCoreDecompositionRuntime};
+pub use k1coloring::{K1ColoringAlgorithmSpec, K1ColoringConfig, K1ColoringResult, K1ColoringStorageRuntime, K1ColoringComputationRuntime};
+pub use kspanningtree::{KSpanningTreeAlgorithmSpec, KSpanningTreeConfig, KSpanningTreeResult, KSpanningTreeStorageRuntime, KSpanningTreeComputationRuntime};
+pub use local_clustering_coefficient::{LOCAL_CLUSTERING_COEFFICIENTAlgorithmSpec, LocalClusteringCoefficientConfig, LocalClusteringCoefficientResult, LocalClusteringCoefficientStorageRuntime, LocalClusteringCoefficientComputationRuntime};
+pub use hits::{HITSAlgorithmSpec, HitsConfig, HitsResult, HitsStorageRuntime, HitsComputationRuntime};
 
 // pub use algorithms::*;
 pub use core::*;
