@@ -72,6 +72,11 @@ impl PathFindingResult {
         self.paths.is_empty()
     }
 
+    /// Get an iterator over the paths
+    pub fn paths(&self) -> impl Iterator<Item = &DijkstraPathResult> {
+        self.paths.iter()
+    }
+
 }
 
 #[cfg(test)]

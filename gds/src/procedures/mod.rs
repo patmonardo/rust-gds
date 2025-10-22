@@ -91,6 +91,9 @@ pub mod core;
 /// - Algorithm-specific result types and transformations
 pub mod algorithms;
 
+// Procedure Facades - User-facing idiomatic Rust API
+pub mod facades;
+
 // Module structure
 
 pub mod sum;
