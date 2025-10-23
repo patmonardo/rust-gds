@@ -98,7 +98,7 @@ fn test_astar_storage_computation_integration() {
     
     let mut computation = AStarComputationRuntime::new();
     
-    let result = storage.compute_astar_path(&mut computation).unwrap();
+    let result = storage.compute_astar_path(&mut computation, None, 0).unwrap();
     
     assert!(result.has_path());
     assert_eq!(result.path_length(), 2);
@@ -155,6 +155,8 @@ fn test_astar_result_serialization() {
         latitude_property: "lat".to_string(),
         longitude_property: "lon".to_string(),
         concurrency: 4,
+        relationship_types: vec![],
+        direction: "outgoing".to_string(),
     };
     
     // Test JSON serialization
@@ -197,7 +199,7 @@ fn test_astar_algorithm_completeness() {
     let mut computation = AStarComputationRuntime::new();
     
     // Test integration
-    let result = storage.compute_astar_path(&mut computation).unwrap();
+    let result = storage.compute_astar_path(&mut computation, None, 0).unwrap();
     
     assert!(result.has_path());
     assert_eq!(result.path_length(), 2);

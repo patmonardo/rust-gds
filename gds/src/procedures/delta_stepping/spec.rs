@@ -7,9 +7,9 @@
 //! efficiently in parallel shortest path computation.
 
 use crate::define_algorithm_spec;
-use crate::projection::eval::procedure::AlgorithmSpec;
+use crate::projection::relationship_type::RelationshipType;
+use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use super::storage::DeltaSteppingStorageRuntime;
 use super::computation::DeltaSteppingComputationRuntime;
 
@@ -29,6 +29,12 @@ pub struct DeltaSteppingConfig {
     
     /// Whether to store predecessors for path reconstruction
     pub store_predecessors: bool,
+    /// Optional relationship types to include (empty means all types)
+    #[serde(default)]
+    pub relationship_types: Vec<String>,
+    /// Direction for traversal ("outgoing" or "incoming")
+    #[serde(default = "DeltaDirection::default_as_str")] 
+    pub direction: String,
 }
 
 impl Default for DeltaSteppingConfig {
@@ -38,8 +44,29 @@ impl Default for DeltaSteppingConfig {
             delta: 1.0,
             concurrency: 4,
             store_predecessors: true,
+            relationship_types: vec![],
+            direction: DeltaDirection::Outgoing.as_str().to_string(),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DeltaDirection { Outgoing, Incoming }
+
+impl DeltaDirection {
+    fn from_str(s: &str) -> Self {
+        match s.to_ascii_lowercase().as_str() {
+            "incoming" => DeltaDirection::Incoming,
+            _ => DeltaDirection::Outgoing,
+        }
+    }
+    fn as_str(&self) -> &'static str {
+        match self {
+            DeltaDirection::Outgoing => "outgoing",
+            DeltaDirection::Incoming => "incoming",
+        }
+    }
+    fn default_as_str() -> String { Self::Outgoing.as_str().to_string() }
 }
 
 impl DeltaSteppingConfig {
@@ -116,7 +143,7 @@ define_algorithm_spec! {
     projection_hint: Dense,
     modes: [Stream, WriteNodeProperty],
     
-    execute: |_self, _graph_store, config, _context| {
+    execute: |_self, graph_store, config, _context| {
         // Parse configuration
         let config: DeltaSteppingConfig = serde_json::from_value(config.clone())
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::InvalidGraph(
@@ -144,8 +171,19 @@ define_algorithm_spec! {
             config.store_predecessors
         );
         
-        // Execute Delta Stepping algorithm
-        let result = storage.compute_delta_stepping(&mut computation)?;
+        // Execute Delta Stepping algorithm with optional relationship-type filtering and direction
+        let base_graph = graph_store.get_graph();
+        let graph = if !config.relationship_types.is_empty() {
+            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
+            match base_graph.relationship_type_filtered_graph(&rel_types) {
+                Ok(g) => g,
+                Err(_) => base_graph,
+            }
+        } else { base_graph };
+
+        let direction = DeltaDirection::from_str(&config.direction);
+
+        let result = storage.compute_delta_stepping(&mut computation, Some(graph.as_ref()), direction as u8)?;
         
         Ok(result)
     }
@@ -154,7 +192,8 @@ define_algorithm_spec! {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::eval::procedure::ExecutionContext;
+    use crate::projection::eval::procedure::{ExecutionContext, AlgorithmSpec};
+    use serde_json::json;
 
     #[test]
     fn test_delta_stepping_config_default() {
@@ -255,6 +294,8 @@ mod tests {
             delta: 0.0,
             concurrency: 4,
             store_predecessors: true,
+            relationship_types: vec![],
+            direction: DeltaDirection::Outgoing.as_str().to_string(),
         };
         
         assert!(invalid_config.validate().is_err());

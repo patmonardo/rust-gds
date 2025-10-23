@@ -76,7 +76,7 @@ fn test_dfs_storage_computation_integration() {
     let storage = DfsStorageRuntime::new(0, vec![3], None, true, 1);
     let mut computation = DfsComputationRuntime::new(0, true, 1);
     
-    let dfs_result = storage.compute_dfs(&mut computation).unwrap();
+    let dfs_result = storage.compute_dfs(&mut computation, None).unwrap();
     
     assert!(dfs_result.nodes_visited > 0);
     assert!(!dfs_result.paths.is_empty());

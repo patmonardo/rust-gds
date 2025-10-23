@@ -158,7 +158,7 @@ impl ProcedureExecutor {
             let empty_result = ComputationResult::new(
                 // Algorithm needs to handle empty case
                 algorithm
-                    .execute(&**graph_store, &config, &self.context)?
+                    .execute(graph_store.as_ref(), &config, &self.context)?
                     .into_result(),
                 std::time::Duration::ZERO,
             )
@@ -171,7 +171,7 @@ impl ProcedureExecutor {
         }
 
         // Step 6: Validate AFTER graph load (config + graph)
-        validation.validate_after_load(graph_store, &config)?;
+        validation.validate_after_load(graph_store.as_ref(), &config)?;
 
         self.context
             .log(LogLevel::Debug, "After-load validation passed");
@@ -184,7 +184,7 @@ impl ProcedureExecutor {
             &format!("Executing algorithm: {}", algo_name),
         );
 
-        let computation_result = algorithm.execute(&**graph_store, &config, &self.context)?;
+        let computation_result = algorithm.execute(graph_store.as_ref(), &config, &self.context)?;
         let compute_time = compute_start.elapsed();
 
         self.context.log(

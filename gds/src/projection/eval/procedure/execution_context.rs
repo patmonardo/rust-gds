@@ -9,6 +9,7 @@
 //! - Simple HashMap-based graph catalog
 //! - Basic logging and metrics
 
+use crate::types::catalog::GraphCatalog;
 use crate::types::prelude::DefaultGraphStore;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -29,6 +30,9 @@ use std::sync::Arc;
 pub struct ExecutionContext {
     /// Graph catalog (name → GraphStore)
     graph_catalog: HashMap<String, Arc<DefaultGraphStore>>,
+
+    /// Optional injected catalog handle (preferred for production)
+    catalog_handle: Option<Arc<dyn GraphCatalog>>, 
 
     /// Current user (for auditing)
     username: String,
@@ -66,6 +70,7 @@ impl ExecutionContext {
     pub fn new(username: impl Into<String>) -> Self {
         Self {
             graph_catalog: HashMap::new(),
+            catalog_handle: None,
             username: username.into(),
             is_admin: false,
             log_level: LogLevel::Info,
@@ -79,10 +84,18 @@ impl ExecutionContext {
         Self::new("")
     }
 
-    /// Load a graph from the catalog by name
-    pub fn load_graph(&self, name: &str) -> Result<&Arc<DefaultGraphStore>, ContextError> {
+    /// Load a graph from the catalog by name (prefers injected catalog)
+    pub fn load_graph(&self, name: &str) -> Result<Arc<DefaultGraphStore>, ContextError> {
+        if let Some(catalog) = &self.catalog_handle {
+            if let Some(store) = catalog.get(name) {
+                return Ok(store);
+            }
+            return Err(ContextError::GraphNotFound(name.to_string()));
+        }
+
         self.graph_catalog
             .get(name)
+            .cloned()
             .ok_or_else(|| ContextError::GraphNotFound(name.to_string()))
     }
 
@@ -104,6 +117,17 @@ impl ExecutionContext {
     /// List all graph names in catalog
     pub fn list_graphs(&self) -> Vec<&str> {
         self.graph_catalog.keys().map(|s| s.as_str()).collect()
+    }
+
+    /// Inject a catalog handle (takes precedence over the internal map)
+    pub fn set_catalog(&mut self, catalog: Arc<dyn GraphCatalog>) {
+        self.catalog_handle = Some(catalog);
+    }
+
+    /// Builder-style injection for convenience in setup/tests
+    pub fn with_catalog(mut self, catalog: Arc<dyn GraphCatalog>) -> Self {
+        self.catalog_handle = Some(catalog);
+        self
     }
 
     /// Get current username

@@ -13,6 +13,8 @@ pub use value_type::*;
 
 pub mod prelude;
 
+pub mod catalog;
+
 // Re-export Concurrency from the proper concurrency module for backward compatibility.
 // This allows existing code that imports `crate::types::concurrency::Concurrency` to work.
 pub mod concurrency {

@@ -42,6 +42,8 @@ fn test_bellman_ford_config_validation() {
         track_negative_cycles: true,
         track_paths: true,
         concurrency: 0,
+        relationship_types: vec![],
+        direction: "outgoing".to_string(),
     };
     
     assert!(invalid_config.validate().is_err());
@@ -71,7 +73,7 @@ fn test_bellman_ford_storage_runtime() {
 #[test]
 fn test_bellman_ford_computation_runtime() {
     let mut computation = BellmanFordComputationRuntime::new(0, true, true, 4);
-    computation.initialize(0, true, true);
+    computation.initialize(0, true, true, 100);
     
     // Test computation runtime
     assert_eq!(computation.source_node(), 0);
@@ -115,7 +117,7 @@ fn test_bellman_ford_storage_computation_integration() {
     let mut computation = BellmanFordComputationRuntime::new(0, true, true, 4);
     
     // Test integration between storage and computation
-    let result = storage.compute_bellman_ford(&mut computation);
+    let result = storage.compute_bellman_ford(&mut computation, None, 0);
     assert!(result.is_ok());
     
     let bellman_ford_result = result.unwrap();

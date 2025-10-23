@@ -91,7 +91,7 @@ define_algorithm_spec! {
     output_type: DfsResult,
     projection_hint: Dense,
     modes: [Stream, WriteNodeProperty],
-    execute: |_self, _graph_store, config_input, _context| {
+    execute: |_self, graph_store, config_input, _context| {
         // Parse and validate configuration
         let parsed_config: DfsConfig = serde_json::from_value(config_input.clone())
             .map_err(|e| AlgorithmError::InvalidGraph(format!("Failed to parse config: {}", e)))?;
@@ -114,8 +114,9 @@ define_algorithm_spec! {
             parsed_config.concurrency,
         );
 
-        // Execute DFS algorithm
-        let result = storage.compute_dfs(&mut computation)?;
+        // Execute DFS algorithm with graph if available
+        let graph = graph_store.get_graph();
+        let result = storage.compute_dfs(&mut computation, Some(graph.as_ref()))?;
         
         Ok(result)
     }

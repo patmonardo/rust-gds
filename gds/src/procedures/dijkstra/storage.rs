@@ -11,6 +11,8 @@ use super::computation::DijkstraComputationRuntime;
 use super::targets::Targets;
 use crate::projection::eval::procedure::AlgorithmError;
 use std::time::Instant;
+use crate::types::graph::Graph;
+use crate::types::properties::relationship::traits::RelationshipIterator as _;
 
 /// Dijkstra Storage Runtime
 ///
@@ -55,18 +57,20 @@ impl DijkstraStorageRuntime {
         &mut self,
         computation: &mut DijkstraComputationRuntime,
         mut targets: Box<dyn Targets>,
+        graph: Option<&dyn Graph>,
+        direction: u8,
     ) -> Result<DijkstraResult, AlgorithmError> {
         let start_time = Instant::now();
         
         // Initialize computation runtime
+        // Bind to actual node count from a Graph view when available
+        let node_count = graph.map(|g| g.node_count()).unwrap_or(100);
         computation.initialize(
             self.source_node,
             self.track_relationships,
-            self.use_heuristic
+            self.use_heuristic,
+            node_count,
         );
-        
-        // Get mock graph data for now
-        let _node_count = 100; // TODO: Replace with actual graph store
         
         // Initialize priority queue with source node
         computation.add_to_queue(self.source_node, 0.0);
@@ -96,8 +100,8 @@ impl DijkstraStorageRuntime {
                 }
             }
             
-            // Relax all outgoing edges
-            self.relax_edges(computation, current_node, current_cost)?;
+            // Relax all outgoing edges using graph-backed neighbor streaming when available
+            self.relax_edges(computation, current_node, current_cost, graph, direction)?;
         }
         
         let computation_time_ms = start_time.elapsed().as_millis() as u64;
@@ -119,9 +123,11 @@ impl DijkstraStorageRuntime {
         computation: &mut DijkstraComputationRuntime,
         source_node: u32,
         source_cost: f64,
+        graph: Option<&dyn Graph>,
+        direction: u8,
     ) -> Result<(), AlgorithmError> {
         // Get neighbors with weights for the source node
-        let neighbors = self.get_neighbors_with_weights(source_node);
+        let neighbors = self.get_neighbors_with_weights(graph, source_node, direction);
         
         for (target_node, weight) in neighbors {
             // Skip if target is already visited
@@ -204,8 +210,23 @@ impl DijkstraStorageRuntime {
     ///
     /// TODO: Replace with actual GraphStore API call
     /// This simulates the Java `forEachRelationship` logic
-    fn get_neighbors_with_weights(&self, node_id: u32) -> Vec<(u32, f64)> {
-        // Mock implementation - replace with actual graph store access
+    fn get_neighbors_with_weights(&self, graph: Option<&dyn Graph>, node_id: u32, direction: u8) -> Vec<(u32, f64)> {
+        if let Some(g) = graph {
+            let fallback = g.default_property_value();
+            let mapped = node_id as u64; // MappedNodeId
+            let iter: Box<dyn Iterator<Item = crate::types::properties::relationship::traits::RelationshipCursorBox> + Send> =
+                if direction == 1 { // 1 = incoming
+                    g.stream_inverse_relationships(mapped, fallback)
+                } else {
+                    g.stream_relationships(mapped, fallback)
+                };
+            return iter
+                .into_iter()
+                .map(|cursor| (cursor.target_id() as u32, cursor.property()))
+                .collect();
+        }
+
+        // Deterministic mock when no Graph is provided
         match node_id {
             0 => vec![(1, 1.0), (2, 4.0)],
             1 => vec![(2, 2.0), (3, 5.0)],
@@ -213,6 +234,11 @@ impl DijkstraStorageRuntime {
             3 => vec![(4, 2.0)],
             _ => vec![],
         }
+    }
+
+    /// Best-effort node count hint from a bound GraphStore once integrated.
+    fn graph_node_count_hint(&self) -> Option<usize> {
+        None
     }
 }
 
@@ -238,7 +264,7 @@ mod tests {
         let targets = Box::new(SingleTarget::new(3));
         
         // Test basic path computation
-        let result = storage.compute_dijkstra(&mut computation, targets);
+        let result = storage.compute_dijkstra(&mut computation, targets, None, 0);
         assert!(result.is_ok());
         
         let dijkstra_result = result.unwrap();
@@ -252,7 +278,7 @@ mod tests {
         let targets = Box::new(ManyTargets::new(vec![3, 5]));
         
         // Test with multiple targets
-        let result = storage.compute_dijkstra(&mut computation, targets);
+        let result = storage.compute_dijkstra(&mut computation, targets, None, 0);
         assert!(result.is_ok());
         
         let dijkstra_result = result.unwrap();
@@ -266,7 +292,7 @@ mod tests {
         let targets = Box::new(AllTargets::new());
         
         // Test with all targets
-        let result = storage.compute_dijkstra(&mut computation, targets);
+        let result = storage.compute_dijkstra(&mut computation, targets, None, 0);
         assert!(result.is_ok());
         
         let dijkstra_result = result.unwrap();
@@ -277,12 +303,12 @@ mod tests {
     fn test_neighbors_with_weights() {
         let storage = DijkstraStorageRuntime::new(0, false, 4, false);
         
-        let neighbors = storage.get_neighbors_with_weights(0);
+        let neighbors = storage.get_neighbors_with_weights(None, 0, 0);
         assert_eq!(neighbors.len(), 2);
         assert_eq!(neighbors[0], (1, 1.0));
         assert_eq!(neighbors[1], (2, 4.0));
         
-        let neighbors_empty = storage.get_neighbors_with_weights(99);
+        let neighbors_empty = storage.get_neighbors_with_weights(None, 99, 0);
         assert!(neighbors_empty.is_empty());
     }
 }

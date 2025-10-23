@@ -5,9 +5,13 @@
 //! This module defines the A* algorithm specification using focused macros.
 
 use crate::define_algorithm_spec;
-use crate::projection::eval::procedure::{ExecutionMode, AlgorithmSpec};
+use crate::projection::eval::procedure::ExecutionMode;
+use crate::projection::relationship_type::RelationshipType;
+use std::collections::HashSet;
+use crate::types::prelude::GraphStore as _; // bring trait methods into scope
+use crate::types::graph::Graph;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+// use serde_json::json; // not needed here
 
 /// A* algorithm configuration
 ///
@@ -24,6 +28,12 @@ pub struct AStarConfig {
     pub longitude_property: String,
     /// Concurrency level
     pub concurrency: usize,
+    /// Optional relationship types to include (empty means all types)
+    #[serde(default)]
+    pub relationship_types: Vec<String>,
+    /// Direction for traversal ("outgoing" or "incoming")
+    #[serde(default = "AStarDirection::default_as_str")] 
+    pub direction: String,
 }
 
 impl Default for AStarConfig {
@@ -34,8 +44,29 @@ impl Default for AStarConfig {
             latitude_property: "latitude".to_string(),
             longitude_property: "longitude".to_string(),
             concurrency: 4,
+            relationship_types: vec![],
+            direction: AStarDirection::Outgoing.as_str().to_string(),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AStarDirection { Outgoing, Incoming }
+
+impl AStarDirection {
+    fn from_str(s: &str) -> Self {
+        match s.to_ascii_lowercase().as_str() {
+            "incoming" => AStarDirection::Incoming,
+            _ => AStarDirection::Outgoing,
+        }
+    }
+    fn as_str(&self) -> &'static str {
+        match self {
+            AStarDirection::Outgoing => "outgoing",
+            AStarDirection::Incoming => "incoming",
+        }
+    }
+    fn default_as_str() -> String { Self::Outgoing.as_str().to_string() }
 }
 
 impl AStarConfig {
@@ -113,7 +144,7 @@ define_algorithm_spec! {
     projection_hint: Dense,
     modes: [Stream, WriteNodeProperty],
     
-    execute: |_self, _graph_store, config, _context| {
+    execute: |_self, graph_store, config, _context| {
         use super::storage::AStarStorageRuntime;
         use super::computation::AStarComputationRuntime;
         
@@ -127,19 +158,44 @@ define_algorithm_spec! {
         parsed_config.validate()
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::Execution(e.to_string()))?;
         
+        // Bind to actual node properties if present
+        let base_graph = graph_store.get_graph();
+        // Optionally filter by relationship types
+        let graph = if !parsed_config.relationship_types.is_empty() {
+            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(parsed_config.relationship_types.clone()).into_iter().collect();
+            match base_graph.relationship_type_filtered_graph(&rel_types) {
+                Ok(g) => g,
+                Err(_) => base_graph,
+            }
+        } else { base_graph };
+        let lat_values = graph.node_properties(&parsed_config.latitude_property);
+        let lon_values = graph.node_properties(&parsed_config.longitude_property);
+
         // Create storage runtime for accessing graph data
-        let mut storage = AStarStorageRuntime::new(
-            parsed_config.source_node,
-            parsed_config.target_node,
-            parsed_config.latitude_property.clone(),
-            parsed_config.longitude_property.clone(),
-        );
+        let mut storage = match (lat_values, lon_values) {
+            (Some(lat), Some(lon)) => AStarStorageRuntime::new_with_values(
+                parsed_config.source_node,
+                parsed_config.target_node,
+                parsed_config.latitude_property.clone(),
+                parsed_config.longitude_property.clone(),
+                lat,
+                lon,
+            ),
+            _ => AStarStorageRuntime::new(
+                parsed_config.source_node,
+                parsed_config.target_node,
+                parsed_config.latitude_property.clone(),
+                parsed_config.longitude_property.clone(),
+            ),
+        };
         
         // Create computation runtime for A* algorithm
         let mut computation = AStarComputationRuntime::new();
         
         // Execute A* algorithm
-        let result = storage.compute_astar_path(&mut computation)
+        let direction = AStarDirection::from_str(&parsed_config.direction);
+
+        let result = storage.compute_astar_path(&mut computation, Some(graph.as_ref()), direction as u8)
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::Execution(e))?;
         
         let execution_time = start_time.elapsed().as_millis() as u64;
@@ -156,6 +212,8 @@ define_algorithm_spec! {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::projection::eval::procedure::AlgorithmSpec; // bring trait methods into scope
+    use serde_json::json; // macro for tests
 
     #[test]
     fn test_astar_config_default() {

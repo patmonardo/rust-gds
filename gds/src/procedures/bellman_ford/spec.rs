@@ -8,6 +8,8 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::AlgorithmSpec;
+use crate::projection::relationship_type::RelationshipType;
+use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use super::storage::BellmanFordStorageRuntime;
@@ -29,6 +31,12 @@ pub struct BellmanFordConfig {
     
     /// Concurrency level for parallel processing
     pub concurrency: usize,
+    /// Optional relationship types to include (empty means all types)
+    #[serde(default)]
+    pub relationship_types: Vec<String>,
+    /// Direction for traversal ("outgoing" or "incoming")
+    #[serde(default = "BellmanDirection::default_as_str")] 
+    pub direction: String,
 }
 
 impl Default for BellmanFordConfig {
@@ -38,8 +46,29 @@ impl Default for BellmanFordConfig {
             track_negative_cycles: true,
             track_paths: true,
             concurrency: 4,
+            relationship_types: vec![],
+            direction: BellmanDirection::Outgoing.as_str().to_string(),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum BellmanDirection { Outgoing, Incoming }
+
+impl BellmanDirection {
+    fn from_str(s: &str) -> Self {
+        match s.to_ascii_lowercase().as_str() {
+            "incoming" => BellmanDirection::Incoming,
+            _ => BellmanDirection::Outgoing,
+        }
+    }
+    fn as_str(&self) -> &'static str {
+        match self {
+            BellmanDirection::Outgoing => "outgoing",
+            BellmanDirection::Incoming => "incoming",
+        }
+    }
+    fn default_as_str() -> String { Self::Outgoing.as_str().to_string() }
 }
 
 impl BellmanFordConfig {
@@ -97,7 +126,7 @@ define_algorithm_spec! {
     projection_hint: Dense,
     modes: [Stream, WriteNodeProperty],
     
-    execute: |_self, _graph_store, config, _context| {
+    execute: |_self, graph_store, config, _context| {
         // Parse configuration
         let config: BellmanFordConfig = serde_json::from_value(config.clone())
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::InvalidGraph(
@@ -125,8 +154,20 @@ define_algorithm_spec! {
             config.concurrency
         );
         
-        // Execute Bellman-Ford algorithm
-        let result = storage.compute_bellman_ford(&mut computation)?;
+        // Build filtered graph if relationship_types provided
+        let base_graph = graph_store.get_graph();
+        let graph = if !config.relationship_types.is_empty() {
+            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
+            match base_graph.relationship_type_filtered_graph(&rel_types) {
+                Ok(g) => g,
+                Err(_) => base_graph,
+            }
+        } else { base_graph };
+
+        let direction = BellmanDirection::from_str(&config.direction);
+
+        // Execute Bellman-Ford algorithm with graph from graph_store
+        let result = storage.compute_bellman_ford(&mut computation, Some(graph.as_ref()), direction as u8)?;
         
         Ok(result)
     }
@@ -214,6 +255,8 @@ mod tests {
             track_negative_cycles: true,
             track_paths: true,
             concurrency: 0,
+            relationship_types: vec![],
+            direction: BellmanDirection::Outgoing.as_str().to_string(),
         };
         
         assert!(invalid_config.validate().is_err());

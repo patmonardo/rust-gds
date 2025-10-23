@@ -42,6 +42,8 @@ fn test_delta_stepping_config_validation() {
         delta: 0.0,
         concurrency: 4,
         store_predecessors: true,
+        relationship_types: vec![],
+        direction: "outgoing".to_string(),
     };
     
     assert!(invalid_config.validate().is_err());
@@ -71,7 +73,7 @@ fn test_delta_stepping_storage_runtime() {
 #[test]
 fn test_delta_stepping_computation_runtime() {
     let mut computation = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-    computation.initialize(0, 1.0, true);
+    computation.initialize(0, 1.0, true, 100);
     
     // Test computation runtime
     assert_eq!(computation.source_node(), 0);
@@ -115,7 +117,7 @@ fn test_delta_stepping_storage_computation_integration() {
     let mut computation = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
     
     // Test integration between storage and computation
-    let result = storage.compute_delta_stepping(&mut computation);
+    let result = storage.compute_delta_stepping(&mut computation, None, 0);
     assert!(result.is_ok());
     
     let delta_stepping_result = result.unwrap();

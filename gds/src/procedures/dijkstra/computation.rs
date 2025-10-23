@@ -96,7 +96,7 @@ impl DijkstraComputationRuntime {
     /// Initialize the computation runtime
     ///
     /// Translation of: Initialization in `compute()` method (lines 170-173)
-    pub fn initialize(&mut self, source_node: u32, track_relationships: bool, use_heuristic: bool) {
+    pub fn initialize(&mut self, source_node: u32, track_relationships: bool, use_heuristic: bool, node_count: usize) {
         self.source_node = source_node;
         self.track_relationships = track_relationships;
         self.use_heuristic = use_heuristic;
@@ -109,7 +109,7 @@ impl DijkstraComputationRuntime {
         self.costs.clear();
         
         // Initialize with infinite costs
-        for node_id in 0..100 { // TODO: Replace with actual graph node count
+        for node_id in 0..(node_count as u32) {
             self.costs.insert(node_id, f64::INFINITY);
             self.predecessors.insert(node_id, None);
             if self.track_relationships {
@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_initialization() {
         let mut runtime = DijkstraComputationRuntime::new(0, true, 4, false);
-        runtime.initialize(0, true, false);
+        runtime.initialize(0, true, false, 100);
         
         assert_eq!(runtime.source_node(), 0);
         assert!(runtime.track_relationships());
@@ -261,7 +261,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_queue_operations() {
         let mut runtime = DijkstraComputationRuntime::new(0, false, 4, false);
-        runtime.initialize(0, false, false);
+        runtime.initialize(0, false, false, 100);
         
         // Test queue operations
         assert!(runtime.is_queue_empty());
@@ -281,7 +281,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_visited_operations() {
         let mut runtime = DijkstraComputationRuntime::new(0, false, 4, false);
-        runtime.initialize(0, false, false);
+        runtime.initialize(0, false, false, 100);
         
         // Test visited operations
         assert!(!runtime.is_visited(1));
@@ -295,7 +295,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_predecessor_operations() {
         let mut runtime = DijkstraComputationRuntime::new(0, false, 4, false);
-        runtime.initialize(0, false, false);
+        runtime.initialize(0, false, false, 100);
         
         // Test predecessor operations
         assert_eq!(runtime.get_predecessor(1), None);
@@ -310,7 +310,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_relationship_operations() {
         let mut runtime = DijkstraComputationRuntime::new(0, true, 4, false);
-        runtime.initialize(0, true, false);
+        runtime.initialize(0, true, false, 100);
         
         // Test relationship operations
         assert_eq!(runtime.get_relationship_id(1), None);
@@ -325,7 +325,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_cost_operations() {
         let mut runtime = DijkstraComputationRuntime::new(0, false, 4, false);
-        runtime.initialize(0, false, false);
+        runtime.initialize(0, false, false, 100);
         
         // Test cost operations
         assert_eq!(runtime.get_cost(1), f64::INFINITY);
@@ -340,7 +340,7 @@ mod tests {
     #[test]
     fn test_dijkstra_computation_runtime_priority_queue_order() {
         let mut runtime = DijkstraComputationRuntime::new(0, false, 4, false);
-        runtime.initialize(0, false, false);
+        runtime.initialize(0, false, false, 100);
         
         // Test priority queue ordering (min-heap)
         runtime.add_to_queue(1, 10.0);

@@ -48,6 +48,8 @@ fn test_dijkstra_config_validation() {
         track_relationships: false,
         concurrency: 0,
         use_heuristic: false,
+        relationship_types: vec![],
+        direction: "outgoing".to_string(),
     };
     
     assert!(invalid_config.validate().is_err());
@@ -77,7 +79,7 @@ fn test_dijkstra_storage_runtime() {
 #[test]
 fn test_dijkstra_computation_runtime() {
     let mut computation = DijkstraComputationRuntime::new(0, true, 4, false);
-    computation.initialize(0, true, false);
+    computation.initialize(0, true, false, 100);
     
     // Test computation runtime
     assert_eq!(computation.source_node(), 0);
@@ -200,7 +202,7 @@ fn test_dijkstra_storage_computation_integration() {
     let targets = Box::new(SingleTarget::new(3));
     
     // Test integration between storage and computation
-    let result = storage.compute_dijkstra(&mut computation, targets);
+    let result = storage.compute_dijkstra(&mut computation, targets, None, 0);
     assert!(result.is_ok());
     
     let dijkstra_result = result.unwrap();

@@ -7,6 +7,8 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::{AlgorithmError, ExecutionContext, AlgorithmSpec};
+use crate::projection::relationship_type::RelationshipType;
+use std::collections::HashSet;
 use super::storage::SpanningTreeStorageRuntime;
 use super::computation::{SpanningTreeComputationRuntime, SpanningTree};
 use serde::{Deserialize, Serialize};
@@ -24,6 +26,9 @@ pub struct SpanningTreeConfig {
     
     /// Concurrency level
     pub concurrency: usize,
+    /// Optional relationship types to include (empty means all types)
+    #[serde(default)]
+    pub relationship_types: Vec<String>,
 }
 
 impl Default for SpanningTreeConfig {
@@ -32,6 +37,7 @@ impl Default for SpanningTreeConfig {
             start_node_id: 0,
             compute_minimum: true,
             concurrency: 1,
+            relationship_types: vec![],
         }
     }
 }
@@ -148,7 +154,7 @@ define_algorithm_spec! {
     output_type: SpanningTreeResult,
     projection_hint: Dense,
     modes: [Stream, Stats, MutateNodeProperty, WriteNodeProperty],
-    execute: |_self, _graph_store, config_input, _context| {
+    execute: |_self, graph_store, config_input, _context| {
         use std::time::Instant;
         
         // Parse and validate configuration
@@ -165,14 +171,20 @@ define_algorithm_spec! {
             config.concurrency,
         );
         
-        // Mock graph data for now (in real implementation, would use graph_store)
-        let node_count = 4; // Mock node count
-        
         // Record start time
         let start_time = Instant::now();
         
-        // Execute the algorithm
-        let spanning_tree = storage.compute_spanning_tree_mock(node_count)
+        // Execute using bound graph with optional relationship-type filtering
+        let base_graph = graph_store.get_graph();
+        let graph = if !config.relationship_types.is_empty() {
+            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
+            match base_graph.relationship_type_filtered_graph(&rel_types) {
+                Ok(g) => g,
+                Err(_) => base_graph,
+            }
+        } else { base_graph };
+
+        let spanning_tree = storage.compute_spanning_tree_with_graph(graph.as_ref())
             .map_err(|e| AlgorithmError::Execution(format!("Spanning tree computation failed: {}", e)))?;
         
         // Calculate computation time

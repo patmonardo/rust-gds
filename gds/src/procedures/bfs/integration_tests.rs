@@ -77,7 +77,7 @@ fn test_bfs_storage_computation_integration() {
     let storage = BfsStorageRuntime::new(0, vec![3], None, true, 1, 1);
     let mut computation = BfsComputationRuntime::new(0, true, 1);
     
-    let bfs_result = storage.compute_bfs(&mut computation).unwrap();
+    let bfs_result = storage.compute_bfs(&mut computation, None).unwrap();
     
     assert!(bfs_result.nodes_visited > 0);
     assert!(!bfs_result.paths.is_empty());

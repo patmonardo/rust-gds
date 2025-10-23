@@ -8,6 +8,9 @@
 use super::computation::{SpanningTreeComputationRuntime, SpanningTree};
 use crate::projection::eval::procedure::AlgorithmError;
 use std::collections::HashMap;
+use crate::types::graph::Graph;
+use crate::types::properties::relationship::traits::RelationshipIterator as _;
+use crate::types::properties::relationship::PropertyValue;
 
 /// Spanning Tree Storage Runtime
 ///
@@ -68,6 +71,12 @@ impl SpanningTreeStorageRuntime {
     where
         F: Fn(u32) -> Vec<(u32, f64)>,
     {
+        // Handle empty graph upfront
+        if node_count == 0 {
+            let empty = SpanningTreeComputationRuntime::new(self.start_node_id, self.compute_minimum, 0, self.concurrency);
+            return Ok(empty.build_result(0));
+        }
+
         // Create computation runtime
         let mut computation = SpanningTreeComputationRuntime::new(
             self.start_node_id,
@@ -124,6 +133,25 @@ impl SpanningTreeStorageRuntime {
         Ok(computation.build_result(node_count))
     }
     
+    /// Compute the spanning tree using a bound Graph (neighbor streaming via relationship cursors).
+    pub fn compute_spanning_tree_with_graph(
+        &self,
+        graph: &dyn Graph,
+    ) -> Result<SpanningTree, AlgorithmError> {
+        let node_count = graph.node_count() as u32;
+        self.compute_spanning_tree(node_count, |node_id| self.get_neighbors_from_graph(graph, node_id))
+    }
+
+    /// Neighbor retrieval backed by Graph::stream_relationships (outgoing edges), with numeric fallback.
+    fn get_neighbors_from_graph(&self, graph: &dyn Graph, node_id: u32) -> Vec<(u32, f64)> {
+        let fallback: PropertyValue = 1.0;
+        let stream = graph.stream_relationships(node_id as u64, fallback);
+        stream
+            .into_iter()
+            .map(|cursor| (cursor.target_id() as u32, cursor.property()))
+            .collect()
+    }
+
     /// Get neighbors of a node (mock implementation for testing).
     ///
     /// # Arguments

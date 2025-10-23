@@ -8,6 +8,8 @@
 use super::spec::{BellmanFordResult, PathResult};
 use super::computation::BellmanFordComputationRuntime;
 use crate::projection::eval::procedure::AlgorithmError;
+use crate::types::graph::Graph;
+use crate::types::properties::relationship::PropertyValue;
 use std::collections::VecDeque;
 
 /// Bellman-Ford Storage Runtime
@@ -52,12 +54,12 @@ impl BellmanFordStorageRuntime {
     pub fn compute_bellman_ford(
         &mut self,
         computation: &mut BellmanFordComputationRuntime,
+        graph: Option<&dyn Graph>,
+        direction: u8,
     ) -> Result<BellmanFordResult, AlgorithmError> {
         // Initialize computation runtime
-        computation.initialize(self.source_node, self.track_negative_cycles, self.track_paths);
-        
-        // Get mock graph data for now
-        let node_count = 100; // TODO: Replace with actual graph store
+        let node_count = graph.map(|g| g.node_count()).unwrap_or(100);
+        computation.initialize(self.source_node, self.track_negative_cycles, self.track_paths, node_count);
         
         // Initialize frontier with source node
         let mut frontier = VecDeque::new();
@@ -77,8 +79,8 @@ impl BellmanFordStorageRuntime {
             
             // Process all nodes in current frontier
             while let Some(node_id) = frontier.pop_front() {
-                // Relax all outgoing edges from this node
-                let neighbors = self.get_neighbors_with_weights(node_id);
+                // Relax edges from this node according to direction
+                let neighbors = self.get_neighbors_with_weights(graph, node_id, direction);
                 
                 for (neighbor, weight) in neighbors {
                     let current_distance = computation.distance(node_id);
@@ -256,16 +258,24 @@ impl BellmanFordStorageRuntime {
 
     /// Get neighbors with weights for a given node
     ///
-    /// TODO: Replace with actual GraphStore API call
-    /// This simulates the Java `forEachRelationship` logic
-    fn get_neighbors_with_weights(&self, node_id: u32) -> Vec<(u32, f64)> {
-        // Mock implementation - replace with actual graph store access
-        match node_id {
-            0 => vec![(1, 1.0), (2, 4.0)],
-            1 => vec![(2, 2.0), (3, 5.0)],
-            2 => vec![(3, 1.0), (4, 3.0)],
-            3 => vec![(4, 2.0)],
-            _ => vec![],
+    /// Uses Graph::stream_relationships to iterate outgoing edges with weights
+    fn get_neighbors_with_weights(&self, graph: Option<&dyn Graph>, node_id: u32, direction: u8) -> Vec<(u32, f64)> {
+        if let Some(g) = graph {
+            let fallback: PropertyValue = 1.0;
+            let iter: Box<dyn Iterator<Item = crate::types::properties::relationship::traits::RelationshipCursorBox> + Send> =
+                if direction == 1 { g.stream_inverse_relationships(node_id as u64, fallback) } else { g.stream_relationships(node_id as u64, fallback) };
+            return iter.into_iter()
+                .map(|cursor| (cursor.target_id() as u32, cursor.property()))
+                .collect();
+        } else {
+            // Mock implementation for tests
+            match node_id {
+                0 => vec![(1, 1.0), (2, 4.0)],
+                1 => vec![(2, 2.0), (3, 5.0)],
+                2 => vec![(3, 1.0), (4, 3.0)],
+                3 => vec![(4, 2.0)],
+                _ => vec![],
+            }
         }
     }
 }
@@ -289,7 +299,7 @@ mod tests {
         let mut computation = BellmanFordComputationRuntime::new(0, true, true, 4);
         
         // Test basic path computation
-        let result = storage.compute_bellman_ford(&mut computation);
+        let result = storage.compute_bellman_ford(&mut computation, None, 0);
         assert!(result.is_ok());
         
         let bellman_ford_result = result.unwrap();
@@ -302,7 +312,7 @@ mod tests {
         let mut computation = BellmanFordComputationRuntime::new(0, true, true, 4);
         
         // Test with same source and target
-        let result = storage.compute_bellman_ford(&mut computation);
+        let result = storage.compute_bellman_ford(&mut computation, None, 0);
         assert!(result.is_ok());
         
         let bellman_ford_result = result.unwrap();
@@ -313,12 +323,12 @@ mod tests {
     fn test_neighbors_with_weights() {
         let storage = BellmanFordStorageRuntime::new(0, true, true, 4);
         
-        let neighbors = storage.get_neighbors_with_weights(0);
+        let neighbors = storage.get_neighbors_with_weights(None, 0, 0);
         assert_eq!(neighbors.len(), 2);
         assert_eq!(neighbors[0], (1, 1.0));
         assert_eq!(neighbors[1], (2, 4.0));
         
-        let neighbors_empty = storage.get_neighbors_with_weights(99);
+        let neighbors_empty = storage.get_neighbors_with_weights(None, 99, 0);
         assert!(neighbors_empty.is_empty());
     }
 }

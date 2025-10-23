@@ -8,6 +8,7 @@
 
 use crate::projection::eval::procedure::AlgorithmError;
 use crate::types::prelude::GraphStore;
+use crate::types::properties::relationship::PropertyValue;
 use std::sync::mpsc;
 use std::thread;
 
@@ -185,29 +186,32 @@ impl<'a, G: GraphStore> AllShortestPathsStorageRuntime<'a, G> {
         Ok(results)
     }
 
-    /// Mock method to get neighbors (unweighted)
+    /// Get neighbors (unweighted) using real graph data
     fn get_neighbors_mock(&self, node: u32) -> Vec<u32> {
-        // TODO: Replace with actual GraphStore API call
-        // This simulates the Java graph.forEachRelationship logic
-        let mut neighbors = Vec::new();
-        for i in 1..=5 {
-            let neighbor = (node + i) % self.graph_store.node_count() as u32;
-            neighbors.push(neighbor);
-        }
-        neighbors
+        // Use real graph data via stream_relationships
+        let graph = self.graph_store.get_graph();
+        let fallback: PropertyValue = 1.0;
+        let stream = graph.stream_relationships(node as u64, fallback);
+        
+        stream.into_iter()
+            .map(|cursor| cursor.target_id() as u32)
+            .collect()
     }
 
-    /// Mock method to get neighbors with weights
+    /// Get neighbors with weights using real graph data
     fn get_neighbors_with_weights_mock(&self, node: u32) -> Vec<(u32, f64)> {
-        // TODO: Replace with actual GraphStore API call
-        // This simulates the Java WeightedAllShortestPaths logic
-        let mut neighbors = Vec::new();
-        for i in 1..=3 {
-            let neighbor = (node + i) % self.graph_store.node_count() as u32;
-            let weight = (i as f64) * 1.5;
-            neighbors.push((neighbor, weight));
-        }
-        neighbors
+        // Use real graph data via stream_relationships
+        let graph = self.graph_store.get_graph();
+        let fallback: PropertyValue = 1.0;
+        let stream = graph.stream_relationships(node as u64, fallback);
+        
+        stream.into_iter()
+            .map(|cursor| {
+                let target = cursor.target_id() as u32;
+                let weight = cursor.property(); // Already f64
+                (target, weight)
+            })
+            .collect()
     }
 
     /// Compute all shortest paths in parallel

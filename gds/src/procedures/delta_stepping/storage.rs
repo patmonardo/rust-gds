@@ -9,6 +9,8 @@
 use super::spec::{DeltaSteppingResult, DeltaSteppingPathResult};
 use super::computation::DeltaSteppingComputationRuntime;
 use crate::projection::eval::procedure::AlgorithmError;
+use crate::types::graph::Graph;
+use crate::types::properties::relationship::PropertyValue;
 use std::collections::VecDeque;
 use std::time::Instant;
 
@@ -54,18 +56,19 @@ impl DeltaSteppingStorageRuntime {
     pub fn compute_delta_stepping(
         &mut self,
         computation: &mut DeltaSteppingComputationRuntime,
+        graph: Option<&dyn Graph>,
+        direction: u8,
     ) -> Result<DeltaSteppingResult, AlgorithmError> {
         let start_time = Instant::now();
         
         // Initialize computation runtime
+        let node_count = graph.map(|g| g.node_count()).unwrap_or(100);
         computation.initialize(
             self.source_node,
             self.delta,
-            self.store_predecessors
+            self.store_predecessors,
+            node_count
         );
-        
-        // Get mock graph data for now
-        let node_count = 100; // TODO: Replace with actual graph store
         
         // Initialize frontier with source node
         let mut frontier = VecDeque::new();
@@ -91,7 +94,7 @@ impl DeltaSteppingStorageRuntime {
                 let node_distance = computation.distance(node_id);
                 if node_distance >= self.delta * current_bin as f64 {
                     // Relax all outgoing edges from this node
-                    let neighbors = self.get_neighbors_with_weights(node_id);
+                    let neighbors = self.get_neighbors_with_weights(graph, node_id, direction);
                     
                     for (neighbor, weight) in neighbors {
                         let current_distance = computation.distance(node_id);
@@ -211,16 +214,24 @@ impl DeltaSteppingStorageRuntime {
 
     /// Get neighbors with weights for a given node
     ///
-    /// TODO: Replace with actual GraphStore API call
-    /// This simulates the Java `forEachRelationship` logic
-    fn get_neighbors_with_weights(&self, node_id: u32) -> Vec<(u32, f64)> {
-        // Mock implementation - replace with actual graph store access
-        match node_id {
-            0 => vec![(1, 1.0), (2, 4.0)],
-            1 => vec![(2, 2.0), (3, 5.0)],
-            2 => vec![(3, 1.0), (4, 3.0)],
-            3 => vec![(4, 2.0)],
-            _ => vec![],
+    /// Uses Graph::stream_relationships to iterate outgoing edges with weights
+    fn get_neighbors_with_weights(&self, graph: Option<&dyn Graph>, node_id: u32, direction: u8) -> Vec<(u32, f64)> {
+        if let Some(g) = graph {
+            let fallback: PropertyValue = 1.0;
+            let iter: Box<dyn Iterator<Item = crate::types::properties::relationship::traits::RelationshipCursorBox> + Send> =
+                if direction == 1 { g.stream_inverse_relationships(node_id as u64, fallback) } else { g.stream_relationships(node_id as u64, fallback) };
+            return iter.into_iter()
+                .map(|cursor| (cursor.target_id() as u32, cursor.property()))
+                .collect();
+        } else {
+            // Mock implementation for tests
+            match node_id {
+                0 => vec![(1, 1.0), (2, 4.0)],
+                1 => vec![(2, 2.0), (3, 5.0)],
+                2 => vec![(3, 1.0), (4, 3.0)],
+                3 => vec![(4, 2.0)],
+                _ => vec![],
+            }
         }
     }
 }
@@ -244,7 +255,7 @@ mod tests {
         let mut computation = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
         
         // Test basic path computation
-        let result = storage.compute_delta_stepping(&mut computation);
+        let result = storage.compute_delta_stepping(&mut computation, None, 0);
         assert!(result.is_ok());
         
         let delta_stepping_result = result.unwrap();
@@ -257,7 +268,7 @@ mod tests {
         let mut computation = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
         
         // Test with same source and target
-        let result = storage.compute_delta_stepping(&mut computation);
+        let result = storage.compute_delta_stepping(&mut computation, None, 0);
         assert!(result.is_ok());
         
         let delta_stepping_result = result.unwrap();
@@ -268,12 +279,12 @@ mod tests {
     fn test_neighbors_with_weights() {
         let storage = DeltaSteppingStorageRuntime::new(0, 1.0, 4, true);
         
-        let neighbors = storage.get_neighbors_with_weights(0);
+        let neighbors = storage.get_neighbors_with_weights(None, 0, 0);
         assert_eq!(neighbors.len(), 2);
         assert_eq!(neighbors[0], (1, 1.0));
         assert_eq!(neighbors[1], (2, 4.0));
         
-        let neighbors_empty = storage.get_neighbors_with_weights(99);
+        let neighbors_empty = storage.get_neighbors_with_weights(None, 99, 0);
         assert!(neighbors_empty.is_empty());
     }
 }

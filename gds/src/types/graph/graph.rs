@@ -6,11 +6,15 @@ use crate::types::graph::{
 };
 use crate::types::properties::{
     node::traits::node_property_container::{NodePropertyContainer, NodePropertyContainerExt},
-    relationship::{relationship_properties::RelationshipProperties, traits::RelationshipIterator},
+    relationship::{
+        relationship_properties::RelationshipProperties,
+        traits::{PropertyValue, RelationshipIterator, RelationshipStream},
+    },
 };
 use crate::types::schema::GraphSchema;
 use std::collections::HashSet;
 use std::sync::Arc;
+use crate::projection::orientation::Orientation;
 
 /// Result alias used by graph operations that may fail during construction of filtered views.
 pub type GraphResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
@@ -76,6 +80,39 @@ pub trait GraphExt: Graph {
         NodePropertyContainerExt::has_node_property(self, property_key)
     }
 
+    /// Stream neighbors based on orientation: NATURAL=outgoing, REVERSE=incoming, UNDIRECTED=both.
+    fn stream_neighbors_oriented(&self, node_id: MappedNodeId, orientation: Orientation) -> RelationshipStream<'_> {
+        match orientation {
+            Orientation::Natural => self.stream_out_neighbors(node_id),
+            Orientation::Reverse => self.stream_in_neighbors(node_id),
+            Orientation::Undirected => {
+                // Collect both directions and return a single iterator
+                let mut cursors: Vec<_> = self.stream_out_neighbors(node_id).collect();
+                cursors.extend(self.stream_in_neighbors(node_id));
+                Box::new(cursors.into_iter())
+            }
+        }
+    }
+
+    /// Collect neighbor ids based on orientation.
+    fn neighbors_oriented(&self, node_id: MappedNodeId, orientation: Orientation) -> Vec<MappedNodeId> {
+        self
+            .stream_neighbors_oriented(node_id, orientation)
+            .map(|cursor| cursor.target_id())
+            .collect()
+    }
+
+    /// Collect neighbor ids with weights based on orientation.
+    fn neighbors_with_weights_oriented(
+        &self,
+        node_id: MappedNodeId,
+        orientation: Orientation,
+    ) -> Vec<(MappedNodeId, PropertyValue)> {
+        self
+            .stream_neighbors_oriented(node_id, orientation)
+            .map(|cursor| (cursor.target_id(), cursor.property()))
+            .collect()
+    }
     /// Returns the characteristics whittled down by the provided builder configuration.
     fn characteristics_with(
         &self,
@@ -90,6 +127,42 @@ pub trait GraphExt: Graph {
         self.nth_target(source_id, offset)
             .map(|id| id as i64)
             .unwrap_or(NOT_FOUND)
+    }
+
+    /// Stream outgoing neighbors as relationship cursors using the graph's default fallback value.
+    fn stream_out_neighbors(&self, source_id: MappedNodeId) -> RelationshipStream<'_> {
+        self.stream_relationships(source_id, self.default_property_value())
+    }
+
+    /// Stream incoming neighbors as relationship cursors using the graph's default fallback value.
+    fn stream_in_neighbors(&self, target_id: MappedNodeId) -> RelationshipStream<'_> {
+        self.stream_inverse_relationships(target_id, self.default_property_value())
+    }
+
+    /// Collect neighbor ids for the given node. If `incoming` is true, returns incoming neighbors; otherwise outgoing.
+    fn neighbors(&self, node_id: MappedNodeId, incoming: bool) -> Vec<MappedNodeId> {
+        let stream = if incoming {
+            self.stream_in_neighbors(node_id)
+        } else {
+            self.stream_out_neighbors(node_id)
+        };
+        stream.map(|cursor| cursor.target_id()).collect()
+    }
+
+    /// Collect neighbor ids with relationship weights for the given node. If `incoming` is true, returns incoming; otherwise outgoing.
+    fn neighbors_with_weights(
+        &self,
+        node_id: MappedNodeId,
+        incoming: bool,
+    ) -> Vec<(MappedNodeId, PropertyValue)> {
+        let stream = if incoming {
+            self.stream_in_neighbors(node_id)
+        } else {
+            self.stream_out_neighbors(node_id)
+        };
+        stream
+            .map(|cursor| (cursor.target_id(), cursor.property()))
+            .collect()
     }
 }
 

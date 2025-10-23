@@ -8,6 +8,8 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::{AlgorithmSpec, ExecutionContext};
+use crate::projection::relationship_type::RelationshipType;
+use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use super::storage::DijkstraStorageRuntime;
@@ -34,6 +36,14 @@ pub struct DijkstraConfig {
     
     /// Whether to use heuristic function (for A* behavior)
     pub use_heuristic: bool,
+
+    /// Optional relationship types to include (empty means all types)
+    #[serde(default)]
+    pub relationship_types: Vec<String>,
+
+    /// Direction for traversal ("outgoing" or "incoming")
+    #[serde(default = "DijkstraDirection::default_as_str")] 
+    pub direction: String,
 }
 
 impl Default for DijkstraConfig {
@@ -44,8 +54,29 @@ impl Default for DijkstraConfig {
             track_relationships: false,
             concurrency: 4,
             use_heuristic: false,
+            relationship_types: vec![],
+            direction: DijkstraDirection::Outgoing.as_str().to_string(),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DijkstraDirection { Outgoing, Incoming }
+
+impl DijkstraDirection {
+    fn from_str(s: &str) -> Self {
+        match s.to_ascii_lowercase().as_str() {
+            "incoming" => DijkstraDirection::Incoming,
+            _ => DijkstraDirection::Outgoing,
+        }
+    }
+    fn as_str(&self) -> &'static str {
+        match self {
+            DijkstraDirection::Outgoing => "outgoing",
+            DijkstraDirection::Incoming => "incoming",
+        }
+    }
+    fn default_as_str() -> String { Self::Outgoing.as_str().to_string() }
 }
 
 impl DijkstraConfig {
@@ -118,7 +149,7 @@ define_algorithm_spec! {
     projection_hint: Dense,
     modes: [Stream, WriteNodeProperty],
     
-    execute: |_self, _graph_store, config, _context| {
+    execute: |_self, graph_store, config, _context| {
         // Parse configuration
         let config: DijkstraConfig = serde_json::from_value(config.clone())
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::InvalidGraph(
@@ -149,8 +180,26 @@ define_algorithm_spec! {
             config.use_heuristic
         );
         
-        // Execute Dijkstra algorithm
-        let result = storage.compute_dijkstra(&mut computation, targets)?;
+        // Execute Dijkstra algorithm with optional relationship-type filtering and direction
+        let base_graph = graph_store.get_graph();
+        let graph = if !config.relationship_types.is_empty() {
+            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
+            match base_graph.relationship_type_filtered_graph(&rel_types) {
+                Ok(g) => g,
+                Err(_) => base_graph, // fallback on error
+            }
+        } else {
+            base_graph
+        };
+
+        let direction = DijkstraDirection::from_str(&config.direction);
+
+        let result = storage.compute_dijkstra(
+            &mut computation,
+            targets,
+            Some(graph.as_ref()),
+            direction as u8,
+        )?;
         
         Ok(result)
     }
@@ -270,6 +319,8 @@ mod tests {
             track_relationships: false,
             concurrency: 0,
             use_heuristic: false,
+            relationship_types: vec![],
+            direction: DijkstraDirection::Outgoing.as_str().to_string(),
         };
         
         assert!(invalid_config.validate().is_err());

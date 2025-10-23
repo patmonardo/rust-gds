@@ -9,6 +9,9 @@ use super::computation::BfsComputationRuntime;
 use super::spec::{BfsResult, BfsPathResult};
 use crate::procedures::traversal::{ExitPredicate, Aggregator, FollowExitPredicate, TargetExitPredicate, OneHopAggregator};
 use crate::projection::eval::procedure::AlgorithmError;
+use crate::types::graph::Graph;
+use crate::types::properties::relationship::traits::RelationshipIterator as _;
+use crate::types::properties::relationship::traits::PropertyValue;
 use std::collections::{VecDeque, HashMap};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -90,14 +93,14 @@ impl BfsStorageRuntime {
     ///
     /// Translation of: `BFS.compute()` (lines 175-259)
     /// This orchestrates the main BFS algorithm loop using Java GDS parallel architecture
-    pub fn compute_bfs(&self, computation: &mut BfsComputationRuntime) -> Result<BfsResult, AlgorithmError> {
+    pub fn compute_bfs(&self, computation: &mut BfsComputationRuntime, graph: Option<&dyn Graph>) -> Result<BfsResult, AlgorithmError> {
         let start_time = std::time::Instant::now();
         
         // Initialize computation runtime
         computation.initialize(self.source_node, self.max_depth);
 
         // Parallel BFS state - following Java GDS architecture
-        let node_count = 1000; // TODO: Get from actual graph store
+        let node_count = graph.map(|g| g.node_count()).unwrap_or(1000);
         let mut traversed_nodes = vec![0u32; node_count];
         let mut weights = vec![0.0f64; node_count];
         let mut visited = vec![false; node_count];
@@ -147,7 +150,7 @@ impl BfsStorageRuntime {
                     
                     if exit_result == crate::procedures::traversal::ExitPredicateResult::Follow {
                         // Relax node - get neighbors and add to next level
-                        let neighbors = self.get_neighbors(node_id);
+                        let neighbors = self.get_neighbors(graph, node_id);
                         for neighbor in neighbors {
                             if !visited[neighbor as usize] {
                                 visited[neighbor as usize] = true;
@@ -170,10 +173,11 @@ impl BfsStorageRuntime {
                 break;
             }
             
-            // Update indices for next level
+            // Update indices for next level: move start to the previous end_index
             let old_index = traversed_nodes_index.load(Ordering::SeqCst);
+            let end_index = end_index; // from this level's snapshot
             let new_length = traversed_nodes_length.load(Ordering::SeqCst);
-            traversed_nodes_index.store(new_length, Ordering::SeqCst);
+            traversed_nodes_index.store(end_index, Ordering::SeqCst);
             current_depth += 1;
             
             // Check if no new nodes were added (compare old length with new length)
@@ -229,18 +233,20 @@ impl BfsStorageRuntime {
         paths
     }
 
-    /// Get neighbors of a node (mock implementation)
-    ///
-    /// Translation of: `GraphStore.getNeighbors()` (lines 251-300)
-    /// This would typically access the actual graph store
-    fn get_neighbors(&self, node: u32) -> Vec<u32> {
-        // Mock implementation - in real implementation this would access GraphStore
-        match node {
-            0 => vec![1, 2],
-            1 => vec![0, 3],
-            2 => vec![0, 3],
-            3 => vec![1, 2],
-            _ => vec![],
+    /// Get neighbors of a node (graph-backed when available; mock fallback)
+    fn get_neighbors(&self, graph: Option<&dyn Graph>, node: u32) -> Vec<u32> {
+        if let Some(g) = graph {
+            let fallback: PropertyValue = 1.0;
+            let stream = g.stream_relationships(node as u64, fallback);
+            stream.into_iter().map(|c| c.target_id() as u32).collect()
+        } else {
+            match node {
+                0 => vec![1, 2],
+                1 => vec![0, 3],
+                2 => vec![0, 3],
+                3 => vec![1, 2],
+                _ => vec![],
+            }
         }
     }
 }
@@ -265,7 +271,7 @@ mod tests {
         let storage = BfsStorageRuntime::new(0, vec![3], None, true, 1, 64);
         let mut computation = BfsComputationRuntime::new(0, true, 1);
         
-        let result = storage.compute_bfs(&mut computation).unwrap();
+        let result = storage.compute_bfs(&mut computation, None).unwrap();
         
         assert!(result.nodes_visited > 0);
         assert!(result.computation_time_ms >= 0);
@@ -276,7 +282,7 @@ mod tests {
         let storage = BfsStorageRuntime::new(0, vec![0], None, true, 1, 64);
         let mut computation = BfsComputationRuntime::new(0, true, 1);
         
-        let result = storage.compute_bfs(&mut computation).unwrap();
+        let result = storage.compute_bfs(&mut computation, None).unwrap();
         
         assert!(result.nodes_visited >= 1);
         assert!(result.computation_time_ms >= 0);
@@ -287,7 +293,7 @@ mod tests {
         let storage = BfsStorageRuntime::new(0, vec![], Some(1), false, 1, 64);
         let mut computation = BfsComputationRuntime::new(0, false, 1);
         
-        let result = storage.compute_bfs(&mut computation).unwrap();
+        let result = storage.compute_bfs(&mut computation, None).unwrap();
         
         // With max_depth=1, we should only visit nodes at distance 0 and 1
         assert!(result.nodes_visited <= 3); // Source + immediate neighbors

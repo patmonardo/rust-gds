@@ -59,7 +59,7 @@ impl DeltaSteppingComputationRuntime {
     /// Initialize the computation runtime
     ///
     /// Translation of: Initialization in `compute()` method (lines 124-125)
-    pub fn initialize(&mut self, source_node: u32, delta: f64, store_predecessors: bool) {
+    pub fn initialize(&mut self, source_node: u32, delta: f64, store_predecessors: bool, node_count: usize) {
         self.source_node = source_node;
         self.delta = delta;
         self.store_predecessors = store_predecessors;
@@ -70,7 +70,7 @@ impl DeltaSteppingComputationRuntime {
         self.bins.clear();
         
         // Initialize with infinite distances
-        for node_id in 0..100 { // TODO: Replace with actual graph node count
+        for node_id in 0..node_count as u32 {
             self.distances.insert(node_id, f64::INFINITY);
             if self.store_predecessors {
                 self.predecessors.insert(node_id, None);
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_initialization() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         assert_eq!(runtime.source_node(), 0);
         assert_eq!(runtime.delta(), 1.0);
@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_empty_bins() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         assert_eq!(runtime.bin_count(), 0);
         assert_eq!(runtime.find_next_non_empty_bin(0), usize::MAX);
@@ -237,7 +237,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_nodes_explored() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Set some distances
         runtime.set_distance(1, 5.0);
@@ -251,7 +251,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_total_cost() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Set source distance
         runtime.set_distance(0, 0.0);
@@ -264,7 +264,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_operations() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Test distance operations
         runtime.set_distance(1, 5.0);
@@ -278,7 +278,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_path_reconstruction() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Set up a simple path: 0 -> 1 -> 2
         runtime.set_distance(0, 0.0);
@@ -299,7 +299,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_lowest_f_cost() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Set different distances
         runtime.set_distance(1, 10.0);
@@ -325,7 +325,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_binning() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Add nodes to different bins
         runtime.add_to_bin(1, 0);
@@ -351,7 +351,7 @@ mod tests {
     #[test]
     fn test_delta_stepping_computation_runtime_compare_and_exchange() {
         let mut runtime = DeltaSteppingComputationRuntime::new(0, 1.0, 4, true);
-        runtime.initialize(0, 1.0, true);
+        runtime.initialize(0, 1.0, true, 100);
         
         // Set initial distance
         runtime.set_distance(1, 10.0);

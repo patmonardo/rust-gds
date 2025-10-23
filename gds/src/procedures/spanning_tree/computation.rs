@@ -496,7 +496,15 @@ impl SpanningTreeComputationRuntime {
     /// * `cost` - Cost to reach this node
     pub fn mark_visited(&mut self, node_id: u32, cost: f64) {
         self.visited.insert(node_id);
-        self.total_weight += cost;
+        if self.compute_minimum {
+            self.total_weight += cost;
+        } else {
+            // For maximum spanning tree, costs in the queue are negated.
+            // Add the original (positive) edge weight to the total.
+            if node_id != self.start_node_id {
+                self.total_weight += -cost;
+            }
+        }
         self.effective_node_count += 1;
     }
     
