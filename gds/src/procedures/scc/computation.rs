@@ -6,7 +6,7 @@
 
 use crate::collections::{HugeLongArray, HugeObjectArray, BitSet};
 use crate::core::utils::paged::HugeLongArrayStack;
-use crate::types::prelude::GraphStore;
+use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator;
 use crate::types::properties::relationship::RelationshipProperties;
 use crate::core::utils::progress::ProgressTracker;
@@ -142,11 +142,11 @@ impl SccComputationRuntime {
     /// Compute SCC for a single node using iterative DFS
     ///
     /// Translation of: `Scc.computePerNode()` (lines 80-110)
-    pub fn compute_per_node<G: GraphStore + RelationshipIterator + RelationshipProperties>(
+    pub fn compute_per_node(
         &mut self,
         node_id: usize,
         component_id: usize,
-        graph_store: &G,
+        graph: &dyn Graph,
     ) -> Result<(), String> {
         // Push node visit to todo stack
         self.todo.set(0, StackEvent::node_visit(node_id as u64));
@@ -163,7 +163,7 @@ impl SccComputationRuntime {
             todo_index -= 1;
             
             if event.is_node_visit() {
-                self.distinguish_node_visit_type(event.node_id() as usize, component_id, graph_store)?;
+                self.distinguish_node_visit_type(event.node_id() as usize, component_id, graph)?;
             } else {
                 self.visit_edge(event.node_id() as usize, component_id)?;
             }
@@ -175,18 +175,18 @@ impl SccComputationRuntime {
     /// Distinguish between first and last visit to a node
     ///
     /// Translation of: `Scc.distinguishNodeVisitType()` (lines 112-118)
-    fn distinguish_node_visit_type<G: GraphStore + RelationshipIterator + RelationshipProperties>(
+    fn distinguish_node_visit_type(
         &mut self,
         node_id: usize,
         component_id: usize,
-        graph_store: &G,
+        graph: &dyn Graph,
     ) -> Result<(), String> {
         if self.index.get(node_id) != UNORDERED {
             // Last visit
             self.post_visit_node(node_id, component_id)?;
         } else {
             // First visit
-            self.visit_node(node_id, component_id, graph_store)?;
+            self.visit_node(node_id, component_id, graph)?;
         }
         Ok(())
     }
@@ -194,11 +194,11 @@ impl SccComputationRuntime {
     /// Visit a node for the first time
     ///
     /// Translation of: `Scc.visitNode()` (lines 120-130)
-    fn visit_node<G: GraphStore + RelationshipIterator + RelationshipProperties>(
+    fn visit_node(
         &mut self,
         node_id: usize,
-        component_id: usize,
-        graph_store: &G,
+        _component_id: usize,
+        graph: &dyn Graph,
     ) -> Result<(), String> {
         let stack_size = self.stack.size();
         self.index.set(node_id, stack_size as i64);
@@ -209,7 +209,7 @@ impl SccComputationRuntime {
         self.todo.set(0, StackEvent::node_visit(node_id as u64));
         
         // Process all outgoing relationships
-        let relationships = graph_store.stream_relationships(node_id as u64, graph_store.default_property_value());
+        let relationships = graph.stream_relationships(node_id as u64, graph.default_property_value());
         for relationship in relationships {
             let target_id = relationship.target_id();
             self.todo.set(0, StackEvent::edge_visit(target_id));

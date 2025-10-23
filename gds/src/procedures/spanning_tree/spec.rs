@@ -8,6 +8,8 @@
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::{AlgorithmError, ExecutionContext, AlgorithmSpec};
 use crate::projection::relationship_type::RelationshipType;
+use crate::types::prelude::GraphStore as _;
+use crate::projection::orientation::Orientation;
 use std::collections::HashSet;
 use super::storage::SpanningTreeStorageRuntime;
 use super::computation::{SpanningTreeComputationRuntime, SpanningTree};
@@ -174,15 +176,13 @@ define_algorithm_spec! {
         // Record start time
         let start_time = Instant::now();
         
-        // Execute using bound graph with optional relationship-type filtering
-        let base_graph = graph_store.get_graph();
-        let graph = if !config.relationship_types.is_empty() {
-            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
-            match base_graph.relationship_type_filtered_graph(&rel_types) {
-                Ok(g) => g,
-                Err(_) => base_graph,
-            }
-        } else { base_graph };
+        // Execute using filtered/oriented graph view
+        let rel_types: HashSet<RelationshipType> = if !config.relationship_types.is_empty() {
+            RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect()
+        } else { HashSet::new() };
+        let graph = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, Orientation::Natural)
+            .map_err(|e| AlgorithmError::Execution(format!("Failed to obtain graph view: {}", e)))?;
 
         let spanning_tree = storage.compute_spanning_tree_with_graph(graph.as_ref())
             .map_err(|e| AlgorithmError::Execution(format!("Spanning tree computation failed: {}", e)))?;

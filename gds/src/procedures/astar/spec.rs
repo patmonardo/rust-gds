@@ -9,7 +9,7 @@ use crate::projection::eval::procedure::ExecutionMode;
 use crate::projection::relationship_type::RelationshipType;
 use std::collections::HashSet;
 use crate::types::prelude::GraphStore as _; // bring trait methods into scope
-use crate::types::graph::Graph;
+use crate::projection::orientation::Orientation;
 use serde::{Deserialize, Serialize};
 // use serde_json::json; // not needed here
 
@@ -158,16 +158,17 @@ define_algorithm_spec! {
         parsed_config.validate()
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::Execution(e.to_string()))?;
         
-        // Bind to actual node properties if present
-        let base_graph = graph_store.get_graph();
-        // Optionally filter by relationship types
-        let graph = if !parsed_config.relationship_types.is_empty() {
-            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(parsed_config.relationship_types.clone()).into_iter().collect();
-            match base_graph.relationship_type_filtered_graph(&rel_types) {
-                Ok(g) => g,
-                Err(_) => base_graph,
-            }
-        } else { base_graph };
+        // Build filtered/oriented graph view via overloads
+        let rel_types: HashSet<RelationshipType> = if !parsed_config.relationship_types.is_empty() {
+            RelationshipType::list_of(parsed_config.relationship_types.clone()).into_iter().collect()
+        } else { HashSet::new() };
+        let orientation = match AStarDirection::from_str(&parsed_config.direction) {
+            AStarDirection::Outgoing => Orientation::Natural,
+            AStarDirection::Incoming => Orientation::Reverse,
+        };
+        let graph = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, orientation)
+            .map_err(|e| crate::projection::eval::procedure::AlgorithmError::Execution(e.to_string()))?;
         let lat_values = graph.node_properties(&parsed_config.latitude_property);
         let lon_values = graph.node_properties(&parsed_config.longitude_property);
 
@@ -194,7 +195,6 @@ define_algorithm_spec! {
         
         // Execute A* algorithm
         let direction = AStarDirection::from_str(&parsed_config.direction);
-
         let result = storage.compute_astar_path(&mut computation, Some(graph.as_ref()), direction as u8)
             .map_err(|e| crate::projection::eval::procedure::AlgorithmError::Execution(e))?;
         

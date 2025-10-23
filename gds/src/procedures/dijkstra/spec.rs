@@ -8,6 +8,8 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::{AlgorithmSpec, ExecutionContext};
+use crate::types::prelude::GraphStore as _;
+use crate::projection::orientation::Orientation;
 use crate::projection::relationship_type::RelationshipType;
 use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
@@ -180,17 +182,23 @@ define_algorithm_spec! {
             config.use_heuristic
         );
         
-        // Execute Dijkstra algorithm with optional relationship-type filtering and direction
-        let base_graph = graph_store.get_graph();
-        let graph = if !config.relationship_types.is_empty() {
-            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
-            match base_graph.relationship_type_filtered_graph(&rel_types) {
-                Ok(g) => g,
-                Err(_) => base_graph, // fallback on error
-            }
+        // Execute Dijkstra with filtered/oriented graph view
+        let rel_types: HashSet<RelationshipType> = if !config.relationship_types.is_empty() {
+            RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect()
         } else {
-            base_graph
+            HashSet::new()
         };
+
+        let orientation = match DijkstraDirection::from_str(&config.direction) {
+            DijkstraDirection::Outgoing => Orientation::Natural,
+            DijkstraDirection::Incoming => Orientation::Reverse,
+        };
+
+        let graph = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, orientation)
+            .map_err(|e| crate::projection::eval::procedure::AlgorithmError::InvalidGraph(
+                format!("Failed to obtain graph view: {}", e)
+            ))?;
 
         let direction = DijkstraDirection::from_str(&config.direction);
 

@@ -2,13 +2,15 @@
 
 use super::{Capabilities, DatabaseInfo, DeletionResult};
 use crate::projection::{NodeLabel, RelationshipType};
-use crate::types::graph::Graph;
+use crate::types::graph::{Graph, GraphResult};
+use crate::types::graph::id_map::IdMap;
+use crate::projection::orientation::Orientation;
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::node::NodePropertyValues;
 use crate::types::properties::relationship::RelationshipPropertyValues;
 use crate::types::schema::GraphSchema;
 use crate::types::ValueType;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 /// Result type for GraphStore operations.
@@ -71,6 +73,17 @@ pub trait GraphStore: Send + Sync {
 
     /// Returns the capabilities of this graph store.
     fn capabilities(&self) -> &Capabilities;
+    // =============================================================================
+    // Core identity
+    // =============================================================================
+
+    /// Returns the node IdMap (original↔mapped ids) for this store.
+    fn nodes(&self) -> Arc<dyn IdMap>;
+
+    /// Returns the set of relationship types present in the store.
+    fn relationships(&self) -> HashSet<RelationshipType> {
+        self.relationship_types()
+    }
 
     // =============================================================================
     // Graph Properties
@@ -233,6 +246,38 @@ pub trait GraphStore: Send + Sync {
     /// Returns an unfiltered graph view over all nodes and relationships.
     /// This is the primary method for obtaining a Graph instance from the store.
     fn get_graph(&self) -> Arc<dyn Graph>;
+
+    /// Returns a graph view filtered to the provided relationship types.
+    fn get_graph_with_types(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+    ) -> GraphResult<Arc<dyn Graph>>;
+
+    /// Returns a graph view filtered to the provided relationship types and using
+    /// the provided relationship property selectors per type.
+    ///
+    /// When a selector is not provided for a type, the implementation may auto-select
+    /// a property if exactly one exists, otherwise no property is selected for that type.
+    fn get_graph_with_types_and_selectors(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        relationship_property_selectors: &HashMap<RelationshipType, String>,
+    ) -> GraphResult<Arc<dyn Graph>>;
+
+    /// Returns a graph view filtered to the provided relationship types and orientation.
+    fn get_graph_with_types_and_orientation(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        orientation: Orientation,
+    ) -> GraphResult<Arc<dyn Graph>>;
+
+    /// Returns a graph view filtered by types, with property selectors, and orientation.
+    fn get_graph_with_types_selectors_and_orientation(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        relationship_property_selectors: &HashMap<RelationshipType, String>,
+        orientation: Orientation,
+    ) -> GraphResult<Arc<dyn Graph>>;
 }
 
 /// Base implementation for GraphStore adapters.
@@ -315,6 +360,10 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
 
     fn capabilities(&self) -> &Capabilities {
         self.graph_store.capabilities()
+    }
+
+    fn nodes(&self) -> Arc<dyn IdMap> {
+        self.graph_store.nodes()
     }
 
     fn graph_property_keys(&self) -> HashSet<String> {
@@ -505,6 +554,46 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
 
     fn get_graph(&self) -> Arc<dyn Graph> {
         self.graph_store.get_graph()
+    }
+
+    fn get_graph_with_types(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+    ) -> GraphResult<Arc<dyn Graph>> {
+        self.graph_store.get_graph_with_types(relationship_types)
+    }
+
+    fn get_graph_with_types_and_selectors(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        relationship_property_selectors: &HashMap<RelationshipType, String>,
+    ) -> GraphResult<Arc<dyn Graph>> {
+        self.graph_store.get_graph_with_types_and_selectors(
+            relationship_types,
+            relationship_property_selectors,
+        )
+    }
+
+    fn get_graph_with_types_and_orientation(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        orientation: Orientation,
+    ) -> GraphResult<Arc<dyn Graph>> {
+        self.graph_store
+            .get_graph_with_types_and_orientation(relationship_types, orientation)
+    }
+
+    fn get_graph_with_types_selectors_and_orientation(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        relationship_property_selectors: &HashMap<RelationshipType, String>,
+        orientation: Orientation,
+    ) -> GraphResult<Arc<dyn Graph>> {
+        self.graph_store.get_graph_with_types_selectors_and_orientation(
+            relationship_types,
+            relationship_property_selectors,
+            orientation,
+        )
     }
 }
 

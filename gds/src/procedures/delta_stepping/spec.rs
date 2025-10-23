@@ -12,6 +12,8 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use super::storage::DeltaSteppingStorageRuntime;
 use super::computation::DeltaSteppingComputationRuntime;
+use crate::types::prelude::GraphStore as _;
+use crate::projection::orientation::Orientation;
 
 /// Delta Stepping algorithm configuration
 ///
@@ -171,15 +173,19 @@ define_algorithm_spec! {
             config.store_predecessors
         );
         
-        // Execute Delta Stepping algorithm with optional relationship-type filtering and direction
-        let base_graph = graph_store.get_graph();
-        let graph = if !config.relationship_types.is_empty() {
-            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
-            match base_graph.relationship_type_filtered_graph(&rel_types) {
-                Ok(g) => g,
-                Err(_) => base_graph,
-            }
-        } else { base_graph };
+        // Execute with filtered/oriented graph view
+        let rel_types: HashSet<RelationshipType> = if !config.relationship_types.is_empty() {
+            RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect()
+        } else { HashSet::new() };
+        let orientation = match DeltaDirection::from_str(&config.direction) {
+            DeltaDirection::Outgoing => Orientation::Natural,
+            DeltaDirection::Incoming => Orientation::Reverse,
+        };
+        let graph = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, orientation)
+            .map_err(|e| crate::projection::eval::procedure::AlgorithmError::InvalidGraph(
+                format!("Failed to obtain graph view: {}", e)
+            ))?;
 
         let direction = DeltaDirection::from_str(&config.direction);
 

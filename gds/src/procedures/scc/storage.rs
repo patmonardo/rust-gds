@@ -7,6 +7,9 @@
 use super::computation::SccComputationResult;
 use crate::collections::{HugeLongArray, HugeObjectArray, BitSet};
 use crate::types::prelude::GraphStore;
+use crate::projection::orientation::Orientation;
+use crate::projection::RelationshipType;
+use crate::types::graph::Graph;
 use crate::core::utils::progress::ProgressTracker;
 use crate::termination::TerminationFlag;
 use std::time::Instant;
@@ -43,9 +46,15 @@ impl SccStorageRuntime {
         // Initialize computation runtime
         computation.initialize(graph_store.node_count() as usize, progress_tracker.clone(), termination_flag.clone());
         
+        // Obtain a directed graph view (Natural orientation, all types)
+        let rel_types: std::collections::HashSet<RelationshipType> = std::collections::HashSet::new();
+        let graph_view = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, Orientation::Natural)
+            .map_err(|e| format!("Failed to obtain graph view: {}", e))?;
+
         // Main SCC algorithm loop
         let mut component_id = 0usize;
-        let node_count = graph_store.node_count() as usize;
+        let node_count = graph_view.node_count() as usize;
         
         for node_id in 0..node_count {
             if !termination_flag.running() {
@@ -54,7 +63,7 @@ impl SccStorageRuntime {
             
             if computation.is_node_unordered(node_id) {
                 component_id += 1;
-                computation.compute_per_node(node_id, component_id, graph_store)?;
+                computation.compute_per_node(node_id, component_id, graph_view.as_ref())?;
             }
         }
         

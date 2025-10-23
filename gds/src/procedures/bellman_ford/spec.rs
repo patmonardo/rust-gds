@@ -9,6 +9,8 @@
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::AlgorithmSpec;
 use crate::projection::relationship_type::RelationshipType;
+use crate::types::prelude::GraphStore as _;
+use crate::projection::orientation::Orientation;
 use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -154,15 +156,19 @@ define_algorithm_spec! {
             config.concurrency
         );
         
-        // Build filtered graph if relationship_types provided
-        let base_graph = graph_store.get_graph();
-        let graph = if !config.relationship_types.is_empty() {
-            let rel_types: HashSet<RelationshipType> = RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect();
-            match base_graph.relationship_type_filtered_graph(&rel_types) {
-                Ok(g) => g,
-                Err(_) => base_graph,
-            }
-        } else { base_graph };
+        // Build filtered/oriented graph view via overloads
+        let rel_types: HashSet<RelationshipType> = if !config.relationship_types.is_empty() {
+            RelationshipType::list_of(config.relationship_types.clone()).into_iter().collect()
+        } else { HashSet::new() };
+        let orientation = match BellmanDirection::from_str(&config.direction) {
+            BellmanDirection::Outgoing => Orientation::Natural,
+            BellmanDirection::Incoming => Orientation::Reverse,
+        };
+        let graph = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, orientation)
+            .map_err(|e| crate::projection::eval::procedure::AlgorithmError::InvalidGraph(
+                format!("Failed to obtain graph view: {}", e)
+            ))?;
 
         let direction = BellmanDirection::from_str(&config.direction);
 

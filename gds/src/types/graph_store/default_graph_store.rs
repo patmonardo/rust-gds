@@ -20,6 +20,7 @@ use crate::types::properties::relationship::{
 };
 
 use crate::types::schema::{Direction, GraphSchema, PropertySchemaTrait};
+use crate::projection::orientation::Orientation;
 use crate::types::PropertyState;
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
@@ -212,6 +213,10 @@ impl GraphStore for DefaultGraphStore {
 
     fn capabilities(&self) -> &Capabilities {
         &self.capabilities
+    }
+
+    fn nodes(&self) -> Arc<dyn IdMap> {
+        Arc::clone(&self.id_map) as Arc<dyn IdMap>
     }
 
     fn graph_property_keys(&self) -> HashSet<String> {
@@ -551,6 +556,130 @@ impl GraphStore for DefaultGraphStore {
             self.relationship_property_stores.clone(),
             HashMap::new(),
         ))
+    }
+
+    fn get_graph_with_types(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+    ) -> crate::types::graph::GraphResult<Arc<dyn Graph>> {
+        self.graph()
+            .relationship_type_filtered_graph(relationship_types)
+    }
+
+    fn get_graph_with_types_and_selectors(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        relationship_property_selectors: &HashMap<RelationshipType, String>,
+    ) -> crate::types::graph::GraphResult<Arc<dyn Graph>> {
+        // Build a DefaultGraph then let it select properties based on provided selectors
+        let mut selectors = relationship_property_selectors.clone();
+
+        // If selector missing and exactly one property exists for a type, allow DefaultGraph::new to auto-select
+        // by passing selectors as-is; DefaultGraph::new handles auto-selection.
+        let topologies = self
+            .relationship_topologies
+            .iter()
+            .filter(|(rel_type, _)| relationship_types.contains(*rel_type))
+            .map(|(rel_type, topology)| (rel_type.clone(), Arc::clone(topology)))
+            .collect::<HashMap<_, _>>();
+
+        let mut ordered_types = self
+            .ordered_relationship_types
+            .iter()
+            .filter(|rel_type| relationship_types.contains(*rel_type))
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let mut inverse_indexed_types = self
+            .inverse_indexed_relationship_types
+            .iter()
+            .filter(|rel_type| relationship_types.contains(*rel_type))
+            .cloned()
+            .collect::<HashSet<_>>();
+
+        let relationship_count: usize = topologies
+            .values()
+            .map(|top| top.relationship_count())
+            .sum();
+
+        let has_parallel_edges = topologies
+            .values()
+            .any(|top| top.has_parallel_edges());
+
+        // Characteristics: preserve directed/undirected; inverse_indexed only if all selected are inverse indexed
+        let all_inverse_indexed = !ordered_types.is_empty()
+            && ordered_types
+                .iter()
+                .all(|t| inverse_indexed_types.contains(t));
+        let mut characteristics_builder = GraphCharacteristicsBuilder::new();
+        match self.schema.direction() {
+            Direction::Directed => {
+                characteristics_builder = characteristics_builder.directed();
+            }
+            Direction::Undirected => {
+                characteristics_builder = characteristics_builder.undirected();
+            }
+        }
+        if all_inverse_indexed {
+            characteristics_builder = characteristics_builder.inverse_indexed();
+        }
+        let filtered_characteristics = characteristics_builder.build();
+
+        // Filter relationship properties and apply selectors
+        let filtered_relationship_properties = ordered_types
+            .iter()
+            .filter_map(|rel_type| {
+                self.relationship_property_stores
+                    .get(rel_type)
+                    .map(|store| (rel_type.clone(), store.clone()))
+            })
+            .collect::<HashMap<_, _>>();
+
+        // DefaultGraph::new expects selectors keyed by type name
+        let filtered_selectors = selectors
+            .into_iter()
+            .filter(|(rel_type, _)| ordered_types.contains(rel_type))
+            .collect::<HashMap<_, _>>();
+
+        let filtered_graph = DefaultGraph::new(
+            Arc::clone(&self.schema),
+            Arc::clone(&self.id_map),
+            filtered_characteristics,
+            topologies,
+            ordered_types.drain(..).collect(),
+            inverse_indexed_types.drain().collect(),
+            relationship_count,
+            has_parallel_edges,
+            self.node_properties.clone(),
+            filtered_relationship_properties,
+            filtered_selectors,
+        );
+
+        Ok(Arc::new(filtered_graph))
+    }
+
+    fn get_graph_with_types_and_orientation(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        _orientation: Orientation,
+    ) -> crate::types::graph::GraphResult<Arc<dyn Graph>> {
+        // Orientation informs traversal; return a filtered view by types.
+        self.graph()
+            .relationship_type_filtered_graph(relationship_types)
+    }
+
+    fn get_graph_with_types_selectors_and_orientation(
+        &self,
+        relationship_types: &HashSet<RelationshipType>,
+        relationship_property_selectors: &HashMap<RelationshipType, String>,
+        orientation: Orientation,
+    ) -> crate::types::graph::GraphResult<Arc<dyn Graph>> {
+        let view = self.get_graph_with_types_and_selectors(
+            relationship_types,
+            relationship_property_selectors,
+        )?;
+        let _ = orientation; // reserved for future orientation-aware views
+        Ok(view)
     }
 }
 

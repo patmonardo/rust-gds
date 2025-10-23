@@ -10,6 +10,9 @@ use crate::projection::eval::procedure::{ExecutionContext, AlgorithmSpec, Execut
 use crate::projection::eval::procedure::AlgorithmError;
 use super::storage::BfsStorageRuntime;
 use super::computation::BfsComputationRuntime;
+use crate::projection::RelationshipType;
+use crate::projection::orientation::Orientation;
+use crate::types::prelude::GraphStore as _;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -118,9 +121,13 @@ define_algorithm_spec! {
             parsed_config.concurrency,
         );
 
-        // Execute BFS algorithm with graph if available
-        let graph = graph_store.get_graph();
-        let result = storage.compute_bfs(&mut computation, Some(graph.as_ref()))?;
+        // Execute BFS algorithm with a filtered/oriented view (defaults: all types, NATURAL)
+        let rel_types: std::collections::HashSet<RelationshipType> = std::collections::HashSet::new();
+        let graph_view = graph_store
+            .get_graph_with_types_and_orientation(&rel_types, Orientation::Natural)
+            .map_err(|e| AlgorithmError::InvalidGraph(format!("Failed to obtain graph view: {}", e)))?;
+
+        let result = storage.compute_bfs(&mut computation, Some(graph_view.as_ref()))?;
         
         Ok(result)
     }
