@@ -10,7 +10,7 @@ use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator;
 use crate::types::properties::relationship::RelationshipProperties;
 use crate::core::utils::progress::ProgressTracker;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use super::spec::SccResult;
 
 /// SCC computation result

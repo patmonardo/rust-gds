@@ -4,7 +4,7 @@
 //! built on top of Rayon's work-stealing scheduler.
 
 use crate::concurrency::Concurrency;
-use crate::termination::{TerminatedException, TerminationFlag};
+use crate::concurrency::{TerminatedException, TerminationFlag};
 use rayon::prelude::*;
 
 /// Parallel executor for graph algorithms.

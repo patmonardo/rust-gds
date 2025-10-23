@@ -5,7 +5,7 @@ use crate::applications::algorithms::machinery::{
 use crate::config::base_types::Config;
 use crate::mem::MemoryEstimation;
 use crate::core::utils::progress::{ProgressTracker, Tasks};
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 // use crate::core::concurrency::DefaultPool; // Placeholder - commented out for now
 // use crate::core::model::Model; // Placeholder - commented out for now
 // use crate::embeddings::{

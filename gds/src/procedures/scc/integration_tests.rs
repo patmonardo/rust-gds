@@ -16,7 +16,7 @@ mod tests {
     use super::*;
     use crate::types::graph_store::default_graph_store::DefaultGraphStore;
     use crate::core::utils::progress::ProgressTracker;
-    use crate::termination::TerminationFlag;
+    use crate::concurrency::TerminationFlag;
 
     #[test]
     fn test_scc_simple_cycle() {

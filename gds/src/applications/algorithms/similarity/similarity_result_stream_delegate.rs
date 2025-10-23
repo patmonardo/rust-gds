@@ -3,7 +3,7 @@
 
 use crate::api::Graph;
 use crate::concurrency::Concurrency;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use crate::applications::algorithms::similarity::results::{SimilarityGraphResult, SimilarityResult};
 use crate::applications::algorithms::similarity::similarity_graph_builder::SimilarityGraphBuilder;
 

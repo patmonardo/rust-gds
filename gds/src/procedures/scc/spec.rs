@@ -7,7 +7,7 @@
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::{ExecutionMode, AlgorithmSpec, LogLevel, AlgorithmError};
 use crate::core::utils::progress::ProgressTracker;
-use crate::termination::{TerminationFlag, TerminationMonitor};
+use crate::concurrency::{TerminationFlag, TerminationMonitor};
 use super::storage::SccStorageRuntime;
 use super::computation::SccComputationRuntime;
 use serde::{Deserialize, Serialize};

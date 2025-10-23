@@ -1,7 +1,7 @@
 use crate::api::{Graph, GraphStore};
 use crate::applications::algorithms::machinery::MutateStep;
 use crate::applications::algorithms::metadata::NodePropertiesWritten;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use crate::config::base_types::Config;
 
 /// Mutation step for KGE (Knowledge Graph Embedding) algorithm.

@@ -1,5 +1,5 @@
 use crate::applications::algorithms::machinery::ProgressTrackerCreator;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use crate::config::base_types::Config;
 
 use crate::applications::algorithms::machinery::DefaultProgressTrackerCreator;

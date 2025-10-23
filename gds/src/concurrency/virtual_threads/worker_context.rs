@@ -162,7 +162,7 @@ mod tests {
     use super::*;
     use crate::concurrency::virtual_threads::Executor;
     use crate::concurrency::Concurrency;
-    use crate::termination::TerminationFlag;
+    use crate::concurrency::TerminationFlag;
 
     #[test]
     fn test_worker_context_basic() {

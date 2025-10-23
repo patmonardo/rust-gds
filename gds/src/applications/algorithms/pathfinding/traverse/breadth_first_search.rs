@@ -1,6 +1,6 @@
 use crate::api::Graph;
 use crate::core::utils::progress::ProgressTracker;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use crate::config::base_types::Config;
 
 /// Placeholder for HugeLongArray - represents a large array of long values

@@ -11,7 +11,7 @@ use crate::projection::orientation::Orientation;
 use crate::projection::RelationshipType;
 use crate::types::graph::Graph;
 use crate::core::utils::progress::ProgressTracker;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use std::time::Instant;
 
 /// SCC storage runtime for accessing graph data

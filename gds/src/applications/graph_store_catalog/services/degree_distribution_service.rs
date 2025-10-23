@@ -1,5 +1,5 @@
 use crate::types::graph_store::GraphStore;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use std::collections::HashMap;
 
 /// Service for computing degree distribution of graphs.

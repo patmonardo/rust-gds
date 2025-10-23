@@ -1,6 +1,6 @@
 use crate::api::Graph;
 use crate::core::utils::progress::ProgressTracker;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use crate::config::base_types::Config;
 use crate::applications::algorithms::pathfinding::traverse::breadth_first_search::HugeLongArray;
 

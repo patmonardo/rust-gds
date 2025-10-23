@@ -6,7 +6,7 @@ use crate::applications::algorithms::metadata::Algorithm;
 use crate::config::base_types::Config;
 use crate::mem::MemoryEstimation;
 use crate::core::utils::progress::{ProgressTracker, Tasks};
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use crate::applications::algorithms::similarity::results::*;
 
 /// Core similarity algorithms implementation.

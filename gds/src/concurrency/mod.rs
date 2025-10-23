@@ -11,6 +11,7 @@ pub mod virtual_threads;
 
 mod batch_size;
 mod concurrency_level;
-
-pub use batch_size::BatchSize;
-pub use concurrency_level::Concurrency;
+mod termination;
+pub use batch_size::*;
+pub use concurrency_level::*;
+pub use termination::*;

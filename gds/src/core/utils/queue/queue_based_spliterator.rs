@@ -1,4 +1,4 @@
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -123,7 +123,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::termination::TerminationFlag;
+    use crate::concurrency::TerminationFlag;
     use std::collections::VecDeque;
     use std::sync::{Arc, Condvar, Mutex};
     use std::time::{Duration, Instant};

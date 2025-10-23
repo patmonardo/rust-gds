@@ -20,7 +20,7 @@
 
 use crate::collections::HugeLongArray;
 use crate::concurrency::Concurrency;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 
 /// High-performance parallel merge sort for huge long arrays.
 ///

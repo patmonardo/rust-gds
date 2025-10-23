@@ -6,7 +6,7 @@
 //! This mirrors Java GDS's RunWithConcurrency but with Rust's simplicity.
 
 use crate::concurrency::{virtual_threads::Executor, Concurrency};
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 
 /// Builder for flexible task execution with concurrency control.
 ///

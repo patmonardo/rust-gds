@@ -1,4 +1,4 @@
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 
 /// Request-scoped dependencies that are available throughout a request.
 /// This is a core pattern in the Applications system for managing

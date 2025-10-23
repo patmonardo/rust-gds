@@ -4,7 +4,7 @@
 //! These mirror Java GDS's ParallelUtil but leverage Rust's Rayon for work-stealing parallelism.
 
 use crate::concurrency::{BatchSize, Concurrency};
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use rayon::prelude::*;
 use std::ops::Range;
 

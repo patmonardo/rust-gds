@@ -5,7 +5,7 @@
 //! like Pregel where each iteration (superstep) must finish before the next begins.
 
 use crate::concurrency::{BatchSize, Concurrency};
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 use rayon::prelude::*;
 
 /// Synchronization scope for parallel work.

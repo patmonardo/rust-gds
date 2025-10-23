@@ -1,6 +1,6 @@
 use super::{GraphStoreCreator, GraphStoreLoader, GraphProjectConfig, GraphStore, ResultStore, GraphDimensions, MemoryEstimation};
 use crate::types::graph_store::DatabaseId;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 
 /// Implementation of GraphStoreCreator for loading from database.
 /// 

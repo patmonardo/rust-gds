@@ -3,7 +3,7 @@ use crate::applications::algorithms::machinery::{
     AlgorithmLabel, RequestScopedDependencies,
 };
 use crate::mem::MemoryEstimation;
-use crate::termination::TerminationFlag;
+use crate::concurrency::TerminationFlag;
 
 use crate::applications::algorithms::machinery::DefaultProgressTrackerCreator;
 
