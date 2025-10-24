@@ -3,8 +3,8 @@
 //! Core numeric array implementation for graph data science, designed to handle
 //! massive datasets that exceed standard array limitations.
 
-use crate::collections::cursor::{HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor};
-use crate::collections::{ArrayUtil, PageUtil};
+use crate::collections::utils::cursor::{HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor};
+use crate::collections::utils::{ArrayUtil, PageUtil};
 use crate::concurrency::Concurrency;
 use crate::core::utils::paged::ParallelIntPageCreator;
 

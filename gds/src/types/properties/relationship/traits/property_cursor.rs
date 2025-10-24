@@ -2,10 +2,6 @@ use std::fmt::Debug;
 
 /// PropertyValue type for relationship properties
 /// 
-/// This is the default type for relationship properties, aligned with Java GDS
-/// which uses Double for weights. For typed access, use TypedRelationshipCursor.
-pub type PropertyValue = f64;
-
 /// Cursor iterating over the values of relationship properties.
 ///
 /// This trait mirrors the TypeScript `PropertyCursor` API that powers the

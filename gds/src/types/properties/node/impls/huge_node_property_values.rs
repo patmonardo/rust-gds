@@ -3,7 +3,7 @@
 //! These implementations use HugeArrays as storage backends instead of Vec<T>,
 //! providing support for billion-scale property storage with paged memory architecture.
 
-use crate::collections::huge_array::{HugeLongArray, HugeDoubleArray, HugeObjectArray};
+use crate::collections::backends::huge::{HugeLongArray, HugeDoubleArray, HugeObjectArray};
 use crate::types::properties::node::{
     LongNodePropertyValues, DoubleNodePropertyValues, LongArrayNodePropertyValues, DoubleArrayNodePropertyValues, NodePropertyValues
 };
@@ -563,7 +563,7 @@ impl DoubleArrayNodePropertyValues for HugeDoubleArrayNodePropertyValues {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::collections::huge_array::{HugeLongArray, HugeDoubleArray, HugeObjectArray};
+    use crate::collections::backends::huge::{HugeLongArray, HugeDoubleArray, HugeObjectArray};
 
     #[test]
     fn test_huge_long_node_property_values() {

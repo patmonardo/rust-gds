@@ -34,6 +34,7 @@ macro_rules! huge_primitive_array {
         $huge_name:ident,           // e.g., HugeIntArray
         $single_name:ident,         // e.g., SingleHugeIntArray
         $paged_name:ident,          // e.g., PagedHugeIntArray
+        $cursor_name:ident,         // e.g., HugeIntArrayCursor
         $element_type:ty,           // e.g., i32
         $type_display:expr,         // e.g., "Int"
         $doc_desc:expr              // Documentation description
@@ -284,17 +285,15 @@ macro_rules! huge_primitive_array {
             }
         }
 
-        impl HugeCursorSupport<$element_type> for $single_name {
-            fn init_cursor(&self, cursor: &mut HugeCursor<$element_type>) -> usize {
-                if self.data.is_empty() {
-                    return 0;
-                }
-                *cursor = HugeCursor::SinglePage(SinglePageCursor {
-                    array: Some(&self.data[..]),
-                    offset: 0,
-                    limit: self.data.len(),
-                });
+        impl<'a> HugeCursorSupport<'a> for $single_name {
+            type Cursor = SinglePageCursor<'a, $element_type>;
+
+            fn size(&self) -> usize {
                 self.data.len()
+            }
+
+            fn new_cursor(&'a self) -> Self::Cursor {
+                SinglePageCursor::new(&self.data)
             }
         }
 
@@ -310,17 +309,20 @@ macro_rules! huge_primitive_array {
 
         impl $paged_name {
             pub fn new(size: usize) -> Self {
-                let num_pages = PageUtil::num_pages_for_size(size);
-                let last_page_size = PageUtil::exclusive_index_of_page(size);
+                // Calculate page size for element type with 4KB pages
+                let page_size = PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<$element_type>());
+                let page_shift = page_size.trailing_zeros(); // log2 of page_size
+                let page_mask = page_size - 1;
+                let num_pages = PageUtil::num_pages_for(size, page_size);
 
                 let mut pages = Vec::with_capacity(num_pages);
                 for page_index in 0..num_pages {
-                    let page_size = if page_index == num_pages - 1 {
-                        last_page_size
+                    let page_length = if page_index == num_pages - 1 {
+                        PageUtil::exclusive_index_of_page(size, page_mask)
                     } else {
-                        PageUtil::page_size(page_index)
+                        page_size
                     };
-                    pages.push(vec![<$element_type>::default(); page_size]);
+                    pages.push(vec![<$element_type>::default(); page_length]);
                 }
 
                 Self { pages, size }
@@ -330,15 +332,21 @@ macro_rules! huge_primitive_array {
                 if index >= self.size {
                     return <$element_type>::default();
                 }
-                let page_index = PageUtil::page_index(index);
-                let index_in_page = PageUtil::index_in_page(index);
+                let page_size = PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<$element_type>());
+                let page_shift = page_size.trailing_zeros();
+                let page_mask = page_size - 1;
+                let page_index = PageUtil::page_index(index, page_shift);
+                let index_in_page = PageUtil::index_in_page(index, page_mask);
                 self.pages[page_index][index_in_page]
             }
 
             pub fn set(&mut self, index: usize, value: $element_type) {
                 assert!(index < self.size, "index out of bounds");
-                let page_index = PageUtil::page_index(index);
-                let index_in_page = PageUtil::index_in_page(index);
+                let page_size = PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<$element_type>());
+                let page_shift = page_size.trailing_zeros();
+                let page_mask = page_size - 1;
+                let page_index = PageUtil::page_index(index, page_shift);
+                let index_in_page = PageUtil::index_in_page(index, page_mask);
                 self.pages[page_index][index_in_page] = value;
             }
 
@@ -395,36 +403,94 @@ macro_rules! huge_primitive_array {
             }
         }
 
-        impl HugeCursorSupport<$element_type> for $paged_name {
-            fn init_cursor(&self, cursor: &mut HugeCursor<$element_type>) -> usize {
-                if self.pages.is_empty() {
-                    return 0;
-                }
-                *cursor = HugeCursor::Paged(PagedCursor {
-                    pages: &self.pages,
-                    page_index: 0,
-                    offset: 0,
-                    limit: 0,
-                    base: std::marker::PhantomData,
-                });
+        impl<'a> HugeCursorSupport<'a> for $paged_name {
+            type Cursor = PagedCursor<'a, $element_type>;
+
+            fn size(&self) -> usize {
                 self.size
             }
+
+            fn new_cursor(&'a self) -> Self::Cursor {
+                PagedCursor::new(&self.pages, self.size)
+            }
         }
 
-        impl HugeCursorSupport<$element_type> for $huge_name {
-            fn init_cursor(&self, cursor: &mut HugeCursor<$element_type>) -> usize {
+        /// Cursor for iterating over HugeArray elements
+        pub enum $cursor_name<'a> {
+            Single(SinglePageCursor<'a, $element_type>),
+            Paged(PagedCursor<'a, $element_type>),
+        }
+
+        impl<'a> HugeCursor<'a> for $cursor_name<'a> {
+            type Array = [$element_type];
+
+            fn next(&mut self) -> bool {
                 match self {
-                    Self::Single(arr) => arr.init_cursor(cursor),
-                    Self::Paged(arr) => arr.init_cursor(cursor),
+                    Self::Single(cursor) => cursor.next(),
+                    Self::Paged(cursor) => cursor.next(),
+                }
+            }
+
+            fn base(&self) -> usize {
+                match self {
+                    Self::Single(cursor) => cursor.base(),
+                    Self::Paged(cursor) => cursor.base(),
+                }
+            }
+
+            fn offset(&self) -> usize {
+                match self {
+                    Self::Single(cursor) => cursor.offset(),
+                    Self::Paged(cursor) => cursor.offset(),
+                }
+            }
+
+            fn limit(&self) -> usize {
+                match self {
+                    Self::Single(cursor) => cursor.limit(),
+                    Self::Paged(cursor) => cursor.limit(),
+                }
+            }
+
+            fn array(&self) -> Option<&'a Self::Array> {
+                match self {
+                    Self::Single(cursor) => cursor.array(),
+                    Self::Paged(cursor) => cursor.array(),
+                }
+            }
+
+            fn reset(&mut self) {
+                match self {
+                    Self::Single(cursor) => cursor.reset(),
+                    Self::Paged(cursor) => cursor.reset(),
+                }
+            }
+
+            fn set_range(&mut self, start: usize, end: usize) {
+                match self {
+                    Self::Single(cursor) => cursor.set_range(start, end),
+                    Self::Paged(cursor) => cursor.set_range(start, end),
                 }
             }
         }
 
-        impl $huge_name {
-            /// Creates a new cursor for iterating over this array.
-            pub fn new_cursor(&self) -> HugeCursor<$element_type> {
-                HugeCursor::Empty
+        impl<'a> HugeCursorSupport<'a> for $huge_name {
+            type Cursor = $cursor_name<'a>;
+
+            fn size(&self) -> usize {
+                match self {
+                    Self::Single(arr) => arr.size(),
+                    Self::Paged(arr) => arr.size(),
+                }
+            }
+
+            fn new_cursor(&'a self) -> Self::Cursor {
+                match self {
+                    Self::Single(arr) => $cursor_name::Single(arr.new_cursor()),
+                    Self::Paged(arr) => $cursor_name::Paged(arr.new_cursor()),
+                }
             }
         }
     };
 }
+

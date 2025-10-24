@@ -1,48 +1,99 @@
-//! High-performance collection data structures for graph analytics
+//! Collections: Unified Data Structures for Graph Data Science
 //!
-//! This module provides specialized collection utilities optimized for large-scale
-//! graph processing operations.
+//! This module provides a unified Collections API across multiple backends:
+//! - **Huge**: Paged arrays for billions of elements
+//! - **Vec**: Enhanced standard library vectors
+//! - **Arrow**: Apache Arrow columnar arrays
+//! - **Extensions**: ndarray, GPU, distributed, compression, encryption
+//! - **Composition**: Hybrid, layered, adaptive collections
+//! - **Magic**: Auto-optimization, AI-powered features
+//!
+//! ## Architecture
+//!
+//! ```text
+//! Application Layer (PropertyValues)
+//!         ↓
+//! Adapter Layer (UniversalPropertyValues)
+//!         ↓
+//! Collections Layer (Huge/Vec/Arrow/Extensions/Composition/Magic)
+//! ```
+//!
+//! ## Usage
+//!
+//! ```rust
+//! use crate::collections::{HugeIntArray, VecInt, ArrowInt};
+//! use crate::collections::Collections;
+//! use crate::collections::UniversalPropertyValues;
+//!
+//! // All implement same interface
+//! let huge: HugeIntArray = HugeIntArray::new(1000);
+//! let vec: VecInt = VecInt::new();
+//! let arrow: ArrowInt = ArrowInt::new();
+//!
+//! // Same API for all
+//! let sum1 = huge.sum();
+//! let sum2 = vec.sum();
+//! let sum3 = arrow.sum();
+//! ```
 
-pub mod array_util;
+// Core configuration and traits
+pub mod config;
+pub mod traits;
+
+// Backend implementations
+pub mod backends;
+
+// Extension implementations
+pub mod extensions;
+
+// Composition implementations
+pub mod composition;
+
+// Magic implementations
+pub mod magic;
+
+// Macro system
+pub mod macros;
+
+// Utilities
+pub mod utils;
+
+// Universal adapter
+pub mod adapter;
+
+// Re-export commonly used types
+pub use config::*;
+pub use traits::*;
+pub use backends::*;
+pub use extensions::*;
+pub use composition::*;
+pub use magic::*;
+pub use macros::*;
+pub use utils::*;
+pub use adapter::*;
+
+// Re-export legacy modules for backward compatibility
 pub mod bit_set;
-pub mod cursor;
-pub mod huge_array;
-pub mod huge_atomic_array;
 pub mod huge_sparse_array;
 pub mod huge_sparse_list;
 pub mod indirect_comparator;
 pub mod long_multiset;
-pub mod page_util;
 pub mod primitive;
 
-// Re-export commonly used types
-pub use array_util::ArrayUtil;
-pub use bit_set::BitSet;
-pub use cursor::{
-    init_cursor, init_cursor_range, HugeCursor, HugeCursorSupport, PagedCursor, SinglePageCursor,
-};
-pub use huge_array::{HugeDoubleArray, HugeIntArray, HugeLongArray, HugeObjectArray};
-pub use huge_atomic_array::{HugeAtomicDoubleArray, HugeAtomicLongArray};
-// Re-exported from core::utils::paged for backward compatibility
-pub use crate::core::utils::paged::{HugeAtomicBitSet, HugeAtomicGrowingBitSet};
-pub use huge_sparse_array::{
-    HugeSparseDoubleArray, HugeSparseDoubleArrayArray, HugeSparseDoubleArrayArrayBuilder,
-    HugeSparseDoubleArrayBuilder, HugeSparseLongArray, HugeSparseLongArrayArray,
-    HugeSparseLongArrayArrayBuilder, HugeSparseLongArrayBuilder,
-};
-pub use huge_sparse_list::{
-    HugeSparseDoubleArrayList, HugeSparseDoubleList, HugeSparseLongArrayArrayList,
-    HugeSparseLongArrayList, HugeSparseLongList, LongByteArrayArrayConsumer, LongByteArrayConsumer,
-    LongDoubleArrayArrayConsumer, LongDoubleArrayConsumer, LongDoubleConsumer,
-    LongFloatArrayConsumer, LongIntConsumer, LongLongArrayArrayConsumer, LongLongArrayConsumer,
-    LongLongConsumer,
-};
-pub use indirect_comparator::IndirectComparator;
-pub use long_multiset::LongMultiSet;
-pub use page_util::PageUtil;
+// Re-export types from core for backward compatibility
+pub use crate::core::utils::paged::HugeAtomicBitSet;
 
-// Re-export primitive iterator types
-pub use primitive::{
-    empty, of, range, single, LongPredicate, PrimitiveLongBaseIterator, PrimitiveLongIterable,
-    PrimitiveLongIterator,
-};
+// Backend selection
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CollectionsBackend {
+    Huge,   // Paged arrays
+    Vec,    // Enhanced vectors
+    Arrow,  // Apache Arrow
+    Std,    // Standard library
+}
+
+impl Default for CollectionsBackend {
+    fn default() -> Self {
+        Self::Vec
+    }
+}

@@ -3,7 +3,7 @@
 
 use std::sync::Arc;
 
-use crate::collections::huge_array::{HugeDoubleArray, HugeLongArray};
+use crate::collections::backends::huge::{HugeDoubleArray, HugeLongArray};
 use crate::config::{PropertyBackendKind, PropertyStoreConfig};
 use crate::types::properties::graph::{
     DoubleArrayGraphPropertyValues, DoubleGraphPropertyValues, FloatArrayGraphPropertyValues,
@@ -102,7 +102,7 @@ impl NodePropertyAdapterFactory {
             PropertyBackendKind::Vec => Arc::new(DefaultDoubleArrayNodePropertyValues::new(values, node_count)),
             PropertyBackendKind::HugeArray => {
                 // Convert Vec<Option<Vec<f64>>> to HugeObjectArray<Vec<f64>>
-                use crate::collections::huge_array::HugeObjectArray;
+                use crate::collections::backends::huge::HugeObjectArray;
                 let mut huge_array = HugeObjectArray::new(node_count);
                 for (i, opt_array) in values.into_iter().enumerate() {
                     if let Some(array) = opt_array {
@@ -129,7 +129,7 @@ impl NodePropertyAdapterFactory {
             PropertyBackendKind::Vec => Arc::new(DefaultLongArrayNodePropertyValues::new(values, node_count)),
             PropertyBackendKind::HugeArray => {
                 // Convert Vec<Option<Vec<i64>>> to HugeObjectArray<Vec<i64>>
-                use crate::collections::huge_array::HugeObjectArray;
+                use crate::collections::backends::huge::HugeObjectArray;
                 let mut huge_array = HugeObjectArray::new(node_count);
                 for (i, opt_array) in values.into_iter().enumerate() {
                     if let Some(array) = opt_array {
