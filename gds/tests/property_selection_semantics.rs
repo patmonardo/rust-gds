@@ -20,7 +20,7 @@ use gds::types::graph_store::{
     GraphStore,
 };
 use gds::types::properties::relationship::{
-    DefaultRelationshipPropertyValues, PropertyValue, RelationshipIterator,
+    DefaultRelationshipPropertyValues, RelationshipIterator,
 };
 use gds::types::schema::GraphSchema;
 use std::collections::HashMap;
@@ -50,7 +50,7 @@ fn test_single_property_auto_selection() {
     println!("Expected: auto-select 'weight' for traversal\n");
 
     // Traverse with fallback; auto-selected property should provide actual values
-    const FALLBACK: PropertyValue = -1.0;
+    const FALLBACK: f64 = -1.0f64;
     let mut values_seen = Vec::new();
     for cursor in graph.stream_relationships(0, FALLBACK) {
         values_seen.push(cursor.property());
@@ -101,7 +101,7 @@ fn test_multiple_properties_no_selector() {
     println!("Expected: NO auto-selection; fallback values should be returned\n");
 
     // Traverse with fallback; no selection means fallback should be used
-    const FALLBACK: PropertyValue = -999.0;
+    const FALLBACK: f64 = -999.0f64;
     let mut values_seen = Vec::new();
     for cursor in graph.stream_relationships(0, FALLBACK) {
         values_seen.push(cursor.property());
@@ -149,7 +149,7 @@ fn test_property_selection_per_relationship_type() {
     println!("KNOWS has 1 property: 'weight' (auto-selected)");
     println!("WORKS_AT has 1 property: 'tenure_months' (auto-selected)\n");
 
-    const FALLBACK: PropertyValue = -1.0;
+    const FALLBACK: f64 = -1.0f64;
 
     // Traverse KNOWS relationships (node 0 -> 1)
     let mut knows_values = Vec::new();
@@ -178,7 +178,7 @@ fn test_fallback_when_property_missing() {
     let store = build_simple_graph(); // No properties added
     let graph = store.graph();
 
-    const FALLBACK: PropertyValue = 42.0;
+    const FALLBACK: f64 = 42.0f64;
     let mut values_seen = Vec::new();
     for cursor in graph.stream_relationships(0, FALLBACK) {
         values_seen.push(cursor.property());

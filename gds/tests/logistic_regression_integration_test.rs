@@ -1,3 +1,4 @@
+#![cfg(feature = "ml")]
 //! Logistic Regression Integration Test
 //!
 //! Comprehensive integration test for the Logistic Regression classifier system.

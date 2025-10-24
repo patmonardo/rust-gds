@@ -1,3 +1,4 @@
+#![cfg(feature = "ml")]
 //! Comprehensive integration tests for the ML tensor system.
 //!
 //! These tests verify that the tensor system works correctly as a whole,

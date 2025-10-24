@@ -1,4 +1,4 @@
-use super::{PropertyCursor, PropertyValue};
+use super::PropertyCursor;
 use crate::types::graph::id_map::MappedNodeId;
 use std::fmt::Debug;
 
@@ -12,7 +12,7 @@ use std::fmt::Debug;
 pub trait RelationshipProperties: Debug {
     /// Returns the default property value used when a relationship is missing
     /// a concrete value in the underlying store.
-    fn default_property_value(&self) -> PropertyValue;
+    fn default_property_value(&self) -> f64;
 
     /// Returns the property value for the relationship identified by the
     /// `(source_id, target_id)` pair. When the underlying storage does not have
@@ -22,8 +22,8 @@ pub trait RelationshipProperties: Debug {
         &self,
         source_id: MappedNodeId,
         target_id: MappedNodeId,
-        fallback_value: PropertyValue,
-    ) -> PropertyValue;
+        fallback_value: f64,
+    ) -> f64;
 
     /// Optional hook to obtain a property cursor positioned for the provided
     /// source node. Implementations that do not support cursored access can
@@ -44,7 +44,7 @@ pub trait RelationshipPropertiesExt: RelationshipProperties {
         &self,
         source_id: MappedNodeId,
         target_id: MappedNodeId,
-    ) -> PropertyValue {
+    ) -> f64 {
         self.relationship_property(source_id, target_id, self.default_property_value())
     }
 
@@ -54,8 +54,8 @@ pub trait RelationshipPropertiesExt: RelationshipProperties {
         &self,
         source_id: MappedNodeId,
         target_id: MappedNodeId,
-        fallback_value: PropertyValue,
-    ) -> PropertyValue {
+        fallback_value: f64,
+    ) -> f64 {
         self.relationship_property(source_id, target_id, fallback_value)
     }
 }
@@ -65,17 +65,17 @@ impl<T: RelationshipProperties + ?Sized> RelationshipPropertiesExt for T {}
 /// Relationship properties implementation that always returns the same value.
 #[derive(Debug, Clone, Copy)]
 pub struct ConstantRelationshipProperties {
-    value: PropertyValue,
+    value: f64,
 }
 
 impl ConstantRelationshipProperties {
-    pub fn new(value: PropertyValue) -> Self {
+    pub fn new(value: f64) -> Self {
         Self { value }
     }
 }
 
 impl RelationshipProperties for ConstantRelationshipProperties {
-    fn default_property_value(&self) -> PropertyValue {
+    fn default_property_value(&self) -> f64 {
         self.value
     }
 
@@ -83,8 +83,8 @@ impl RelationshipProperties for ConstantRelationshipProperties {
         &self,
         _source_id: MappedNodeId,
         _target_id: MappedNodeId,
-        _fallback_value: PropertyValue,
-    ) -> PropertyValue {
+        _fallback_value: f64,
+    ) -> f64 {
         self.value
     }
 }
@@ -94,11 +94,11 @@ impl RelationshipProperties for ConstantRelationshipProperties {
 /// `RelationshipProperties.empty` helper.
 #[derive(Debug, Clone, Copy)]
 pub struct EmptyRelationshipProperties {
-    default_value: PropertyValue,
+    default_value: f64,
 }
 
 impl EmptyRelationshipProperties {
-    pub fn new(default_value: PropertyValue) -> Self {
+    pub fn new(default_value: f64) -> Self {
         Self { default_value }
     }
 }
@@ -110,7 +110,7 @@ impl Default for EmptyRelationshipProperties {
 }
 
 impl RelationshipProperties for EmptyRelationshipProperties {
-    fn default_property_value(&self) -> PropertyValue {
+    fn default_property_value(&self) -> f64 {
         self.default_value
     }
 
@@ -118,8 +118,8 @@ impl RelationshipProperties for EmptyRelationshipProperties {
         &self,
         _source_id: MappedNodeId,
         _target_id: MappedNodeId,
-        fallback_value: PropertyValue,
-    ) -> PropertyValue {
+        fallback_value: f64,
+    ) -> f64 {
         fallback_value
     }
 }

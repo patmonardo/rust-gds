@@ -1,3 +1,4 @@
+#![cfg(feature = "procedures")]
 //! Integration test: Execute Sum Procedure through ProcedureExecutor
 //!
 //! This demonstrates the complete flow:

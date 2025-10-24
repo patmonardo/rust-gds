@@ -24,6 +24,7 @@ pub struct PrimitiveValues;
 
 // Generate all factory methods using the mega macro
 // This macro generates the impl block with create(), of(), long_value(), etc.
+use crate::generate_primitive_values_factory;
 generate_primitive_values_factory!();
 
 #[cfg(test)]

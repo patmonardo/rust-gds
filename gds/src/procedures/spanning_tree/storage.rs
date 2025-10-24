@@ -10,7 +10,6 @@ use crate::projection::eval::procedure::AlgorithmError;
 use std::collections::HashMap;
 use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator as _;
-use crate::types::properties::relationship::PropertyValue;
 
 /// Spanning Tree Storage Runtime
 ///
@@ -144,8 +143,8 @@ impl SpanningTreeStorageRuntime {
 
     /// Neighbor retrieval backed by Graph::stream_relationships (outgoing edges), with numeric fallback.
     fn get_neighbors_from_graph(&self, graph: &dyn Graph, node_id: u32) -> Vec<(u32, f64)> {
-        let fallback: PropertyValue = 1.0;
-        let stream = graph.stream_relationships(node_id as u64, fallback);
+        let fallback: f64 = 1.0;
+        let stream = graph.stream_relationships(node_id as i64, fallback);
         stream
             .into_iter()
             .map(|cursor| (cursor.target_id() as u32, cursor.property()))
@@ -193,16 +192,16 @@ mod tests {
     
     #[test]
     fn test_storage_runtime_creation() {
-        let runtime = SpanningTreeStorageRuntime::new(0, true, 1);
+        let runtime = SpanningTreeStorageRuntime::new(0, true, 1.0);
         
         assert_eq!(runtime.start_node_id, 0);
         assert!(runtime.compute_minimum);
-        assert_eq!(runtime.concurrency, 1);
+        assert_eq!(runtime.concurrency, 1.0);
     }
     
     #[test]
     fn test_storage_runtime_minimum_spanning_tree() {
-        let runtime = SpanningTreeStorageRuntime::new(0, true, 1);
+        let runtime = SpanningTreeStorageRuntime::new(0, true, 1.0);
         let result = runtime.compute_spanning_tree_mock(4).unwrap();
         
         // Verify basic properties
@@ -211,15 +210,15 @@ mod tests {
         assert!(result.total_weight() > 0.0);
         
         // Verify tree structure (all nodes should be connected)
-        assert_eq!(result.parent(0), -1); // Root has no parent
-        assert!(result.parent(1) != -1); // Other nodes have parents
-        assert!(result.parent(2) != -1);
-        assert!(result.parent(3) != -1);
+        assert_eq!(result.parent(0), -1.0); // Root has no parent
+        assert!(result.parent(1.0) != -1.0); // Other nodes have parents
+        assert!(result.parent(2) != -1.0);
+        assert!(result.parent(3) != -1.0);
     }
     
     #[test]
     fn test_storage_runtime_maximum_spanning_tree() {
-        let runtime = SpanningTreeStorageRuntime::new(0, false, 1);
+        let runtime = SpanningTreeStorageRuntime::new(0, false, 1.0);
         let result = runtime.compute_spanning_tree_mock(4).unwrap();
         
         // Verify basic properties
@@ -228,16 +227,16 @@ mod tests {
         assert!(result.total_weight() > 0.0);
         
         // Verify tree structure
-        assert_eq!(result.parent(0), -1); // Root has no parent
-        assert!(result.parent(1) != -1); // Other nodes have parents
-        assert!(result.parent(2) != -1);
-        assert!(result.parent(3) != -1);
+        assert_eq!(result.parent(0), -1.0); // Root has no parent
+        assert!(result.parent(1.0) != -1.0); // Other nodes have parents
+        assert!(result.parent(2) != -1.0);
+        assert!(result.parent(3) != -1.0);
     }
     
     #[test]
     fn test_storage_runtime_different_start_nodes() {
-        let runtime1 = SpanningTreeStorageRuntime::new(0, true, 1);
-        let runtime2 = SpanningTreeStorageRuntime::new(1, true, 1);
+        let runtime1 = SpanningTreeStorageRuntime::new(0, true, 1.0);
+        let runtime2 = SpanningTreeStorageRuntime::new(1, true, 1.0);
         
         let result1 = runtime1.compute_spanning_tree_mock(4).unwrap();
         let result2 = runtime2.compute_spanning_tree_mock(4).unwrap();
@@ -253,7 +252,7 @@ mod tests {
     
     #[test]
     fn test_storage_runtime_edge_iteration() {
-        let runtime = SpanningTreeStorageRuntime::new(0, true, 1);
+        let runtime = SpanningTreeStorageRuntime::new(0, true, 1.0);
         let result = runtime.compute_spanning_tree_mock(4).unwrap();
         
         let mut edges = Vec::new();
@@ -273,7 +272,7 @@ mod tests {
     
     #[test]
     fn test_storage_runtime_empty_graph() {
-        let runtime = SpanningTreeStorageRuntime::new(0, true, 1);
+        let runtime = SpanningTreeStorageRuntime::new(0, true, 1.0);
         
         // Mock empty graph
         let result = runtime.compute_spanning_tree(0, |_| vec![]).unwrap();
@@ -284,13 +283,13 @@ mod tests {
     
     #[test]
     fn test_storage_runtime_single_node() {
-        let runtime = SpanningTreeStorageRuntime::new(0, true, 1);
+        let runtime = SpanningTreeStorageRuntime::new(0, true, 1.0);
         
         // Mock single node graph
-        let result = runtime.compute_spanning_tree(1, |_| vec![]).unwrap();
+        let result = runtime.compute_spanning_tree(1.0, |_| vec![]).unwrap();
         
-        assert_eq!(result.effective_node_count(), 1);
+        assert_eq!(result.effective_node_count(), 1.0);
         assert_eq!(result.total_weight(), 0.0);
-        assert_eq!(result.parent(0), -1); // Root has no parent
+        assert_eq!(result.parent(0), -1.0); // Root has no parent
     }
 }

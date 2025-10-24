@@ -12,7 +12,7 @@ use super::targets::Targets;
 use crate::projection::eval::procedure::AlgorithmError;
 use std::time::Instant;
 use crate::types::graph::Graph;
-use crate::types::properties::relationship::traits::RelationshipIterator as _;
+use crate::types::properties::relationship::traits::{RelationshipIterator as _, WeightedRelationshipCursor};
 
 /// Dijkstra Storage Runtime
 ///
@@ -214,15 +214,15 @@ impl DijkstraStorageRuntime {
         if let Some(g) = graph {
             let fallback = g.default_property_value();
             let mapped = node_id as u64; // MappedNodeId
-            let iter: Box<dyn Iterator<Item = crate::types::properties::relationship::traits::RelationshipCursorBox> + Send> =
+            let iter: Box<dyn Iterator<Item = crate::types::properties::relationship::traits::WeightedRelationshipCursorBox> + Send> =
                 if direction == 1 { // 1 = incoming
-                    g.stream_inverse_relationships(mapped, fallback)
+                    g.stream_inverse_relationships_weighted(mapped as i64, fallback)
                 } else {
-                    g.stream_relationships(mapped, fallback)
+                    g.stream_relationships_weighted(mapped as i64, fallback)
                 };
             return iter
                 .into_iter()
-                .map(|cursor| (cursor.target_id() as u32, cursor.property()))
+                .map(|cursor| (cursor.target_id() as u32, cursor.weight()))
                 .collect();
         }
 

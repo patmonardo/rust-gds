@@ -62,7 +62,7 @@ impl OriginalIdNodePropertyValues {
         // Capture the original IDs at creation time to avoid lifetime issues
         let node_count = id_map.node_count();
         let original_ids: Vec<Option<i64>> = (0..node_count)
-            .map(|i| id_map.to_original_node_id(i as u64))
+            .map(|i| id_map.to_original_node_id(i as i64))
             .collect();
 
         Self {

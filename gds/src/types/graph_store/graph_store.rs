@@ -95,6 +95,9 @@ pub trait GraphStore: Send + Sync {
     /// Checks if a graph property exists.
     fn has_graph_property(&self, property_key: &str) -> bool;
 
+    /// Returns the value type of a graph property.
+    fn graph_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType>;
+
     /// Returns graph property values.
     fn graph_property_values(
         &self,
@@ -148,6 +151,9 @@ pub trait GraphStore: Send + Sync {
 
     /// Checks if a node property exists for a specific label.
     fn has_node_property_for_label(&self, label: &NodeLabel, property_key: &str) -> bool;
+
+    /// Returns the value type of a node property.
+    fn node_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType>;
 
     /// Returns node property values.
     fn node_property_values(
@@ -374,6 +380,10 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
         self.graph_store.has_graph_property(property_key)
     }
 
+    fn graph_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType> {
+        self.graph_store.graph_property_type(property_key)
+    }
+
     fn graph_property_values(
         &self,
         property_key: &str,
@@ -440,6 +450,10 @@ impl<G: GraphStore> GraphStore for GraphStoreAdapter<G> {
     fn has_node_property_for_label(&self, label: &NodeLabel, property_key: &str) -> bool {
         self.graph_store
             .has_node_property_for_label(label, property_key)
+    }
+
+    fn node_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType> {
+        self.graph_store.node_property_type(property_key)
     }
 
     fn node_property_values(

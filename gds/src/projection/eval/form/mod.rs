@@ -18,7 +18,7 @@
 //! eval/form (Form ISA)             ← FormSpec implementations
 //! ```
 
-pub mod form_spec;
+// pub mod form_spec;
 pub mod executor;
 pub mod triadic_cycle;
 

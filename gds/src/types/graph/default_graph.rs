@@ -10,8 +10,9 @@ use crate::types::properties::relationship::{
     relationship_properties::RelationshipProperties,
     relationship_property_values::RelationshipPropertyValues, DefaultModifiableRelationshipCursor,
     DefaultRelationshipCursor, DefaultRelationshipPropertyStore, ModifiableRelationshipCursor,
-    PropertyValue, RelationshipCursor, RelationshipCursorBox, RelationshipIterator,
-    RelationshipPredicate, RelationshipStream,
+    RelationshipCursor, RelationshipCursorBox, RelationshipIterator,
+    RelationshipPredicate, RelationshipStream, WeightedRelationshipCursor, WeightedRelationshipCursorBox,
+    WeightedRelationshipStream,
 };
 use crate::types::schema::{GraphSchema, NodeLabel};
 use std::collections::{HashMap, HashSet};
@@ -34,6 +35,29 @@ pub struct DefaultGraph {
     relationship_property_selectors: HashMap<RelationshipType, String>,
     topology_offsets: HashMap<RelationshipType, Arc<Vec<usize>>>,
     has_relationship_properties: bool,
+}
+
+// === Phase 2C: WeightedRelationshipCursor Implementation ===
+
+#[derive(Debug)]
+struct WeightedCursor {
+    source: MappedNodeId,
+    target: MappedNodeId,
+    weight: f64,
+}
+
+impl WeightedRelationshipCursor for WeightedCursor {
+    fn source_id(&self) -> MappedNodeId {
+        self.source
+    }
+
+    fn target_id(&self) -> MappedNodeId {
+        self.target
+    }
+
+    fn weight(&self) -> f64 {
+        self.weight
+    }
 }
 
 impl DefaultGraph {
@@ -138,8 +162,8 @@ impl DefaultGraph {
         relationship_type: &RelationshipType,
         source_id: MappedNodeId,
         neighbor_index: usize,
-        fallback_value: PropertyValue,
-    ) -> PropertyValue {
+        fallback_value: f64,
+    ) -> f64 {
         let selected = match self.selected_property(relationship_type) {
             Some(selected) => selected,
             None => return fallback_value,
@@ -265,34 +289,34 @@ impl DefaultGraph {
 #[derive(Debug, Clone)]
 struct SelectedRelationshipProperty {
     values: Arc<dyn RelationshipPropertyValues>,
-    fallback: PropertyValue,
+    fallback: f64,
 }
 
 impl SelectedRelationshipProperty {
-    fn new(values: Arc<dyn RelationshipPropertyValues>, fallback: PropertyValue) -> Self {
+    fn new(values: Arc<dyn RelationshipPropertyValues>, fallback: f64) -> Self {
         Self { values, fallback }
     }
 
-    fn value_at_or(&self, index: u64, fallback: PropertyValue) -> PropertyValue {
+    fn value_at_or(&self, index: u64, fallback: f64) -> f64 {
         self.values.double_value(index).unwrap_or(fallback)
     }
 }
 
 #[derive(Debug, Clone, Copy)]
 struct PropertyTraversalMode {
-    fallback: PropertyValue,
+    fallback: f64,
     include_value: bool,
 }
 
 impl PropertyTraversalMode {
-    fn with_value(fallback: PropertyValue) -> Self {
+    fn with_value(fallback: f64) -> Self {
         Self {
             fallback,
             include_value: true,
         }
     }
 
-    fn fallback(self) -> PropertyValue {
+    fn fallback(self) -> f64 {
         self.fallback
     }
 
@@ -639,7 +663,7 @@ impl RelationshipIterator for DefaultGraph {
     fn stream_relationships<'a>(
         &'a self,
         node_id: MappedNodeId,
-        fallback_value: PropertyValue,
+        fallback_value: f64,
     ) -> RelationshipStream<'a> {
         let mut cursors: Vec<RelationshipCursorBox> = Vec::new();
         let _ = self.traverse_outgoing_relationships(
@@ -661,7 +685,7 @@ impl RelationshipIterator for DefaultGraph {
     fn stream_inverse_relationships<'a>(
         &'a self,
         node_id: MappedNodeId,
-        fallback_value: PropertyValue,
+        fallback_value: f64,
     ) -> RelationshipStream<'a> {
         let mut cursors: Vec<RelationshipCursorBox> = Vec::new();
         let _ = self.traverse_inverse_relationships(
@@ -683,10 +707,60 @@ impl RelationshipIterator for DefaultGraph {
     fn concurrent_copy(&self) -> Box<dyn RelationshipIterator> {
         Box::new(self.clone())
     }
+
+    // === Phase 2C: Weighted Stream Implementations ===
+    
+    fn stream_relationships_weighted<'a>(
+        &'a self,
+        node_id: MappedNodeId,
+        fallback_value: f64,
+    ) -> WeightedRelationshipStream<'a> {
+        let mut cursors: Vec<WeightedRelationshipCursorBox> = Vec::new();
+        let _ = self.traverse_outgoing_relationships(
+            node_id,
+            PropertyTraversalMode::with_value(fallback_value),
+            |cursor| {
+                // Direct f64 weight access - no conversion needed
+                let weight = cursor.property();
+                let snapshot = WeightedCursor {
+                    source: cursor.source_id(),
+                    target: cursor.target_id(),
+                    weight,
+                };
+                cursors.push(Box::new(snapshot) as WeightedRelationshipCursorBox);
+                true
+            },
+        );
+        Box::new(cursors.into_iter())
+    }
+
+    fn stream_inverse_relationships_weighted<'a>(
+        &'a self,
+        node_id: MappedNodeId,
+        fallback_value: f64,
+    ) -> WeightedRelationshipStream<'a> {
+        let mut cursors: Vec<WeightedRelationshipCursorBox> = Vec::new();
+        let _ = self.traverse_inverse_relationships(
+            node_id,
+            PropertyTraversalMode::with_value(fallback_value),
+            |cursor| {
+                // Direct f64 weight access - no conversion needed
+                let weight = cursor.property();
+                let snapshot = WeightedCursor {
+                    source: cursor.source_id(),
+                    target: cursor.target_id(),
+                    weight,
+                };
+                cursors.push(Box::new(snapshot) as WeightedRelationshipCursorBox);
+                true
+            },
+        );
+        Box::new(cursors.into_iter())
+    }
 }
 
 impl RelationshipProperties for DefaultGraph {
-    fn default_property_value(&self) -> PropertyValue {
+    fn default_property_value(&self) -> f64 {
         self.selected_relationship_properties
             .values()
             .next()
@@ -698,8 +772,8 @@ impl RelationshipProperties for DefaultGraph {
         &self,
         source_id: MappedNodeId,
         target_id: MappedNodeId,
-        fallback_value: PropertyValue,
-    ) -> PropertyValue {
+        fallback_value: f64,
+    ) -> f64 {
         if self.selected_relationship_properties.is_empty() {
             return fallback_value;
         }

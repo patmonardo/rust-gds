@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-/// Relationship property values are modelled as 64-bit floating point numbers.
+/// PropertyValue type for relationship properties
+/// 
+/// This is the default type for relationship properties, aligned with Java GDS
+/// which uses Double for weights. For typed access, use TypedRelationshipCursor.
 pub type PropertyValue = f64;
 
 /// Cursor iterating over the values of relationship properties.
@@ -16,7 +19,7 @@ pub trait PropertyCursor: Debug {
     fn init(&mut self, index: usize, degree: usize);
 
     /// Returns `true` if there is at least one more property value available.
-    fn has_next_long(&self) -> bool;
+    fn has_next(&self) -> bool;
 
     /// Fetches the next property value from the underlying storage.
     ///
@@ -24,7 +27,7 @@ pub trait PropertyCursor: Debug {
     /// available. The TypeScript equivalent throws in this case; returning an
     /// `Option` keeps the API safe on the Rust side while extension helpers can
     /// provide the "panic on exhaustion" behaviour when needed.
-    fn next_long(&mut self) -> Option<PropertyValue>;
+    fn next(&mut self) -> Option<f64>;
 
     /// Release any resources associated with this cursor.
     fn close(&mut self);
@@ -32,17 +35,17 @@ pub trait PropertyCursor: Debug {
     /// Convenience helper mirroring the TypeScript semantics: return the next
     /// property value when one exists, otherwise fall back to the supplied
     /// value.
-    fn next_long_or(&mut self, fallback: PropertyValue) -> PropertyValue {
-        self.next_long().unwrap_or(fallback)
+    fn next_or(&mut self, fallback: f64) -> f64 {
+        self.next().unwrap_or(fallback)
     }
 
     /// Drain all remaining property values into a vector. This is primarily
     /// useful for tests and for slow-path algorithms that favour ergonomics
     /// over zero-allocation iteration.
-    fn collect_remaining(&mut self) -> Vec<PropertyValue> {
+    fn collect_remaining(&mut self) -> Vec<f64> {
         let mut out = Vec::new();
-        while self.has_next_long() {
-            if let Some(value) = self.next_long() {
+        while self.has_next() {
+            if let Some(value) = self.next() {
                 out.push(value);
             } else {
                 break;
@@ -60,11 +63,11 @@ pub struct EmptyPropertyCursor;
 impl PropertyCursor for EmptyPropertyCursor {
     fn init(&mut self, _index: usize, _degree: usize) {}
 
-    fn has_next_long(&self) -> bool {
+    fn has_next(&self) -> bool {
         false
     }
 
-    fn next_long(&mut self) -> Option<PropertyValue> {
+    fn next(&mut self) -> Option<f64> {
         None
     }
 
@@ -93,8 +96,8 @@ mod tests {
     fn empty_cursor_reports_no_values() {
         let mut cursor = EmptyPropertyCursor;
         cursor.init(0, 0);
-        assert!(!cursor.has_next_long());
-        assert_eq!(cursor.next_long(), None);
+        assert!(!cursor.has_next());
+        assert_eq!(cursor.next(), None);
         cursor.close();
     }
 

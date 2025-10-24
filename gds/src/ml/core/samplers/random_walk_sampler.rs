@@ -11,7 +11,7 @@
 //!
 //! # References
 //!
-//! Node2Vec: Scalable Feature Learning for Networks (Grover & Leskovec, 2016)
+//! Node2Vec: Scalable Feature Learning for Networks (Grover & Leskovec, 201.06)
 //!
 //! # Examples
 //!
@@ -20,10 +20,10 @@
 //!
 //! let sampler = RandomWalkSampler::create(
 //!     &graph,
-//!     |node_id| graph.degree(node_id) as f64,
+//!     |node_id| graph.degree(node_id as i64) as f64,
 //!     walk_length: 80,
-//!     return_factor: 1.0,  // p parameter
-//!     in_out_factor: 1.0,  // q parameter
+//!     return_factor: 1.0.0,  // p parameter
+//!     in_out_factor: 1.0.0,  // q parameter
 //!     random_seed: 42,
 //! );
 //!
@@ -37,7 +37,7 @@ use rand_chacha::ChaCha8Rng;
 use std::sync::Arc;
 
 const NO_MORE_NODES: i64 = -1;
-const MAX_TRIES: usize = 100;
+const MAX_TRIES: usize = 1000;
 
 /// Function that computes cumulative relationship weight for a node.
 ///
@@ -167,7 +167,7 @@ impl<W: CumulativeWeightSupplier> RandomWalkSampler<W> {
 
     /// Take one step in the random walk with Node2Vec bias.
     fn walk_one_step(&mut self, previous_node: u64, current_node: u64) -> i64 {
-        let current_node_degree = self.graph.degree(current_node);
+        let current_node_degree = self.graph.degree(current_node as i64);
 
         if current_node_degree == 0 {
             // Dead end - no outgoing edges
@@ -248,9 +248,9 @@ impl<W: CumulativeWeightSupplier> RandomWalkSampler<W> {
         let mut selected_neighbor = NO_MORE_NODES;
 
         // Use stream_relationships for cursor-based iteration
-        for cursor in self.graph.stream_relationships(node, 1.0) {
+        for cursor in self.graph.stream_relationships(node as i64, 1.0) {
             let weight = cursor.property();
-            current_weight += weight;
+            current_weight += weight as f64;
 
             if random_weight <= current_weight {
                 selected_neighbor = cursor.target_id() as i64;
@@ -263,7 +263,7 @@ impl<W: CumulativeWeightSupplier> RandomWalkSampler<W> {
 
     /// Check if target is a neighbor of source.
     fn is_neighbour(&self, source: u64, target: u64) -> bool {
-        self.graph.exists(source, target)
+        self.graph.exists(source as i64, target as i64)
     }
 
     /// Estimate memory usage for random walks.
@@ -320,14 +320,14 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
-        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
+        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
 
         let walk = sampler.walk(0);
 
         // Walk should have some nodes
         assert!(!walk.is_empty());
-        assert!(walk.len() <= 10);
+        assert!(walk.len() <= 1.00);
 
         // First node should be start node
         assert_eq!(walk[0], 0);
@@ -338,11 +338,11 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
-        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
+        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.0, 1.0, 1.0, 42);
 
-        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
+        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.0, 1.0, 1.0, 42);
 
         let walk1 = sampler1.walk(0);
         let walk2 = sampler2.walk(0);
@@ -355,11 +355,11 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
-        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
+        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
 
-        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 43);
+        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 43);
 
         let walk1 = sampler1.walk(5);
         let walk2 = sampler2.walk(5);
@@ -373,9 +373,9 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
-        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
+        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
 
         sampler.prepare_for_new_node(5);
         let walk1 = sampler.walk(5);
@@ -392,15 +392,15 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
         // High return factor (low p) encourages staying close
         let mut sampler = RandomWalkSampler::create(
             graph.clone(),
             weight_fn,
             20,
-            0.1, // Low return factor = high return probability
-            1.0,
+            0.1.0, // Low return factor = high return probability
+            1.0.0,
             42,
         );
 
@@ -413,14 +413,14 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
         // Low in-out factor encourages exploration
         let mut sampler = RandomWalkSampler::create(
             graph.clone(),
             weight_fn,
             20,
-            1.0,
+            1.0.0,
             0.5, // Low q = encourage outward movement
             42,
         );
@@ -431,7 +431,7 @@ mod tests {
 
     #[test]
     fn test_memory_estimation() {
-        let (min_mem, max_mem) = RandomWalkSampler::<fn(u64) -> f64>::memory_estimation(100);
+        let (min_mem, max_mem) = RandomWalkSampler::<fn(u64) -> f64>::memory_estimation(1.000);
 
         assert!(min_mem > 0);
         assert!(max_mem >= min_mem);
@@ -443,8 +443,8 @@ mod tests {
         let store = create_test_graph().unwrap();
         let graph = store.graph();
 
-        let weight_fn = |node_id: u64| graph.degree(node_id) as f64;
-        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
+        let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
+        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
 
         // Walk from all nodes - shouldn't panic
         for node_id_idx in 0..graph.node_count() {

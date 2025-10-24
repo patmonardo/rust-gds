@@ -23,11 +23,11 @@
 pub mod procedure;
 
 // Form - The third ISA (Triads of Hegel)
-pub mod form;
+// pub mod form;
 
 // pub use form::*;
 // pub use form_processor::*;
 // pub use ml::*;
 // pub use native_factory::*;
 pub use procedure::*;
-pub use form::{FormSpec, FormExecutor, FormResult, FormError, TriadicCycle, Thesis, Antithesis, Synthesis};
+// pub use form::{FormSpec, FormExecutor, FormResult, FormError, TriadicCycle, Thesis, Antithesis, Synthesis};

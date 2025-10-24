@@ -1,6 +1,6 @@
-use crate::types::graph::id_map::MappedNodeId;
+use crate::types::graph::id_map::NodeId;
 use crate::types::properties::relationship::{
-    ModifiableRelationshipCursor, PropertyValue, RelationshipCursor,
+    ModifiableRelationshipCursor, RelationshipCursor,
 };
 
 /// Immutable relationship cursor mirroring the TypeScript primitive
@@ -8,14 +8,14 @@ use crate::types::properties::relationship::{
 /// associated property value.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DefaultRelationshipCursor {
-    source_id: MappedNodeId,
-    target_id: MappedNodeId,
-    property: PropertyValue,
+    source_id: NodeId,
+    target_id: NodeId,
+    property: f64,
 }
 
 impl DefaultRelationshipCursor {
     /// Construct a new immutable cursor instance.
-    pub fn new(source_id: MappedNodeId, target_id: MappedNodeId, property: PropertyValue) -> Self {
+    pub fn new(source_id: NodeId, target_id: NodeId, property: f64) -> Self {
         Self {
             source_id,
             target_id,
@@ -30,15 +30,15 @@ impl DefaultRelationshipCursor {
 }
 
 impl RelationshipCursor for DefaultRelationshipCursor {
-    fn source_id(&self) -> MappedNodeId {
+    fn source_id(&self) -> NodeId {
         self.source_id
     }
 
-    fn target_id(&self) -> MappedNodeId {
+    fn target_id(&self) -> NodeId {
         self.target_id
     }
 
-    fn property(&self) -> PropertyValue {
+    fn property(&self) -> f64 {
         self.property
     }
 }
@@ -47,14 +47,14 @@ impl RelationshipCursor for DefaultRelationshipCursor {
 /// cursor instance while traversing relationships.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DefaultModifiableRelationshipCursor {
-    source_id: MappedNodeId,
-    target_id: MappedNodeId,
-    property: PropertyValue,
+    source_id: NodeId,
+    target_id: NodeId,
+    property: f64,
 }
 
 impl DefaultModifiableRelationshipCursor {
     /// Creates a new modifiable cursor with the provided initial values.
-    pub fn new(source_id: MappedNodeId, target_id: MappedNodeId, property: PropertyValue) -> Self {
+    pub fn new(source_id: NodeId, target_id: NodeId, property: f64) -> Self {
         Self {
             source_id,
             target_id,
@@ -69,29 +69,29 @@ impl DefaultModifiableRelationshipCursor {
 }
 
 impl RelationshipCursor for DefaultModifiableRelationshipCursor {
-    fn source_id(&self) -> MappedNodeId {
+    fn source_id(&self) -> NodeId {
         self.source_id
     }
 
-    fn target_id(&self) -> MappedNodeId {
+    fn target_id(&self) -> NodeId {
         self.target_id
     }
 
-    fn property(&self) -> PropertyValue {
+    fn property(&self) -> f64 {
         self.property
     }
 }
 
 impl ModifiableRelationshipCursor for DefaultModifiableRelationshipCursor {
-    fn set_source_id(&mut self, source_id: MappedNodeId) {
+    fn set_source_id(&mut self, source_id: NodeId) {
         self.source_id = source_id;
     }
 
-    fn set_target_id(&mut self, target_id: MappedNodeId) {
+    fn set_target_id(&mut self, target_id: NodeId) {
         self.target_id = target_id;
     }
 
-    fn set_property(&mut self, property: PropertyValue) {
+    fn set_property(&mut self, property: f64) {
         self.property = property;
     }
 }

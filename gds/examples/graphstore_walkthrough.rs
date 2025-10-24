@@ -8,7 +8,7 @@ use gds::types::graph_store::{
 };
 use gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
 use gds::types::properties::node::DefaultLongNodePropertyValues;
-use gds::types::properties::relationship::PropertyValue;
+use gds::types::graph::PropertyValue;
 use gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use gds::types::schema::{Direction, MutableGraphSchema};
 use gds::types::value_type::ValueType;

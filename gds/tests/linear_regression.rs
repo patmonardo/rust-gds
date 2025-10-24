@@ -1,3 +1,4 @@
+#![cfg(feature = "ml")]
 //! Comprehensive tests for Linear Regression.
 //!
 //! These tests verify the complete Linear Regression pipeline:

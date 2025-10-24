@@ -75,7 +75,7 @@ fn simple_degree_histogram(store: &DefaultGraphStore) -> HashMap<u32, u64> {
     let graph = store.graph();
     let n = IdMap::node_count(graph.as_ref());
     for node_id in 0..n {
-        let deg = Degrees::degree(graph.as_ref(), node_id as u64) as u32;
+        let deg = Degrees::degree(graph.as_ref(), node_id as i64) as u32;
         *hist.entry(deg).or_insert(0) += 1;
     }
     hist

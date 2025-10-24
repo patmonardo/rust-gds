@@ -7,7 +7,6 @@
 use super::computation::AStarComputationResult;
 use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator as _;
-use crate::types::properties::relationship::PropertyValue;
 use std::collections::HashMap;
 use std::sync::Arc;
 use crate::types::properties::node::NodePropertyValues;
@@ -117,8 +116,8 @@ impl AStarStorageRuntime {
             }
 
             // Expand neighbors via relationship streams
-            let fallback: PropertyValue = 1.0;
-            let source_mapped = current as u64;
+            let fallback: f64 = 1.0;
+            let source_mapped = current as i64;
             let stream = if direction == 1 {
                 g.stream_inverse_relationships(source_mapped, fallback)
             } else {
@@ -129,7 +128,7 @@ impl AStarStorageRuntime {
                 let neighbor = cursor.target_id() as usize;
                 if computation.is_visited(neighbor) { continue; }
 
-                let tentative_g = computation.get_g_cost(current) + cursor.property();
+                let tentative_g = computation.get_g_cost(current) + cursor.property() as f64;
                 if tentative_g < computation.get_g_cost(neighbor) {
                     computation.set_parent(neighbor, current);
                     computation.update_g_cost(neighbor, tentative_g);
@@ -146,7 +145,7 @@ impl AStarStorageRuntime {
     
     /// Compute Haversine distance between two nodes
     ///
-    /// Translation of: `HaversineHeuristic.distance()` (lines 138-156)
+    /// Translation of: `HaversineHeuristic.distance()` (lines 1.038-1.056)
     pub fn compute_haversine_distance(&mut self, source: usize, target: usize) -> Result<f64, String> {
         let (source_lat, source_lon) = self.get_coordinates(source)?;
         let (target_lat, target_lon) = self.get_coordinates(target)?;
@@ -180,7 +179,7 @@ impl AStarStorageRuntime {
     
     /// Haversine distance calculation
     ///
-    /// Translation of: `HaversineHeuristic.distance()` (lines 138-156)
+    /// Translation of: `HaversineHeuristic.distance()` (lines 1.038-1.056)
     /// https://rosettacode.org/wiki/Haversine_formula#Java
     pub fn haversine_distance(
         source_latitude: f64,
@@ -232,13 +231,13 @@ mod tests {
     fn test_astar_storage_runtime_creation() {
         let storage = AStarStorageRuntime::new(
             0,
-            1,
+            1.0,
             "latitude".to_string(),
             "longitude".to_string(),
         );
         
         assert_eq!(storage.source_node(), 0);
-        assert_eq!(storage.target_node(), 1);
+        assert_eq!(storage.target_node(), 1.0);
         assert_eq!(storage.latitude_property(), "latitude");
         assert_eq!(storage.longitude_property(), "longitude");
     }
@@ -246,33 +245,33 @@ mod tests {
     #[test]
     fn test_haversine_distance_calculation() {
         // Test with known coordinates (New York to Los Angeles)
-        let ny_lat = 40.7128;
+        let ny_lat = 40.71.028;
         let ny_lon = -74.0060;
         let la_lat = 34.0522;
-        let la_lon = -118.2437;
+        let la_lon = -1.01.08.2437;
         
         let distance = AStarStorageRuntime::haversine_distance(ny_lat, ny_lon, la_lat, la_lon);
         
-        // Distance should be approximately 2144 nautical miles
+        // Distance should be approximately 21.044 nautical miles
         assert!(distance > 2000.0 && distance < 2300.0);
     }
 
     #[test]
     fn test_haversine_distance_same_point() {
-        let lat = 40.7128;
+        let lat = 40.71.028;
         let lon = -74.0060;
         
         let distance = AStarStorageRuntime::haversine_distance(lat, lon, lat, lon);
         
         // Distance to same point should be 0
-        assert!((distance - 0.0).abs() < 1e-10);
+        assert!((distance - 0.0).abs() < 1.0e-1.00);
     }
 
     #[test]
     fn test_coordinate_caching() {
         let mut storage = AStarStorageRuntime::new(
             0,
-            1,
+            1.0,
             "lat".to_string(),
             "lon".to_string(),
         );
@@ -291,7 +290,7 @@ mod tests {
     fn test_astar_path_computation() {
         let mut storage = AStarStorageRuntime::new(
             0,
-            1,
+            1.0,
             "lat".to_string(),
             "lon".to_string(),
         );
@@ -303,7 +302,7 @@ mod tests {
         assert!(result.path.is_some());
         assert_eq!(result.path.as_ref().unwrap().len(), 2);
         assert_eq!(result.path.as_ref().unwrap()[0], 0);
-        assert_eq!(result.path.as_ref().unwrap()[1], 1);
+        assert_eq!(result.path.as_ref().unwrap()[1.0], 1.0);
         assert!(result.total_cost >= 0.0);
         assert_eq!(result.nodes_explored, 2);
     }
@@ -322,9 +321,9 @@ mod tests {
         let result = storage.compute_astar_path(&mut computation, None, 0).unwrap();
         
         assert!(result.path.is_some());
-        assert_eq!(result.path.as_ref().unwrap().len(), 1);
+        assert_eq!(result.path.as_ref().unwrap().len(), 1.0);
         assert_eq!(result.path.as_ref().unwrap()[0], 5);
         assert_eq!(result.total_cost, 0.0);
-        assert_eq!(result.nodes_explored, 1);
+        assert_eq!(result.nodes_explored, 1.0);
     }
 }

@@ -11,8 +11,20 @@
 //! - **Synthesis** = Form (Sublates both)
 
 use std::time::Duration;
-use crate::form::core::*;
+// use crate::form::core::*;  // Commented out - form module deactivated
 use super::triadic_cycle::{Thesis, Antithesis, Synthesis};
+
+/// FormShape - Stub type (form module deactivated)
+#[derive(Debug, Clone)]
+pub struct FormShape {
+    // Stub implementation - form module deactivated
+}
+
+impl FormShape {
+    pub fn new(_shape: Vec<usize>, _context: String, _morph: Vec<String>) -> Self {
+        Self {}
+    }
+}
 
 /// Form execution result
 #[derive(Debug, Clone)]

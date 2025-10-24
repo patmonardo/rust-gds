@@ -1,0 +1,458 @@
+//! PropertyValues Implementation Macros
+//!
+//! Generates typed storage backends for each ValueType with proper
+//! element counting and type conversion policies.
+//!
+//! **Pattern**: Every PropertyValues implementation is a Smart Converter
+//! that accepts all type queries and either returns exact type (zero-cost),
+//! converts compatible types (i64→f64), or throws error if incompatible.
+
+use crate::types::ValueType;
+use thiserror::Error;
+
+/// Macro to generate PropertyValues implementations for different value types.
+/// This eliminates duplication across Node, Relationship, and Graph property value implementations.
+///
+/// # Variants
+///
+/// - Base variant: For node properties with `Option<Vec<T>>`
+/// - `relationship`: For relationship properties with direct `Vec<T>` and `element_count`
+/// - `array`: For node array properties with `Option<Vec<Option<Vec<T>>>>`
+/// - `graph`: For graph properties with direct `Vec<T>`
+/// - `graph_array`: For graph array properties with `Vec<Vec<T>>`
+///
+#[macro_export]
+macro_rules! property_values_impl {
+    // Base variant: For node properties with node_count field
+    ($struct_name:ident, $value_type:ident) => {
+        impl PropertyValues for $struct_name {
+            fn value_type(&self) -> ValueType {
+                ValueType::$value_type
+            }
+
+            fn element_count(&self) -> usize {
+                self.node_count
+            }
+        }
+    };
+    // Relationship variant: Uses element_count field instead of node_count
+    ($struct_name:ident, $value_type:ident, relationship) => {
+        impl PropertyValues for $struct_name {
+            fn value_type(&self) -> ValueType {
+                ValueType::$value_type
+            }
+
+            fn element_count(&self) -> usize {
+                self.element_count
+            }
+        }
+    };
+    // Array variant: For node array properties (same as base, using node_count)
+    ($struct_name:ident, $value_type:ident, array) => {
+        impl PropertyValues for $struct_name {
+            fn value_type(&self) -> ValueType {
+                ValueType::$value_type
+            }
+
+            fn element_count(&self) -> usize {
+                self.node_count
+            }
+        }
+    };
+    // Graph variant: element_count based on values.len()
+    ($struct_name:ident, $value_type:ident, graph) => {
+        impl PropertyValues for $struct_name {
+            fn value_type(&self) -> ValueType {
+                ValueType::$value_type
+            }
+
+            fn element_count(&self) -> usize {
+                self.values.len()
+            }
+        }
+    };
+    // Graph array variant: element_count based on values.len()
+    ($struct_name:ident, $value_type:ident, graph_array) => {
+        impl PropertyValues for $struct_name {
+            fn value_type(&self) -> ValueType {
+                ValueType::$value_type
+            }
+
+            fn element_count(&self) -> usize {
+                self.values.len()
+            }
+        }
+    };
+}
+
+/// Macro to generate complete NodePropertyValues implementation for scalar Long type.
+/// Generates all accessor methods, type conversions, and error cases.
+#[macro_export]
+macro_rules! node_long_property_values_impl {
+    ($struct_name:ident) => {
+        impl NodePropertyValues for $struct_name {
+            fn double_value(&self, node_id: u64) -> PropertyValuesResult<f64> {
+                Ok(self.long_value(node_id)? as f64)
+            }
+
+            fn long_value(&self, node_id: u64) -> PropertyValuesResult<i64> {
+                self.values
+                    .get(node_id as usize)
+                    .copied()
+                    .ok_or(PropertyValuesError::InvalidNodeId(node_id))
+            }
+
+            fn double_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::DoubleArray,
+                ))
+            }
+
+            fn float_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f32>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::FloatArray,
+                ))
+            }
+
+            fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::LongArray,
+                ))
+            }
+
+            fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
+                Ok(Box::new(self.long_value(node_id)?))
+            }
+
+            fn dimension(&self) -> Option<usize> {
+                Some(1)
+            }
+
+            fn get_max_long_property_value(&self) -> Option<i64> {
+                self.values.iter().max().copied()
+            }
+
+            fn get_max_double_property_value(&self) -> Option<f64> {
+                self.get_max_long_property_value().map(|v| v as f64)
+            }
+
+            fn has_value(&self, node_id: u64) -> bool {
+                (node_id as usize) < self.values.len()
+            }
+        }
+    };
+}
+
+/// Macro to generate complete NodePropertyValues implementation for scalar Double type.
+#[macro_export]
+macro_rules! node_double_property_values_impl {
+    ($struct_name:ident) => {
+        impl NodePropertyValues for $struct_name {
+            fn double_value(&self, node_id: u64) -> PropertyValuesResult<f64> {
+                self.values
+                    .get(node_id as usize)
+                    .copied()
+                    .ok_or(PropertyValuesError::InvalidNodeId(node_id))
+            }
+
+            fn long_value(&self, node_id: u64) -> PropertyValuesResult<i64> {
+                Ok(self.double_value(node_id)? as i64)
+            }
+
+            fn double_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::DoubleArray,
+                ))
+            }
+
+            fn float_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f32>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::FloatArray,
+                ))
+            }
+
+            fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::LongArray,
+                ))
+            }
+
+            fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
+                Ok(Box::new(self.double_value(node_id)?))
+            }
+
+            fn dimension(&self) -> Option<usize> {
+                Some(1)
+            }
+
+            fn get_max_long_property_value(&self) -> Option<i64> {
+                self.get_max_double_property_value().map(|v| v as i64)
+            }
+
+            fn get_max_double_property_value(&self) -> Option<f64> {
+                self.values
+                    .iter()
+                    .copied()
+                    .fold(None, |max, v| Some(max.map_or(v, |m| f64::max(m, v))))
+            }
+
+            fn has_value(&self, node_id: u64) -> bool {
+                (node_id as usize) < self.values.len()
+            }
+        }
+    };
+}
+
+/// Macro to generate complete NodePropertyValues implementation for DoubleArray type.
+#[macro_export]
+macro_rules! node_double_array_property_values_impl {
+    ($struct_name:ident) => {
+        impl NodePropertyValues for $struct_name {
+            fn double_value(&self, _node_id: u64) -> PropertyValuesResult<f64> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::Double,
+                ))
+            }
+
+            fn long_value(&self, _node_id: u64) -> PropertyValuesResult<i64> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::Long,
+                ))
+            }
+
+            fn double_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f64>> {
+                self.values
+                    .get(node_id as usize)
+                    .and_then(|v| v.clone())
+                    .ok_or(PropertyValuesError::InvalidNodeId(node_id))
+            }
+
+            fn float_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f32>> {
+                Ok(self
+                    .double_array_value(node_id)?
+                    .iter()
+                    .map(|&v| v as f32)
+                    .collect())
+            }
+
+            fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::LongArray,
+                ))
+            }
+
+            fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
+                Ok(Box::new(self.double_array_value(node_id)?))
+            }
+
+            fn dimension(&self) -> Option<usize> {
+                self.dimension
+            }
+
+            fn get_max_long_property_value(&self) -> Option<i64> {
+                None
+            }
+
+            fn get_max_double_property_value(&self) -> Option<f64> {
+                None
+            }
+
+            fn has_value(&self, node_id: u64) -> bool {
+                self.values
+                    .get(node_id as usize)
+                    .and_then(|v| v.as_ref())
+                    .is_some()
+            }
+        }
+    };
+}
+
+/// Macro to generate complete NodePropertyValues implementation for FloatArray type.
+#[macro_export]
+macro_rules! node_float_array_property_values_impl {
+    ($struct_name:ident) => {
+        impl NodePropertyValues for $struct_name {
+            fn double_value(&self, _node_id: u64) -> PropertyValuesResult<f64> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::Double,
+                ))
+            }
+
+            fn long_value(&self, _node_id: u64) -> PropertyValuesResult<i64> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::Long,
+                ))
+            }
+
+            fn double_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f64>> {
+                Ok(self
+                    .float_array_value(node_id)?
+                    .iter()
+                    .map(|&v| v as f64)
+                    .collect())
+            }
+
+            fn float_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<f32>> {
+                self.values
+                    .get(node_id as usize)
+                    .and_then(|v| v.clone())
+                    .ok_or(PropertyValuesError::InvalidNodeId(node_id))
+            }
+
+            fn long_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<i64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::LongArray,
+                ))
+            }
+
+            fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
+                Ok(Box::new(self.float_array_value(node_id)?))
+            }
+
+            fn dimension(&self) -> Option<usize> {
+                self.dimension
+            }
+
+            fn get_max_long_property_value(&self) -> Option<i64> {
+                None
+            }
+
+            fn get_max_double_property_value(&self) -> Option<f64> {
+                None
+            }
+
+            fn has_value(&self, node_id: u64) -> bool {
+                self.values
+                    .get(node_id as usize)
+                    .and_then(|v| v.as_ref())
+                    .is_some()
+            }
+        }
+    };
+}
+
+/// Macro to generate complete NodePropertyValues implementation for LongArray type.
+#[macro_export]
+macro_rules! node_long_array_property_values_impl {
+    ($struct_name:ident) => {
+        impl NodePropertyValues for $struct_name {
+            fn double_value(&self, _node_id: u64) -> PropertyValuesResult<f64> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::Double,
+                ))
+            }
+
+            fn long_value(&self, _node_id: u64) -> PropertyValuesResult<i64> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::Long,
+                ))
+            }
+
+            fn double_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f64>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::DoubleArray,
+                ))
+            }
+
+            fn float_array_value(&self, _node_id: u64) -> PropertyValuesResult<Vec<f32>> {
+                Err(PropertyValuesError::unsupported_type(
+                    self.value_type(),
+                    ValueType::FloatArray,
+                ))
+            }
+
+            fn long_array_value(&self, node_id: u64) -> PropertyValuesResult<Vec<i64>> {
+                self.values
+                    .get(node_id as usize)
+                    .and_then(|v| v.clone())
+                    .ok_or(PropertyValuesError::InvalidNodeId(node_id))
+            }
+
+            fn get_object(&self, node_id: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
+                Ok(Box::new(self.long_array_value(node_id)?))
+            }
+
+            fn dimension(&self) -> Option<usize> {
+                self.dimension
+            }
+
+            fn get_max_long_property_value(&self) -> Option<i64> {
+                None
+            }
+
+            fn get_max_double_property_value(&self) -> Option<f64> {
+                None
+            }
+
+            fn has_value(&self, node_id: u64) -> bool {
+                self.values
+                    .get(node_id as usize)
+                    .and_then(|v| v.as_ref())
+                    .is_some()
+            }
+        }
+    };
+}
+
+/// Error type for property value operations.
+#[derive(Error, Debug, Clone)]
+pub enum PropertyValuesError {
+    #[error("Tried to retrieve a value of type {expected:?} from properties of type {actual:?}")]
+    UnsupportedType {
+        actual: ValueType,
+        expected: ValueType,
+    },
+
+    #[error("Operation not supported: {0}")]
+    UnsupportedOperation(String),
+
+    #[error("Invalid node ID: {0}")]
+    InvalidNodeId(u64),
+
+    #[error("Value not found for ID: {0}")]
+    ValueNotFound(u64),
+}
+
+impl PropertyValuesError {
+    /// Creates an error for unsupported type operations.
+    pub fn unsupported_type(actual: ValueType, expected: ValueType) -> Self {
+        PropertyValuesError::UnsupportedType { actual, expected }
+    }
+
+    /// Creates an error for unsupported operations.
+    pub fn unsupported_operation(message: impl Into<String>) -> Self {
+        PropertyValuesError::UnsupportedOperation(message.into())
+    }
+}
+
+pub type PropertyValuesResult<T> = Result<T, PropertyValuesError>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_creation() {
+        let err = PropertyValuesError::unsupported_type(ValueType::Long, ValueType::Double);
+        assert!(err.to_string().contains("Long"));
+        assert!(err.to_string().contains("Double"));
+
+        let err = PropertyValuesError::unsupported_operation("test operation");
+        assert!(err.to_string().contains("test operation"));
+    }
+}

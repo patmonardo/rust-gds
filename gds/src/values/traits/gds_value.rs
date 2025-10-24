@@ -1,4 +1,5 @@
 use crate::types::ValueType;
+use crate::values::*;
 use once_cell::sync::Lazy;
 use serde_json::Value as JsonValue;
 use std::collections::hash_map::DefaultHasher;
@@ -134,5 +135,174 @@ pub trait FloatingPointValue: GdsValue {
     fn double_value(&self) -> f64;
     fn as_object_default(&self) -> JsonValue {
         JsonValue::from(self.double_value())
+    }
+}
+
+/// Scalar string value (maps TS StringValue)
+pub trait StringValue: GdsValue {
+    fn string_value(&self) -> String;
+    fn as_object_default(&self) -> JsonValue {
+        JsonValue::from(self.string_value())
+    }
+}
+
+/// Scalar boolean value (maps TS BooleanValue)
+pub trait BooleanValue: GdsValue {
+    fn boolean_value(&self) -> bool;
+    fn as_object_default(&self) -> JsonValue {
+        JsonValue::from(self.boolean_value())
+    }
+}
+
+/// Smart converter trait for type-safe value extraction
+/// 
+/// This trait enables the smart converter pattern where a single `get<T>()` method
+/// can extract values with automatic type conversions (e.g., i64 → f64).
+pub trait FromGdsValue: Sized {
+    fn from_gds_value(value: &dyn GdsValue) -> Result<Self, String>;
+}
+
+/// Smart converter implementation for i64
+impl FromGdsValue for i64 {
+    fn from_gds_value(value: &dyn GdsValue) -> Result<Self, String> {
+        match value.value_type() {
+            ValueType::Long => {
+                if let Some(integral) = value.as_any().downcast_ref::<DefaultLongValue>() {
+                    Ok(integral.long_value())
+                } else {
+                    Err("Failed to downcast to DefaultLongValue".to_string())
+                }
+            }
+            ValueType::Double => {
+                if let Some(fp) = value.as_any().downcast_ref::<DefaultFloatingPointValue>() {
+                    let d = fp.double_value();
+                    // Smart conversion: f64 → i64 if exact
+                    if d.fract() == 0.0 && d.is_finite() {
+                        let as_i = d as i64;
+                        if (as_i as f64) == d {
+                            Ok(as_i)
+                        } else {
+                            Err(format!("Cannot safely convert {} to i64", d))
+                        }
+                    } else {
+                        Err(format!("Cannot convert {} to i64", d))
+                    }
+                } else {
+                    Err("Failed to downcast to DefaultFloatingPointValue".to_string())
+                }
+            }
+            ValueType::Boolean => {
+                if let Some(bool_val) = value.as_any().downcast_ref::<DefaultBooleanValue>() {
+                    Ok(if bool_val.boolean_value() { 1 } else { 0 })
+                } else {
+                    Err("Failed to downcast to DefaultBooleanValue".to_string())
+                }
+            }
+            _ => Err(format!("Cannot convert {:?} to i64", value.value_type()))
+        }
+    }
+}
+
+/// Smart converter implementation for f64
+impl FromGdsValue for f64 {
+    fn from_gds_value(value: &dyn GdsValue) -> Result<Self, String> {
+        match value.value_type() {
+            ValueType::Long => {
+                if let Some(integral) = value.as_any().downcast_ref::<DefaultLongValue>() {
+                    Ok(integral.long_value() as f64)
+                } else {
+                    Err("Failed to downcast to DefaultLongValue".to_string())
+                }
+            }
+            ValueType::Double => {
+                if let Some(fp) = value.as_any().downcast_ref::<DefaultFloatingPointValue>() {
+                    Ok(fp.double_value())
+                } else {
+                    Err("Failed to downcast to DefaultFloatingPointValue".to_string())
+                }
+            }
+            ValueType::Boolean => {
+                if let Some(bool_val) = value.as_any().downcast_ref::<DefaultBooleanValue>() {
+                    Ok(if bool_val.boolean_value() { 1.0 } else { 0.0 })
+                } else {
+                    Err("Failed to downcast to DefaultBooleanValue".to_string())
+                }
+            }
+            _ => Err(format!("Cannot convert {:?} to f64", value.value_type()))
+        }
+    }
+}
+
+/// Smart converter implementation for bool
+impl FromGdsValue for bool {
+    fn from_gds_value(value: &dyn GdsValue) -> Result<Self, String> {
+        match value.value_type() {
+            ValueType::Long => {
+                if let Some(integral) = value.as_any().downcast_ref::<DefaultLongValue>() {
+                    Ok(integral.long_value() != 0)
+                } else {
+                    Err("Failed to downcast to DefaultLongValue".to_string())
+                }
+            }
+            ValueType::Double => {
+                if let Some(fp) = value.as_any().downcast_ref::<DefaultFloatingPointValue>() {
+                    Ok(fp.double_value() != 0.0)
+                } else {
+                    Err("Failed to downcast to DefaultFloatingPointValue".to_string())
+                }
+            }
+            ValueType::Boolean => {
+                if let Some(bool_val) = value.as_any().downcast_ref::<DefaultBooleanValue>() {
+                    Ok(bool_val.boolean_value())
+                } else {
+                    Err("Failed to downcast to DefaultBooleanValue".to_string())
+                }
+            }
+            ValueType::String => {
+                if let Some(str_val) = value.as_any().downcast_ref::<DefaultStringValue>() {
+                    Ok(!str_val.string_value().is_empty())
+                } else {
+                    Err("Failed to downcast to DefaultStringValue".to_string())
+                }
+            }
+            _ => Err(format!("Cannot convert {:?} to bool", value.value_type()))
+        }
+    }
+}
+
+/// Smart converter implementation for String
+impl FromGdsValue for String {
+    fn from_gds_value(value: &dyn GdsValue) -> Result<Self, String> {
+        match value.value_type() {
+            ValueType::Long => {
+                if let Some(integral) = value.as_any().downcast_ref::<DefaultLongValue>() {
+                    Ok(integral.long_value().to_string())
+                } else {
+                    Err("Failed to downcast to DefaultLongValue".to_string())
+                }
+            }
+            ValueType::Double => {
+                if let Some(fp) = value.as_any().downcast_ref::<DefaultFloatingPointValue>() {
+                    Ok(fp.double_value().to_string())
+                } else {
+                    Err("Failed to downcast to DefaultFloatingPointValue".to_string())
+                }
+            }
+            ValueType::Boolean => {
+                if let Some(bool_val) = value.as_any().downcast_ref::<DefaultBooleanValue>() {
+                    Ok(bool_val.boolean_value().to_string())
+                } else {
+                    Err("Failed to downcast to DefaultBooleanValue".to_string())
+                }
+            }
+            ValueType::String => {
+                if let Some(str_val) = value.as_any().downcast_ref::<DefaultStringValue>() {
+                    Ok(str_val.string_value())
+                } else {
+                    Err("Failed to downcast to DefaultStringValue".to_string())
+                }
+            }
+            _ => Err(format!("Cannot convert {:?} to String", value.value_type()))
+        }
     }
 }

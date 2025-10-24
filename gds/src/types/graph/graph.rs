@@ -59,7 +59,7 @@ pub trait Graph:
 
 	/// Returns the `offset`-th target of the outgoing adjacency for `source_id` if present.
 	fn nth_target(&self, source_id: MappedNodeId, offset: usize) -> Option<MappedNodeId> {
-		if offset >= self.degree(source_id) {
+        if offset >= self.degree(source_id) {
 			return None;
 		}
 

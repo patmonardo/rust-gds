@@ -1,7 +1,3 @@
-// Macros must be loaded first with #[macro_use] so they're available to other modules
-#[macro_use]
-pub mod macros;
-
 // Now load modules that use the macros
 pub mod impls;
 pub mod traits;

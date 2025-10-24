@@ -227,6 +227,20 @@ impl GraphStore for DefaultGraphStore {
         self.graph_properties.contains_key(property_key)
     }
 
+    fn graph_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType> {
+        // First check the actual property stores
+        if let Some(property_values) = self.graph_properties.get(property_key) {
+            return Ok(property_values.value_type());
+        }
+
+        // Fall back to schema if property not found in stores
+        if let Some(property_schema) = self.schema.graph_properties().get(property_key) {
+            return Ok(property_schema.value_type());
+        }
+
+        Err(GraphStoreError::PropertyNotFound(property_key.to_string()))
+    }
+
     fn graph_property_values(
         &self,
         property_key: &str,
@@ -322,6 +336,22 @@ impl GraphStore for DefaultGraphStore {
             .get(&Self::label_key(label))
             .map(|keys| keys.contains(property_key))
             .unwrap_or(false)
+    }
+
+    fn node_property_type(&self, property_key: &str) -> GraphStoreResult<ValueType> {
+        // First check the actual property stores
+        if let Some(property_values) = self.node_properties.get(property_key) {
+            return Ok(property_values.value_type());
+        }
+
+        // Fall back to schema if property not found in stores
+        for entry in self.schema.node_schema().entries() {
+            if let Some(property_schema) = entry.properties().get(property_key) {
+                return Ok(property_schema.value_type());
+            }
+        }
+
+        Err(GraphStoreError::PropertyNotFound(property_key.to_string()))
     }
 
     fn node_property_values(
@@ -572,7 +602,7 @@ impl GraphStore for DefaultGraphStore {
         relationship_property_selectors: &HashMap<RelationshipType, String>,
     ) -> crate::types::graph::GraphResult<Arc<dyn Graph>> {
         // Build a DefaultGraph then let it select properties based on provided selectors
-        let mut selectors = relationship_property_selectors.clone();
+        let selectors = relationship_property_selectors.clone();
 
         // If selector missing and exactly one property exists for a type, allow DefaultGraph::new to auto-select
         // by passing selectors as-is; DefaultGraph::new handles auto-selection.

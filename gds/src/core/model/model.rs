@@ -7,8 +7,15 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 
 use crate::config::{BaseConfig, ToMapConvertible, GraphSchema};
-use crate::ml::TrainingMethod;
+// use crate::ml::TrainingMethod;  // Commented out - ml module deactivated
 use crate::core::model::types::ModelConfig;
+
+/// TrainingMethod - Stub type (ml module deactivated)
+#[derive(Debug, Clone)]
+pub enum TrainingMethod {
+    // Stub implementation - ml module deactivated
+    Stub,
+}
 
 /// Model interface for ML models.
 ///

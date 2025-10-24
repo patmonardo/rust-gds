@@ -61,6 +61,7 @@
 //! - `runtimes/` - DIFFERENCE/Manifestation (Computer, StorageRuntime, etc.)
 //! - `algorithm/` - Projection MAPPINGS (TypeProjector, Functors) - the genetic constituents
 //! - `consequence/` - LOGICAL ENTAILMENT (rules determining runtime from membership)
+//! - `values/` - Primitive Values Macro System (GdsValue codegen, Arrow compat)
 //! - `registry/` - OMNISCIENCE (analyze descriptors → extract schema)
 //! - `catalog/` - OMNIPOTENCE (manifest runtimes from schema)
 //!
@@ -88,22 +89,41 @@
 // MODULE DECLARATIONS
 // ============================================================================
 
-#[macro_use]
-pub mod algorithm;
+// Note: Algorithm module deactivated - test_algorithm.rs references PageRank
+// #[macro_use]
+// pub mod algorithm;
 #[macro_use]
 pub mod config;
 #[macro_use]
 pub mod eval;
+#[macro_use]
+pub mod property;
+#[macro_use]
+pub mod collections;
+#[macro_use]
+pub mod values;
 
 // ============================================================================
 // RE-EXPORTS
 // ============================================================================
 
 // Algorithm macros (re-exported at crate root via #[macro_export])
-pub use algorithm::*;
+// Note: Algorithm module deactivated - test_algorithm.rs references PageRank
+// pub use algorithm::*;
 
 // Config macros (re-exported at crate root via #[macro_export])
 pub use config::*;
 
 // Eval macros (re-exported at crate root via #[macro_export])
 pub use eval::*;
+
+// Property macros (re-exported at crate root via #[macro_export])
+pub use property::*;
+
+// Collections macros (re-exported at crate root via #[macro_export])
+// Note: Collections module is available but not yet actively used
+// pub use collections::*;
+
+// Values macros (re-exported at crate root via #[macro_export])
+// Note: Values module is available but not yet actively used
+// pub use values::*;

@@ -1,7 +1,10 @@
 use std::fmt::Debug;
 
-/// Relationship property values are modelled as 64-bit floating point numbers.
-pub type PropertyValue = f64;
+/// Relationship property values are modelled as 64-bit signed integers (Java GDS alignment).
+/// 
+/// This replaces the SUSPECT f64 with i64 to match Java GDS Long type.
+/// All property values, weights, and counts are now consistently i64.
+pub type PropertyValue = i64;
 
 /// Cursor iterating over the values of relationship properties.
 ///

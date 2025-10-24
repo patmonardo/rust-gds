@@ -1,3 +1,4 @@
+#![cfg(feature = "ml")]
 //! Consolidated gradient computation tests
 //!
 //! Verifies that gradients flow to trainable variables (weights, bias)

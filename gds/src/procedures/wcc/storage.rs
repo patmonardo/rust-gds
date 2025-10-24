@@ -25,11 +25,11 @@ impl WccStorageRuntime {
         let get_neighbors = |node: usize| -> Vec<usize> {
             let id = node as u64;
             let mut out: Vec<usize> = graph
-                .stream_relationships(id, fallback)
+                .stream_relationships(id as i64, fallback)
                 .map(|c| c.target_id() as usize)
                 .collect();
             let mut inc: Vec<usize> = graph
-                .stream_inverse_relationships(id, fallback)
+                .stream_inverse_relationships(id as i64, fallback)
                 .map(|c| c.source_id() as usize)
                 .collect();
             out.append(&mut inc);

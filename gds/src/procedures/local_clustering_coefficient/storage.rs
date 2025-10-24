@@ -32,6 +32,6 @@ impl<'a, G: GraphStore> LocalClusteringCoefficientStorageRuntime<'a, G> {
     /// Get degree of a node
     pub fn degree(&self, node_id: usize) -> i32 {
         let graph = self.graph_store.get_graph();
-        graph.degree(node_id as u64) as i32
+        graph.degree(node_id as i64) as i32
     }
 }

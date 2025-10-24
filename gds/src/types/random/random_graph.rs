@@ -167,7 +167,10 @@ impl Randomizable<(&RandomGraphConfig, &RandomRelationshipConfig)> for Relations
             }
         }
 
-        Ok(RelationshipTopology::new(outgoing, incoming))
+        Ok(RelationshipTopology::new(
+            outgoing.into_iter().map(|adj| adj.into_iter().map(|id| id as i64).collect()).collect(),
+            incoming.map(|inc| inc.into_iter().map(|adj| adj.into_iter().map(|id| id as i64).collect()).collect())
+        ))
     }
 }
 
@@ -242,7 +245,7 @@ impl Randomizable<RandomGraphConfig> for DefaultGraphStore {
         for mapped_id in 0..config.node_count as u64 {
             let label_index = rng.gen_range(0..node_labels.len());
             let label = node_labels[label_index].clone();
-            id_map.add_node_id_to_label(mapped_id, label);
+            id_map.add_node_id_to_label(mapped_id as i64, label);
         }
 
         let direction = if config.directed {

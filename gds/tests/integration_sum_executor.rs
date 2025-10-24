@@ -1,3 +1,4 @@
+#![cfg(feature = "procedures")]
 //! Integration Test: Sum Algorithm - The Killer Test
 //!
 //! This demonstrates the complete execution flow through the AlgorithmSpec contract:

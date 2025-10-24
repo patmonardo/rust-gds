@@ -1,17 +1,17 @@
-use crate::types::graph::MappedNodeId;
+use crate::types::graph::id_map::NodeId;
 
 /// In-memory adjacency representation used by the default graph implementation.
 #[derive(Debug, Clone)]
 pub struct RelationshipTopology {
-    outgoing: Vec<Vec<MappedNodeId>>,
-    incoming: Option<Vec<Vec<MappedNodeId>>>,
+    outgoing: Vec<Vec<NodeId>>,
+    incoming: Option<Vec<Vec<NodeId>>>,
     relationship_count: usize,
     has_parallel_edges: bool,
 }
 
 impl RelationshipTopology {
     /// Creates a new topology from outgoing adjacency lists.
-    pub fn new(outgoing: Vec<Vec<MappedNodeId>>, incoming: Option<Vec<Vec<MappedNodeId>>>) -> Self {
+    pub fn new(outgoing: Vec<Vec<NodeId>>, incoming: Option<Vec<Vec<NodeId>>>) -> Self {
         let relationship_count = outgoing.iter().map(|adj| adj.len()).sum();
         let has_parallel_edges = outgoing.iter().any(|adj| {
             let mut sorted = adj.clone();
@@ -38,14 +38,14 @@ impl RelationshipTopology {
     }
 
     /// Returns the outgoing adjacency for the given node, if available.
-    pub fn outgoing(&self, node: MappedNodeId) -> Option<&[MappedNodeId]> {
+    pub fn outgoing(&self, node: NodeId) -> Option<&[NodeId]> {
         self.outgoing
             .get(node as usize)
             .map(|neighbors| neighbors.as_slice())
     }
 
     /// Returns the incoming adjacency for the given node when an inverse index exists.
-    pub fn incoming(&self, node: MappedNodeId) -> Option<&[MappedNodeId]> {
+    pub fn incoming(&self, node: NodeId) -> Option<&[NodeId]> {
         self.incoming
             .as_ref()
             .and_then(|lists| lists.get(node as usize))

@@ -10,7 +10,6 @@ use super::spec::{DeltaSteppingResult, DeltaSteppingPathResult};
 use super::computation::DeltaSteppingComputationRuntime;
 use crate::projection::eval::procedure::AlgorithmError;
 use crate::types::graph::Graph;
-use crate::types::properties::relationship::PropertyValue;
 use std::collections::VecDeque;
 use std::time::Instant;
 
@@ -98,7 +97,7 @@ impl DeltaSteppingStorageRuntime {
                     
                     for (neighbor, weight) in neighbors {
                         let current_distance = computation.distance(node_id);
-                        let new_distance = current_distance + weight;
+                        let new_distance = current_distance + weight as f64;
                         
                         if new_distance < computation.distance(neighbor) {
                             computation.set_distance(neighbor, new_distance);
@@ -217,9 +216,9 @@ impl DeltaSteppingStorageRuntime {
     /// Uses Graph::stream_relationships to iterate outgoing edges with weights
     fn get_neighbors_with_weights(&self, graph: Option<&dyn Graph>, node_id: u32, direction: u8) -> Vec<(u32, f64)> {
         if let Some(g) = graph {
-            let fallback: PropertyValue = 1.0;
+            let fallback: f64 = 1.0;
             let iter: Box<dyn Iterator<Item = crate::types::properties::relationship::traits::RelationshipCursorBox> + Send> =
-                if direction == 1 { g.stream_inverse_relationships(node_id as u64, fallback) } else { g.stream_relationships(node_id as u64, fallback) };
+                if direction == 1 { g.stream_inverse_relationships(node_id as i64, fallback) } else { g.stream_relationships(node_id as i64, fallback) };
             return iter.into_iter()
                 .map(|cursor| (cursor.target_id() as u32, cursor.property()))
                 .collect();

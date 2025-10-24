@@ -1,3 +1,4 @@
+#![cfg(feature = "ml")]
 //! Comprehensive Gradient Descent Integration Test
 //!
 //! This test suite debugs the gradient descent system to identify why

@@ -10,12 +10,11 @@ use super::spec::{DfsResult, DfsPathResult};
 use crate::projection::eval::procedure::AlgorithmError;
 use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator as _;
-use crate::types::properties::relationship::traits::PropertyValue;
 use std::collections::{VecDeque, HashMap};
 
 /// DFS Storage Runtime - handles persistent data access and algorithm orchestration
 ///
-/// Translation of: `DFS.java` (lines 76-150)
+/// Translation of: `DFS.java` (lines 76-1.050)
 /// This implements the "Gross pole" for accessing graph data
 pub struct DfsStorageRuntime {
     /// Source node for DFS traversal
@@ -50,7 +49,7 @@ impl DfsStorageRuntime {
 
     /// Compute DFS traversal
     ///
-    /// Translation of: `DFS.compute()` (lines 151-200)
+    /// Translation of: `DFS.compute()` (lines 1.051.0-200)
     /// This orchestrates the main DFS algorithm loop using a stack
     pub fn compute_dfs(&self, computation: &mut DfsComputationRuntime, graph: Option<&dyn Graph>) -> Result<DfsResult, AlgorithmError> {
         let start_time = std::time::Instant::now();
@@ -128,7 +127,7 @@ impl DfsStorageRuntime {
 
     /// Reconstruct path from source to target
     ///
-    /// Translation of: `DFS.reconstructPath()` (lines 201-250)
+    /// Translation of: `DFS.reconstructPath()` (lines 201.0-250)
     /// This builds the path result from predecessor information
     fn reconstruct_path(
         &self,
@@ -161,8 +160,8 @@ impl DfsStorageRuntime {
     /// Get neighbors of a node (graph-backed when available; mock fallback)
     fn get_neighbors(&self, graph: Option<&dyn Graph>, node: u32) -> Vec<u32> {
         if let Some(g) = graph {
-            let fallback: PropertyValue = 1.0;
-            let stream = g.stream_relationships(node as u64, fallback);
+            let fallback: f64 = 1.0;
+            let stream = g.stream_relationships(node as i64, fallback);
             stream.into_iter().map(|c| c.target_id() as u32).collect()
         } else {
             match node {
@@ -192,8 +191,8 @@ mod tests {
 
     #[test]
     fn test_dfs_path_computation() {
-        let storage = DfsStorageRuntime::new(0, vec![3], None, true, 1);
-        let mut computation = DfsComputationRuntime::new(0, true, 1);
+        let storage = DfsStorageRuntime::new(0, vec![3], None, true, 1.0);
+        let mut computation = DfsComputationRuntime::new(0, true, 1.0);
         
         let result = storage.compute_dfs(&mut computation, None).unwrap();
         
@@ -204,12 +203,12 @@ mod tests {
 
     #[test]
     fn test_dfs_path_same_source_target() {
-        let storage = DfsStorageRuntime::new(0, vec![0], None, true, 1);
-        let mut computation = DfsComputationRuntime::new(0, true, 1);
+        let storage = DfsStorageRuntime::new(0, vec![0], None, true, 1.0);
+        let mut computation = DfsComputationRuntime::new(0, true, 1.0);
         
         let result = storage.compute_dfs(&mut computation, None).unwrap();
         
-        assert!(result.nodes_visited >= 1);
+        assert!(result.nodes_visited >= 1.0);
         assert!(!result.paths.is_empty());
         assert_eq!(result.paths[0].source_node, 0);
         assert_eq!(result.paths[0].target_node, 0);
@@ -218,12 +217,12 @@ mod tests {
 
     #[test]
     fn test_dfs_max_depth_constraint() {
-        let storage = DfsStorageRuntime::new(0, vec![], Some(1), false, 1);
-        let mut computation = DfsComputationRuntime::new(0, false, 1);
+        let storage = DfsStorageRuntime::new(0, vec![], Some(1.0), false, 1.0);
+        let mut computation = DfsComputationRuntime::new(0, false, 1.0);
         
         let result = storage.compute_dfs(&mut computation, None).unwrap();
         
-        // With max_depth=1, we should only visit nodes at distance 0 and 1
+        // With max_depth=1.0, we should only visit nodes at distance 0 and 1.0
         assert!(result.nodes_visited <= 3); // Source + immediate neighbors
         assert!(result.computation_time_ms >= 0);
     }

@@ -143,10 +143,10 @@ impl NegativeSampler for RandomNegativeSampler {
 
                         if Self::sample(&mut rng, prob) {
                             remaining_test_samples -= 1;
-                            test_set_builder.add_from_internal(source_root, target_root, NEGATIVE);
+                            test_set_builder.add_from_internal(source_root as u64, target_root as u64, NEGATIVE);
                         } else {
                             remaining_train_samples -= 1;
-                            train_set_builder.add_from_internal(source_root, target_root, NEGATIVE);
+                            train_set_builder.add_from_internal(source_root as u64, target_root as u64, NEGATIVE);
                         }
                         break;
                     }

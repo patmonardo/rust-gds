@@ -100,7 +100,7 @@ impl BatchNodeIterable for SimpleIdMap {
         while start < total {
             let remaining = total - start;
             let length = usize::min(batch_size, remaining as usize);
-            batches.push(NodeIdBatch::new(start, length));
+            batches.push(NodeIdBatch::new(start as i64, length));
             start += length as u64;
         }
         batches

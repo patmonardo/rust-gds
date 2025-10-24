@@ -1,3 +1,4 @@
+#![cfg(feature = "procedures")]
 //! Comprehensive PageRank Integration Test
 //!
 //! This test demonstrates the complete PageRank implementation using:

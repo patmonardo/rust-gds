@@ -7,7 +7,7 @@ use gds::projection::RelationshipType;
 use gds::types::graph::id_map::MappedNodeId;
 use gds::types::graph::{Graph, GraphExt, GraphResult};
 use gds::types::graph_store::DefaultGraphStore;
-use gds::types::properties::relationship::PropertyValue;
+use gds::types::graph::PropertyValue;
 use gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use std::collections::HashSet;
 use std::error::Error;

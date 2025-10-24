@@ -207,7 +207,7 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     /// int degree()
     /// ```
     pub fn degree(&self) -> usize {
-        self.graph.degree(self.node_id)
+        self.graph.degree(self.node_id as i64)
     }
 
     /// Returns the corresponding node id in the original graph for the current node id.
@@ -219,7 +219,7 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     /// ```
     pub fn to_original_id(&self) -> i64 {
         self.graph
-            .to_original_node_id(self.node_id)
+            .to_original_node_id(self.node_id as i64)
             .expect("node should exist in graph")
     }
 
@@ -232,7 +232,7 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     /// ```
     pub fn to_original_id_of(&self, internal_node_id: u64) -> i64 {
         self.graph
-            .to_original_node_id(internal_node_id)
+            .to_original_node_id(internal_node_id as i64)
             .expect("node should exist in graph")
     }
 
@@ -246,7 +246,7 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     pub fn to_internal_id(&self, original_node_id: i64) -> u64 {
         self.graph
             .to_mapped_node_id(original_node_id)
-            .expect("node should exist in graph")
+            .expect("node should exist in graph") as u64
     }
 
     /// Calls the consumer for each neighbor of the currently processed node.
@@ -260,9 +260,9 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     where
         F: FnMut(u64),
     {
-        let stream = self.graph.stream_relationships(self.node_id, 0.0);
+        let stream = self.graph.stream_relationships(self.node_id as i64, 0.0);
         for cursor in stream {
-            consumer(cursor.target_id());
+            consumer(cursor.target_id() as u64);
         }
     }
 
@@ -277,9 +277,9 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     where
         F: FnMut(u64),
     {
-        let stream = self.graph.stream_relationships(node_id, 0.0);
+        let stream = self.graph.stream_relationships(node_id as i64, 0.0);
         for cursor in stream {
-            consumer(cursor.target_id());
+            consumer(cursor.target_id() as u64);
         }
     }
 }

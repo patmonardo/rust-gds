@@ -8,4 +8,5 @@ pub use array_equals::*;
 // This generates: DefaultLongValue, DefaultFloatingPointValue,
 // DefaultLongArray, DefaultIntLongArray, DefaultShortLongArray,
 // DefaultByteLongArray, DefaultDoubleArray, DefaultFloatArray
+use crate::generate_primitive_values;
 generate_primitive_values!();
