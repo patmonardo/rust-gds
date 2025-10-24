@@ -719,7 +719,7 @@ mod tests {
     use crate::types::graph::degrees::Degrees;
     use crate::types::graph::Graph;
     use crate::types::graph_store::{DatabaseId, DatabaseLocation};
-    use crate::types::properties::relationship::DefaultRelationshipPropertyValues;
+    use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
     use std::sync::Arc;
 
     fn sample_store() -> DefaultGraphStore {

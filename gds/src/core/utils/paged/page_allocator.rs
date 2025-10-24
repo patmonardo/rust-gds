@@ -298,6 +298,46 @@ impl PageAllocatorFactory<Vec<f64>> {
     }
 }
 
+impl PageAllocatorFactory<Vec<f32>> {
+    /// Creates a factory optimized for f32 arrays with 32KB pages.
+    ///
+    /// Configuration:
+    /// - Page size: 8,192 elements (32KB for 4-byte f32s)
+    /// - Optimized for: Single-precision floating-point data
+    ///
+    /// # Returns
+    ///
+    /// Factory configured for f32 pages
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use gds::core::utils::paged::PageAllocatorFactory;
+    ///
+    /// let factory = PageAllocatorFactory::<Vec<f32>>::for_float_array();
+    /// let allocator = factory.new_allocator();
+    ///
+    /// let page = allocator.new_page();
+    /// assert_eq!(page.capacity(), 8192);
+    /// ```
+    pub fn for_float_array() -> Self {
+        let page_size =
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_32KB, std::mem::size_of::<f32>());
+        let bytes_per_page = Estimate::size_of_float_array(page_size);
+
+        Self::new(page_size, bytes_per_page)
+    }
+
+    /// Creates a factory optimized for f32 arrays with 4KB pages.
+    pub fn for_float_array_4kb() -> Self {
+        let page_size =
+            PageUtil::page_size_for(PageUtil::PAGE_SIZE_4KB, std::mem::size_of::<f32>());
+        let bytes_per_page = Estimate::size_of_float_array(page_size);
+
+        Self::new(page_size, bytes_per_page)
+    }
+}
+
 impl PageAllocatorFactory<Vec<i32>> {
     /// Creates a factory optimized for i32 arrays with 32KB pages.
     ///
@@ -420,6 +460,20 @@ impl PageAllocator<Vec<i32>> for DirectPageAllocator<Vec<i32>> {
 
 impl PageAllocator<Vec<u8>> for DirectPageAllocator<Vec<u8>> {
     fn new_page(&self) -> Vec<u8> {
+        Vec::with_capacity(self.page_size)
+    }
+
+    fn page_size(&self) -> usize {
+        self.page_size
+    }
+
+    fn bytes_per_page(&self) -> usize {
+        self.bytes_per_page
+    }
+}
+
+impl PageAllocator<Vec<f32>> for DirectPageAllocator<Vec<f32>> {
+    fn new_page(&self) -> Vec<f32> {
         Vec::with_capacity(self.page_size)
     }
 

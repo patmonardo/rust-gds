@@ -2,6 +2,8 @@ use crate::types::properties::graph::GraphProperty;
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::graph::{GraphPropertyStore, GraphPropertyStoreBuilder};
 use crate::types::properties::PropertyStore;
+use crate::config::PropertyStoreConfig;
+use crate::types::properties::factory::GraphPropertyAdapterFactory;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -147,6 +149,36 @@ impl DefaultGraphPropertyStoreBuilder {
 
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, values);
+        self.properties.insert(key_str, prop);
+        self
+    }
+
+    /// Convenience: create and put Long graph property from Vec using the adapter factory.
+    pub fn put_long_from_vec(
+        mut self,
+        cfg: &PropertyStoreConfig,
+        key: impl Into<String>,
+        values: Vec<i64>,
+    ) -> Self {
+        let pv = GraphPropertyAdapterFactory::long_from_vec(cfg, values);
+        use crate::types::PropertyState;
+        let key_str = key.into();
+        let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
+        self.properties.insert(key_str, prop);
+        self
+    }
+
+    /// Convenience: create and put Double graph property from Vec using the adapter factory.
+    pub fn put_double_from_vec(
+        mut self,
+        cfg: &PropertyStoreConfig,
+        key: impl Into<String>,
+        values: Vec<f64>,
+    ) -> Self {
+        let pv = GraphPropertyAdapterFactory::double_from_vec(cfg, values);
+        use crate::types::PropertyState;
+        let key_str = key.into();
+        let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
         self.properties.insert(key_str, prop);
         self
     }

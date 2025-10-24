@@ -4,7 +4,7 @@ use crate::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore, GraphStoreError,
 };
-use crate::types::properties::graph::DefaultDoubleGraphPropertyValues;
+use crate::types::properties::graph::impls::default_graph_property_values::DefaultDoubleGraphPropertyValues;
 use crate::types::properties::node::DefaultDoubleNodePropertyValues;
 use crate::types::schema::{Direction, MutableGraphSchema};
 use crate::types::ValueType;

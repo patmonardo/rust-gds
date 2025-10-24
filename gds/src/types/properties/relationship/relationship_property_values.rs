@@ -27,6 +27,38 @@ pub trait RelationshipPropertyValues: PropertyValues + std::fmt::Debug + Send + 
     fn has_value(&self, rel_index: u64) -> bool;
 }
 
+// ========== Specialized traits for typed relationship property values ==========
+
+/// Relationship property values that are scalar longs (64-bit integers).
+pub trait LongRelationshipPropertyValues: RelationshipPropertyValues {
+    /// Returns the long value for the given relationship index.
+    fn long_value_unchecked(&self, rel_index: u64) -> i64;
+}
+
+/// Relationship property values that are scalar doubles (64-bit floats).
+pub trait DoubleRelationshipPropertyValues: RelationshipPropertyValues {
+    /// Returns the double value for the given relationship index.
+    fn double_value_unchecked(&self, rel_index: u64) -> f64;
+}
+
+/// Relationship property values that are arrays of doubles.
+pub trait DoubleArrayRelationshipPropertyValues: RelationshipPropertyValues {
+    /// Returns the double array value for the given relationship index.
+    fn double_array_value_unchecked(&self, rel_index: u64) -> Option<Vec<f64>>;
+}
+
+/// Relationship property values that are arrays of floats.
+pub trait FloatArrayRelationshipPropertyValues: RelationshipPropertyValues {
+    /// Returns the float array value for the given relationship index.
+    fn float_array_value_unchecked(&self, rel_index: u64) -> Option<Vec<f32>>;
+}
+
+/// Relationship property values that are arrays of longs.
+pub trait LongArrayRelationshipPropertyValues: RelationshipPropertyValues {
+    /// Returns the long array value for the given relationship index.
+    fn long_array_value_unchecked(&self, rel_index: u64) -> Option<Vec<i64>>;
+}
+
 // Implement PropertyValues for Box<dyn RelationshipPropertyValues> to allow trait objects
 impl PropertyValues for Box<dyn RelationshipPropertyValues> {
     fn value_type(&self) -> ValueType {

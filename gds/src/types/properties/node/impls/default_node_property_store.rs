@@ -3,6 +3,8 @@ use crate::types::properties::node::NodePropertyValues;
 use crate::types::properties::node::{NodePropertyStore, NodePropertyStoreBuilder};
 use crate::types::properties::PropertyStore;
 use crate::types::PropertyState;
+use crate::config::PropertyStoreConfig;
+use crate::types::properties::factory::NodePropertyAdapterFactory;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -149,6 +151,62 @@ impl DefaultNodePropertyStoreBuilder {
         let key_str = key.into();
         let prop = NodeProperty::with_state(key_str.clone(), PropertyState::Persistent, values);
         self.properties.insert(key_str, prop);
+        self
+    }
+
+    /// Convenience: create and put a Long property from a Vec using the adapter factory.
+    pub fn put_long_from_vec(
+        mut self,
+        cfg: &PropertyStoreConfig,
+        key: impl Into<String>,
+        values: Vec<i64>,
+    ) -> Self {
+        let node_count = values.len();
+        let pv = NodePropertyAdapterFactory::long_from_vec(cfg, values, node_count);
+        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
+        self.properties.insert(prop.key().to_string(), prop);
+        self
+    }
+
+    /// Convenience: create and put a Double property from a Vec using the adapter factory.
+    pub fn put_double_from_vec(
+        mut self,
+        cfg: &PropertyStoreConfig,
+        key: impl Into<String>,
+        values: Vec<f64>,
+    ) -> Self {
+        let node_count = values.len();
+        let pv = NodePropertyAdapterFactory::double_from_vec(cfg, values, node_count);
+        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
+        self.properties.insert(prop.key().to_string(), prop);
+        self
+    }
+
+    /// Convenience: create and put a DoubleArray property from a Vec<Option<Vec<f64>>>.
+    pub fn put_double_array_from_vec(
+        mut self,
+        cfg: &PropertyStoreConfig,
+        key: impl Into<String>,
+        values: Vec<Option<Vec<f64>>>,
+    ) -> Self {
+        let node_count = values.len();
+        let pv = NodePropertyAdapterFactory::double_array_from_vec(cfg, values, node_count);
+        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
+        self.properties.insert(prop.key().to_string(), prop);
+        self
+    }
+
+    /// Convenience: create and put a LongArray property from a Vec<Option<Vec<i64>>>.
+    pub fn put_long_array_from_vec(
+        mut self,
+        cfg: &PropertyStoreConfig,
+        key: impl Into<String>,
+        values: Vec<Option<Vec<i64>>>,
+    ) -> Self {
+        let node_count = values.len();
+        let pv = NodePropertyAdapterFactory::long_array_from_vec(cfg, values, node_count);
+        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
+        self.properties.insert(prop.key().to_string(), prop);
         self
     }
 }

@@ -37,7 +37,6 @@ pub mod lazy_batch_collection;
 pub mod mapped_id_node_property_values;
 pub mod original_id_node_property_values;
 pub mod progress_timer;
-pub mod raw_values;
 pub mod time_util;
 
 pub mod paged;
@@ -58,7 +57,6 @@ pub use lazy_batch_collection::LazyBatchCollection;
 pub use mapped_id_node_property_values::MappedIdNodePropertyValues;
 pub use original_id_node_property_values::OriginalIdNodePropertyValues;
 pub use progress_timer::ProgressTimer;
-pub use raw_values::RawValues;
 pub use set_bits_iterable::SetBitsIterable;
 pub use shuffle::{Random as ShuffleRandom, ShuffleUtil, SplittableRandom};
 pub use time_util::{TimeUtil, ZoneId};

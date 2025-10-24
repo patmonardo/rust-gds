@@ -50,6 +50,10 @@ mod selector_validation;
 #[macro_use]
 mod typed_property_values;
 
+/// Triadic PropertyStore matrix macros (Level × Component × ValueTypes)
+#[macro_use]
+mod triadic_macros;
+
 // Re-export all macros at module level for barrel imports
 pub use property_values::*;
 pub use smart_converter::*;
@@ -57,3 +61,4 @@ pub use selector_validation::*;
 // Note: cursor_accessors and typed_property_values are available but not yet used
 // pub use cursor_accessors::*;
 // pub use typed_property_values::*;
+pub use triadic_macros::*;

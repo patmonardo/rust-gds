@@ -93,7 +93,7 @@ impl Property for DefaultRelationshipProperty {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::properties::relationship::impls::values::DefaultRelationshipPropertyValues;
+    use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
     use crate::types::properties::PropertyValues;
     use crate::types::ValueType;
 

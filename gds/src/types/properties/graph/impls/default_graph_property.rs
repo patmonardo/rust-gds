@@ -90,7 +90,7 @@ impl Property for DefaultGraphProperty {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::properties::graph::DefaultLongGraphPropertyValues;
+    use crate::types::properties::graph::impls::default_graph_property_values::DefaultLongGraphPropertyValues;
     use crate::types::properties::PropertyValues;
 
     #[test]

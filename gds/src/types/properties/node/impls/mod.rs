@@ -1,8 +1,12 @@
 pub mod default_node_property;
 pub mod default_node_property_store;
 pub mod default_node_property_values;
-pub mod values;
+pub mod huge_node_property_values;
 
 pub use default_node_property::DefaultNodeProperty;
 pub use default_node_property_store::*;
-pub use values::*;
+pub use default_node_property_values::*;
+pub use huge_node_property_values::{
+    HugeLongNodePropertyValues, HugeDoubleNodePropertyValues,
+    HugeLongArrayNodePropertyValues, HugeDoubleArrayNodePropertyValues,
+};

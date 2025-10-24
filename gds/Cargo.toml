@@ -48,6 +48,7 @@ core = ["cursor"]
 arrow = []
 io = []
 pipeline = []
+triadic_codegen_preview = []
 # Config system optional features
 serde = []        # Enables config serialization (serde already in deps)
 config-files = [] # Future: YAML/JSON file loading

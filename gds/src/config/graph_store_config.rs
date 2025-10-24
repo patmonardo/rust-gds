@@ -5,6 +5,7 @@
 
 use super::base_types::ConcurrencyConfig;
 use super::validation::ConfigValidation;
+use super::property_store_config::PropertyStoreConfig;
 use crate::define_config;
 
 define_config!(
@@ -105,6 +106,7 @@ define_config!(
         memory: GraphStoreMemoryConfig = GraphStoreMemoryConfig::default(),
         cache: GraphStoreCacheConfig = GraphStoreCacheConfig::default(),
         compute: GraphStoreComputeConfig = GraphStoreComputeConfig::default(),
+        properties: PropertyStoreConfig = PropertyStoreConfig::default(),
     }
 );
 
