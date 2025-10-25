@@ -3,79 +3,207 @@
 //! This module provides factory functions for creating Collections instances,
 //! including Huge, Vec, Arrow, and other backend implementations.
 
-use crate::collections::traits::Collections;
+use crate::collections::backends::vec::{VecLong, VecDouble, VecInt, VecFloat, VecShort, VecByte, VecBoolean, VecChar};
+use crate::collections::backends::huge::{HugeLongArray, HugeDoubleArray, HugeIntArray, HugeFloatArray, HugeShortArray, HugeByteArray, HugeBooleanArray, HugeCharArray};
+use crate::collections::traits::{Collections, CollectionsFactory as CollectionsFactoryTrait};
 use crate::config::{CollectionsBackend, CollectionsConfig};
-use std::iter::Sum;
 
-/// Collections factory for creating Collections instances
-pub struct CollectionsFactoryImpl;
+/// Factory for creating Collections instances from config
+pub struct CollectionFactory;
 
-impl CollectionsFactoryImpl {
-    /// Creates a new Collections instance based on the specified backend
-    pub fn create<T>(backend: CollectionsBackend, config: CollectionsConfig<T>) -> Box<dyn Collections<T>> 
-    where 
-        T: Clone + Default + Ord + Sum + 'static,
-    {
-        match backend {
-            CollectionsBackend::Huge => {
-                // Create HugeArray instance
-                todo!("Implement HugeArray creation")
-            }
+impl CollectionFactory {
+    /// Creates a long (i64) collection based on config
+    pub fn create_long_collection(config: &CollectionsConfig<i64>) -> Box<dyn Collections<i64>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
             CollectionsBackend::Vec => {
-                // Create Vec instance
-                todo!("Implement Vec creation")
+                if capacity > 0 {
+                    Box::new(VecLong::with_capacity(capacity))
+                } else {
+                    Box::new(VecLong::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeLongArray::new(capacity))
             }
             CollectionsBackend::Arrow => {
-                // Create Arrow instance
-                todo!("Implement Arrow creation")
-            }
-            CollectionsBackend::Std => {
-                // Create Standard library instance
-                todo!("Implement Std creation")
+                // TODO: Implement Arrow backend
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(VecLong::with_capacity(capacity))
             }
             _ => {
                 // Default to Vec
-                todo!("Implement default Vec creation")
+                Box::new(VecLong::with_capacity(capacity))
             }
         }
     }
 
-    /// Creates a new Collections instance with default configuration
-    pub fn create_default<T>(backend: CollectionsBackend) -> Box<dyn Collections<T>> 
-    where 
-        T: Clone + Default + Ord + Sum + 'static,
-    {
-        let config = CollectionsConfig::<T>::default();
-        Self::create(backend, config)
+    /// Creates a double (f64) collection based on config
+    pub fn create_double_collection(config: &CollectionsConfig<f64>) -> Box<dyn Collections<f64>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(VecDouble::with_capacity(capacity))
+                } else {
+                    Box::new(VecDouble::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeDoubleArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                // TODO: Implement Arrow backend
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(VecDouble::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(VecDouble::with_capacity(capacity))
+            }
+        }
     }
 
-    /// Creates a new Collections instance from Vec
-    pub fn from_vec<T>(backend: CollectionsBackend, values: Vec<T>) -> Box<dyn Collections<T>> 
-    where 
-        T: Clone + Default + Ord + Sum + 'static,
-    {
-        let config = CollectionsConfig::<T>::default();
-        // TODO: Implement from_vec creation
-        todo!("Implement from_vec creation")
+    /// Creates an int (i32) collection based on config
+    pub fn create_int_collection(config: &CollectionsConfig<i32>) -> Box<dyn Collections<i32>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(VecInt::with_capacity(capacity))
+                } else {
+                    Box::new(VecInt::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeIntArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(VecInt::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(VecInt::with_capacity(capacity))
+            }
+        }
     }
 
-    /// Creates a new Collections instance from slice
-    pub fn from_slice<T>(backend: CollectionsBackend, slice: &[T]) -> Box<dyn Collections<T>> 
-    where 
-        T: Clone + Default + Ord + Sum + 'static,
-    {
-        let config = CollectionsConfig::<T>::default();
-        // TODO: Implement from_slice creation
-        todo!("Implement from_slice creation")
+    /// Creates a float (f32) collection based on config
+    pub fn create_float_collection(config: &CollectionsConfig<f32>) -> Box<dyn Collections<f32>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(capacity))
+                } else {
+                    Box::new(VecFloat::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeFloatArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(capacity))
+            }
+        }
     }
 
-    /// Creates a new Collections instance with default values
-    pub fn with_defaults<T>(backend: CollectionsBackend, count: usize, default_value: T) -> Box<dyn Collections<T>> 
-    where 
-        T: Clone + Default + Ord + Sum + 'static,
-    {
-        let config = CollectionsConfig::<T>::default();
-        // TODO: Implement with_defaults creation
-        todo!("Implement with_defaults creation")
+    /// Creates a short (i16) collection based on config
+    pub fn create_short_collection(config: &CollectionsConfig<i16>) -> Box<dyn Collections<i16>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(capacity))
+                } else {
+                    Box::new(VecShort::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeShortArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(capacity))
+            }
+        }
+    }
+
+    /// Creates a byte (i8) collection based on config
+    pub fn create_byte_collection(config: &CollectionsConfig<i8>) -> Box<dyn Collections<i8>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(capacity))
+                } else {
+                    Box::new(VecByte::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeByteArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(capacity))
+            }
+        }
+    }
+
+    /// Creates a boolean collection based on config
+    pub fn create_boolean_collection(config: &CollectionsConfig<bool>) -> Box<dyn Collections<bool>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(<VecBoolean as CollectionsFactoryTrait<bool>>::with_capacity(capacity))
+                } else {
+                    Box::new(VecBoolean::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeBooleanArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(<VecBoolean as CollectionsFactoryTrait<bool>>::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(<VecBoolean as CollectionsFactoryTrait<bool>>::with_capacity(capacity))
+            }
+        }
+    }
+
+    /// Creates a char collection based on config
+    pub fn create_char_collection(config: &CollectionsConfig<char>) -> Box<dyn Collections<char>> {
+        let capacity = config.element_type.element_count;
+        match config.backend.primary {
+            CollectionsBackend::Vec => {
+                if capacity > 0 {
+                    Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(capacity))
+                } else {
+                    Box::new(VecChar::new())
+                }
+            }
+            CollectionsBackend::Huge => {
+                Box::new(HugeCharArray::new(capacity))
+            }
+            CollectionsBackend::Arrow => {
+                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
+                Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(capacity))
+            }
+            _ => {
+                Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(capacity))
+            }
+        }
     }
 }

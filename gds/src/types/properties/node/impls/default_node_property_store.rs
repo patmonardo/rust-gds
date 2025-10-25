@@ -4,7 +4,12 @@ use crate::types::properties::node::{NodePropertyStore, NodePropertyStoreBuilder
 use crate::types::properties::PropertyStore;
 use crate::types::PropertyState;
 use crate::config::PropertyStoreConfig;
-use crate::types::properties::factory::NodePropertyAdapterFactory;
+use crate::types::properties::node::impls::default_node_property_values::{
+    DefaultDoubleArrayNodePropertyValues,
+    DefaultDoubleNodePropertyValues,
+    DefaultLongArrayNodePropertyValues,
+    DefaultLongNodePropertyValues,
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -154,29 +159,29 @@ impl DefaultNodePropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put a Long property from a Vec using the adapter factory.
+    /// Convenience: create and put a Long property from a Vec using Vec-backed defaults.
     pub fn put_long_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<i64>,
     ) -> Self {
         let node_count = values.len();
-        let pv = NodePropertyAdapterFactory::long_from_vec(cfg, values, node_count);
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultLongNodePropertyValues::new(values, node_count));
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
     }
 
-    /// Convenience: create and put a Double property from a Vec using the adapter factory.
+    /// Convenience: create and put a Double property from a Vec using Vec-backed defaults.
     pub fn put_double_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<f64>,
     ) -> Self {
         let node_count = values.len();
-        let pv = NodePropertyAdapterFactory::double_from_vec(cfg, values, node_count);
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleNodePropertyValues::new(values, node_count));
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
@@ -185,12 +190,12 @@ impl DefaultNodePropertyStoreBuilder {
     /// Convenience: create and put a DoubleArray property from a Vec<Option<Vec<f64>>>.
     pub fn put_double_array_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<Option<Vec<f64>>>,
     ) -> Self {
         let node_count = values.len();
-        let pv = NodePropertyAdapterFactory::double_array_from_vec(cfg, values, node_count);
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleArrayNodePropertyValues::new(values, node_count));
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
@@ -199,12 +204,12 @@ impl DefaultNodePropertyStoreBuilder {
     /// Convenience: create and put a LongArray property from a Vec<Option<Vec<i64>>>.
     pub fn put_long_array_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<Option<Vec<i64>>>,
     ) -> Self {
         let node_count = values.len();
-        let pv = NodePropertyAdapterFactory::long_array_from_vec(cfg, values, node_count);
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultLongArrayNodePropertyValues::new(values, node_count));
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self

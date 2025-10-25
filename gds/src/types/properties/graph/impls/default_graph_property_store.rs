@@ -3,7 +3,13 @@ use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::graph::{GraphPropertyStore, GraphPropertyStoreBuilder};
 use crate::types::properties::PropertyStore;
 use crate::config::PropertyStoreConfig;
-use crate::types::properties::factory::GraphPropertyAdapterFactory;
+use crate::types::properties::graph::impls::default_graph_property_values::{
+    DefaultDoubleArrayGraphPropertyValues,
+    DefaultDoubleGraphPropertyValues,
+    DefaultFloatArrayGraphPropertyValues,
+    DefaultLongArrayGraphPropertyValues,
+    DefaultLongGraphPropertyValues,
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -153,14 +159,14 @@ impl DefaultGraphPropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put Long graph property from Vec using the adapter factory.
+    /// Convenience: create and put Long graph property from Vec using Vec-backed defaults.
     pub fn put_long_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<i64>,
     ) -> Self {
-        let pv = GraphPropertyAdapterFactory::long_from_vec(cfg, values);
+        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultLongGraphPropertyValues::new(values));
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
@@ -168,14 +174,14 @@ impl DefaultGraphPropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put Double graph property from Vec using the adapter factory.
+    /// Convenience: create and put Double graph property from Vec using Vec-backed defaults.
     pub fn put_double_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<f64>,
     ) -> Self {
-        let pv = GraphPropertyAdapterFactory::double_from_vec(cfg, values);
+        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultDoubleGraphPropertyValues::new(values));
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);

@@ -5,7 +5,7 @@ use crate::types::properties::relationship::{
 };
 use crate::types::properties::PropertyStore;
 use crate::config::PropertyStoreConfig;
-use crate::types::properties::factory::RelationshipPropertyAdapterFactory;
+use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -156,18 +156,17 @@ impl DefaultRelationshipPropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put a Double relationship property from Vec using factory.
+    /// Convenience: create and put a Double relationship property from Vec using Vec-backed defaults.
     pub fn put_double_from_vec(
         mut self,
-        cfg: &PropertyStoreConfig,
+        _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
         values: Vec<f64>,
         default_value: f64,
     ) -> Self {
-        let pv = RelationshipPropertyAdapterFactory::double_from_vec(
-            cfg,
-            values,
-            default_value,
+        let element_count = values.len();
+        let pv: Arc<dyn RelationshipPropertyValues> = Arc::new(
+            DefaultRelationshipPropertyValues::new(values, default_value, element_count),
         );
         let key_str = key.into();
         use crate::types::PropertyState;
