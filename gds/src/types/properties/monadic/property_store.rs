@@ -1,14 +1,19 @@
 //! Monadic PropertyStore: Simple Collections First PropertyStore
 //!
-//! A simplified property store implementation that works directly with Collections,
+//! A standalone property store implementation that works directly with Collections,
 //! independent of graph/node/relationship complexity.
+//!
+//! This is a proof-of-concept demonstrating the Collections First architecture.
 
-use crate::types::properties::monadic_property::MonadicProperty;
+use super::property::MonadicProperty;
 use crate::types::properties::PropertyStore;
+use crate::types::properties::PropertyValues;
 use std::collections::HashMap;
 use std::sync::Arc;
 
 /// Monadic property store: Simple Collections First implementation
+///
+/// Standalone store not tied to GraphStore - demonstrates Collections First works!
 #[derive(Debug, Clone, Default)]
 pub struct MonadicPropertyStore {
     properties: HashMap<String, MonadicProperty>,
@@ -46,7 +51,7 @@ impl MonadicPropertyStore {
     }
 
     /// Get property values by key
-    pub fn get_property_values(&self, property_key: &str) -> Option<Arc<dyn crate::types::properties::PropertyValues>> {
+    pub fn get_property_values(&self, property_key: &str) -> Option<Arc<dyn PropertyValues>> {
         self.properties
             .get(property_key)
             .map(|property| property.values_arc())
@@ -144,9 +149,8 @@ impl MonadicPropertyStoreBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::property_values::{MonadicLongPropertyValues, MonadicDoublePropertyValues};
     use crate::collections::backends::vec::{VecLong, VecDouble};
-    use crate::types::properties::monadic_property_values::{LongPropertyValues, DoublePropertyValues};
-    use crate::types::properties::PropertyValues;
     use crate::types::ValueType;
 
     #[test]
@@ -158,14 +162,14 @@ mod tests {
 
     #[test]
     fn property_store_with_properties() {
-        // Create long property
+        // Create long property using Collections First
         let vec_long = VecLong::from(vec![1, 2, 3]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
+        let long_values = MonadicLongPropertyValues::new(vec_long, 0);
         let age_property = MonadicProperty::of("age", Arc::new(long_values));
 
-        // Create double property
+        // Create double property using Collections First
         let vec_double = VecDouble::from(vec![1.5, 2.5, 3.5]);
-        let double_values = DoublePropertyValues::new(vec_double, 0.0);
+        let double_values = MonadicDoublePropertyValues::new(vec_double, 0.0);
         let score_property = MonadicProperty::of("score", Arc::new(double_values));
 
         // Create store with properties
@@ -183,13 +187,13 @@ mod tests {
 
     #[test]
     fn property_store_builder() {
-        // Create properties
+        // Create properties using Collections First
         let vec_long = VecLong::from(vec![10, 20, 30]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
+        let long_values = MonadicLongPropertyValues::new(vec_long, 0);
         let rank_property = MonadicProperty::of("rank", Arc::new(long_values));
 
         let vec_double = VecDouble::from(vec![5.0, 6.0]);
-        let double_values = DoublePropertyValues::new(vec_double, 0.0);
+        let double_values = MonadicDoublePropertyValues::new(vec_double, 0.0);
         let rating_property = MonadicProperty::of("rating", Arc::new(double_values));
 
         // Build store
@@ -206,7 +210,7 @@ mod tests {
     #[test]
     fn property_store_get_values() {
         let vec_long = VecLong::from(vec![100, 200]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
+        let long_values = MonadicLongPropertyValues::new(vec_long, 0);
         let property = MonadicProperty::of("count", Arc::new(long_values));
 
         let store = MonadicPropertyStore::builder()
@@ -221,11 +225,11 @@ mod tests {
     #[test]
     fn property_store_builder_put_if_absent() {
         let vec_long1 = VecLong::from(vec![1, 2]);
-        let long_values1 = LongPropertyValues::new(vec_long1, 0);
+        let long_values1 = MonadicLongPropertyValues::new(vec_long1, 0);
         let property1 = MonadicProperty::of("value", Arc::new(long_values1));
 
         let vec_long2 = VecLong::from(vec![3, 4]);
-        let long_values2 = LongPropertyValues::new(vec_long2, 0);
+        let long_values2 = MonadicLongPropertyValues::new(vec_long2, 0);
         let property2 = MonadicProperty::of("value", Arc::new(long_values2));
 
         let store = MonadicPropertyStore::builder()
@@ -240,7 +244,7 @@ mod tests {
     #[test]
     fn property_store_to_builder() {
         let vec_long = VecLong::from(vec![1, 2, 3]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
+        let long_values = MonadicLongPropertyValues::new(vec_long, 0);
         let property = MonadicProperty::of("test", Arc::new(long_values));
 
         let store1 = MonadicPropertyStore::builder()
@@ -248,7 +252,7 @@ mod tests {
             .build();
 
         let vec_double = VecDouble::from(vec![4.0, 5.0]);
-        let double_values = DoublePropertyValues::new(vec_double, 0.0);
+        let double_values = MonadicDoublePropertyValues::new(vec_double, 0.0);
         let new_property = MonadicProperty::of("new", Arc::new(double_values));
 
         let store2 = store1
@@ -261,4 +265,3 @@ mod tests {
         assert!(store2.contains_key("new"));
     }
 }
-

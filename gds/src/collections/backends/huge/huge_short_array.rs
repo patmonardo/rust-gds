@@ -670,3 +670,18 @@ mod tests {
         assert_eq!(sum, 45); // Sum of 0..9
     }
 }
+
+// Collections impl via macro
+use crate::huge_collections;
+use crate::types::ValueType;
+huge_collections!(
+    HugeShortArray,
+    i16,
+    ValueType::Short,
+    0i16,
+    to_f64 = |x: i16| x as f64,
+    kind: Ord,
+    [],
+    [],
+    "Collections impl for HugeShortArray"
+);

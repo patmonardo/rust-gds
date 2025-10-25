@@ -488,6 +488,21 @@ impl PagedHugeByteArray {
     }
 }
 
+// Collections impl via macro
+use crate::huge_collections;
+use crate::types::ValueType;
+huge_collections!(
+    HugeByteArray,
+    i8,
+    ValueType::Byte,
+    0i8,
+    to_f64 = |x: i8| x as f64,
+    kind: Ord,
+    [],
+    [],
+    "Collections impl for HugeByteArray"
+);
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -690,3 +690,17 @@ mod tests {
         assert_eq!(result, "ABCDEFGHIJ");
     }
 }
+
+// Collections impl via macro
+use crate::huge_collections;
+use crate::types::ValueType;
+huge_collections!(
+    HugeCharArray,
+    char,
+    ValueType::Char,
+    '\0',
+    kind: OrdNoAgg,
+    [],
+    [],
+    "Collections impl for HugeCharArray"
+);

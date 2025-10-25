@@ -4,111 +4,127 @@
 //! including aggregation methods, nullability support, and extensions.
 
 
-/// Vec Collections macro that generates Vec-based Collections implementations
+// Heavyweight vec_collections! generator removed as per simplification.
+
+/// Implement Collections for an existing Vec-backed type with a `data: Vec<T>` field
 #[macro_export]
 macro_rules! vec_collections {
+    // Float-aware arm (partial_cmp for ordering)
     (
-        $type_name:ident,           // e.g., VecInt
-        $element_type:ty,           // e.g., i32
-        $value_type:expr,           // e.g., ValueType::Int
-        $default_value:expr,        // e.g., 0i32
-        $features:expr,             // e.g., [Feature::Aggregation]
-        $extensions:expr,           // e.g., [Extension::Ndarray]
-        $doc_desc:expr              // Documentation
+        $type_name:ident,
+        $element_type:ty,
+        $value_type:expr,
+        $default_value:expr,
+        kind = Float
     ) => {
-        collections! {
-            $type_name,
-            $element_type,
-            $value_type,
-            $default_value,
-            CollectionsBackend::Vec,
-            $features,
-            $extensions,
-            $doc_desc
-        }
-
-        // Vec-specific implementation
-        impl $type_name {
-            pub fn new() -> Self {
-                Self {
-                    data: Vec::new(),
-                    metadata: CollectionsMetadata {
-                        backend: CollectionsBackend::Vec,
-                        features: $features,
-                        extensions: $extensions,
-                        performance_profile: PerformanceProfile::default(),
-                    },
-                    extensions: ExtensionsRegistry::new($extensions),
+        impl crate::collections::traits::Collections<$element_type> for $type_name {
+            fn get(&self, index: usize) -> Option<$element_type> { self.data.get(index).cloned() }
+            fn set(&mut self, index: usize, value: $element_type) {
+                if index < self.data.len() { self.data[index] = value; }
+                else { self.data.resize(index + 1, $default_value); self.data[index] = value; }
+            }
+            fn len(&self) -> usize { self.data.len() }
+            fn sum(&self) -> Option<$element_type> where $element_type: std::iter::Sum { Some(self.data.iter().cloned().sum()) }
+            fn mean(&self) -> Option<f64> { if self.data.is_empty() { None } else { Some(self.data.iter().cloned().map(|x| x as f64).sum::<f64>() / self.data.len() as f64) } }
+            fn std_dev(&self) -> Option<f64> { if self.data.len() < 2 { None } else { let m = self.mean()?; let v = self.data.iter().cloned().map(|x| { let d = x as f64 - m; d*d }).sum::<f64>() / (self.data.len() - 1) as f64; Some(v.sqrt()) } }
+            fn variance(&self) -> Option<f64> { if self.data.len() < 2 { None } else { let m = self.mean()?; Some(self.data.iter().cloned().map(|x| { let d = x as f64 - m; d*d }).sum::<f64>() / (self.data.len() - 1) as f64) } }
+            fn min(&self) -> Option<$element_type> { self.data.iter().cloned().min_by(|a,b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)) }
+            fn max(&self) -> Option<$element_type> { self.data.iter().cloned().max_by(|a,b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)) }
+            fn median(&self) -> Option<$element_type> {
+                if self.data.is_empty() { None } else {
+                    let mut v = self.data.clone();
+                    v.sort_by(|a,b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+                    let mid = v.len()/2;
+                    if v.len()%2==0 { Some((v[mid-1] + v[mid]) / 2.0) } else { Some(v[mid]) }
                 }
             }
-
-            pub fn with_capacity(capacity: usize) -> Self {
-                Self {
-                    data: Vec::with_capacity(capacity),
-                    metadata: CollectionsMetadata {
-                        backend: CollectionsBackend::Vec,
-                        features: $features,
-                        extensions: $extensions,
-                        performance_profile: PerformanceProfile::default(),
-                    },
-                    extensions: ExtensionsRegistry::new($extensions),
+            fn percentile(&self, p: f64) -> Option<$element_type> {
+                if self.data.is_empty() || !(0.0..=100.0).contains(&p) { None } else {
+                    let mut v = self.data.clone();
+                    v.sort_by(|a,b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+                    let idx = ((p/100.0)*(v.len()-1) as f64).round() as usize;
+                    Some(v[idx])
                 }
             }
-
-            pub fn push(&mut self, value: $element_type) {
-                self.data.push(value);
-            }
-
-            pub fn pop(&mut self) -> Option<$element_type> {
-                self.data.pop()
-            }
-
-            pub fn reserve(&mut self, additional: usize) {
-                self.data.reserve(additional);
-            }
-
-            pub fn shrink_to_fit(&mut self) {
-                self.data.shrink_to_fit();
-            }
-
-            pub fn clear(&mut self) {
-                self.data.clear();
-            }
-
-            pub fn extend_from_slice(&mut self, slice: &[$element_type]) {
-                self.data.extend_from_slice(slice);
-            }
-
-            pub fn insert(&mut self, index: usize, value: $element_type) {
-                self.data.insert(index, value);
-            }
-
-            pub fn remove(&mut self, index: usize) -> $element_type {
-                self.data.remove(index)
-            }
-
-            pub fn swap_remove(&mut self, index: usize) -> $element_type {
-                self.data.swap_remove(index)
-            }
-
-            pub fn retain<F>(&mut self, f: F) where F: FnMut(&$element_type) -> bool {
-                self.data.retain(f);
-            }
-
-            pub fn dedup(&mut self) where $element_type: PartialEq {
-                self.data.dedup();
-            }
-
-            pub fn dedup_by<F>(&mut self, same_bucket: F) where F: FnMut(&mut $element_type, &mut $element_type) -> bool {
-                self.data.dedup_by(same_bucket);
-            }
-
-            pub fn dedup_by_key<F, K>(&mut self, key: F) where F: FnMut(&mut $element_type) -> K, K: PartialEq {
-                self.data.dedup_by_key(key);
-            }
+            fn binary_search(&self, key: &$element_type) -> Result<usize, usize> { self.data.binary_search_by(|x| x.partial_cmp(key).unwrap()) }
+            fn sort(&mut self) { self.data.sort_by(|a,b| a.partial_cmp(b).unwrap()); }
+            fn to_vec(self) -> Vec<$element_type> { self.data }
+            fn as_slice(&self) -> &[$element_type] { &self.data }
+            fn is_null(&self, _index: usize) -> bool { false }
+            fn null_count(&self) -> usize { 0 }
+            fn default_value(&self) -> $element_type { $default_value }
+            fn backend(&self) -> crate::config::CollectionsBackend { crate::config::CollectionsBackend::Vec }
+            fn features(&self) -> &[crate::config::Extension] { &[] }
+            fn extensions(&self) -> &[crate::config::Extension] { &[] }
+            fn value_type(&self) -> crate::types::ValueType { $value_type }
+            fn with_capacity(capacity: usize) -> Self where Self: Sized { Self { data: Vec::with_capacity(capacity) } }
+            fn with_defaults(count: usize, default_value: $element_type) -> Self where Self: Sized { Self { data: vec![default_value; count] } }
         }
 
-        impl Collections<$element_type> for $type_name {
+        impl crate::collections::traits::CollectionsFactory<$element_type> for $type_name {
+            fn new() -> Self { Self { data: Vec::new() } }
+            fn with_capacity(capacity: usize) -> Self { Self { data: Vec::with_capacity(capacity) } }
+            fn from_vec(values: Vec<$element_type>) -> Self { Self { data: values } }
+            fn from_slice(slice: &[$element_type]) -> Self { Self { data: slice.to_vec() } }
+            fn with_defaults(count: usize, default_value: $element_type) -> Self { Self { data: vec![default_value; count] } }
+        }
+    };
+    // Ord-only, no numeric aggregations (e.g., bool, char)
+    (
+        $type_name:ident,
+        $element_type:ty,
+        $value_type:expr,
+        $default_value:expr,
+        kind = OrdNoAgg
+    ) => {
+        impl crate::collections::traits::Collections<$element_type> for $type_name {
+            fn get(&self, index: usize) -> Option<$element_type> { self.data.get(index).cloned() }
+            fn set(&mut self, index: usize, value: $element_type) {
+                if index < self.data.len() { self.data[index] = value; }
+                else { self.data.resize(index + 1, $default_value); self.data[index] = value; }
+            }
+            fn len(&self) -> usize { self.data.len() }
+            fn sum(&self) -> Option<$element_type> { None }
+            fn mean(&self) -> Option<f64> { None }
+            fn std_dev(&self) -> Option<f64> { None }
+            fn variance(&self) -> Option<f64> { None }
+            fn min(&self) -> Option<$element_type> where $element_type: Ord { self.data.iter().cloned().min() }
+            fn max(&self) -> Option<$element_type> where $element_type: Ord { self.data.iter().cloned().max() }
+            fn median(&self) -> Option<$element_type> where $element_type: Ord { None }
+            fn percentile(&self, _p: f64) -> Option<$element_type> where $element_type: Ord { None }
+            fn binary_search(&self, key: &$element_type) -> Result<usize, usize> where $element_type: Ord { self.data.binary_search(key) }
+            fn sort(&mut self) where $element_type: Ord { self.data.sort(); }
+            fn to_vec(self) -> Vec<$element_type> { self.data }
+            fn as_slice(&self) -> &[$element_type] { &self.data }
+            fn is_null(&self, _index: usize) -> bool { false }
+            fn null_count(&self) -> usize { 0 }
+            fn default_value(&self) -> $element_type { $default_value }
+            fn backend(&self) -> crate::config::CollectionsBackend { crate::config::CollectionsBackend::Vec }
+            fn features(&self) -> &[crate::config::Extension] { &[] }
+            fn extensions(&self) -> &[crate::config::Extension] { &[] }
+            fn value_type(&self) -> crate::types::ValueType { $value_type }
+            fn with_capacity(capacity: usize) -> Self where Self: Sized { Self { data: Vec::with_capacity(capacity) } }
+            fn with_defaults(count: usize, default_value: $element_type) -> Self where Self: Sized { Self { data: vec![default_value; count] } }
+        }
+
+        impl crate::collections::traits::CollectionsFactory<$element_type> for $type_name {
+            fn new() -> Self { Self { data: Vec::new() } }
+            fn with_capacity(capacity: usize) -> Self { Self { data: Vec::with_capacity(capacity) } }
+            fn from_vec(values: Vec<$element_type>) -> Self { Self { data: values } }
+            fn from_slice(slice: &[$element_type]) -> Self { Self { data: slice.to_vec() } }
+            fn with_defaults(count: usize, default_value: $element_type) -> Self { Self { data: vec![default_value; count] } }
+        }
+    };
+
+    (
+        $type_name:ident,            // e.g., VecInt
+        $element_type:ty,            // e.g., i32
+        $value_type:expr,            // e.g., ValueType::Int
+        $default_value:expr,         // e.g., 0i32
+        to_f64 = $to_f64:expr,       // e.g., |x: i32| x as f64
+        kind = Ord                   // comparison kind (currently Ord only)
+    ) => {
+        impl crate::collections::traits::Collections<$element_type> for $type_name {
             fn get(&self, index: usize) -> Option<$element_type> {
                 self.data.get(index).cloned()
             }
@@ -122,159 +138,87 @@ macro_rules! vec_collections {
                 }
             }
 
-            fn len(&self) -> usize {
-                self.data.len()
+            fn len(&self) -> usize { self.data.len() }
+
+            fn sum(&self) -> Option<$element_type> where $element_type: std::iter::Sum {
+                Some(self.data.iter().cloned().sum())
             }
 
-            fn as_slice(&self) -> &[$element_type] {
-                &self.data
+            fn mean(&self) -> Option<f64> {
+                if self.data.is_empty() { None } else {
+                    let sum: f64 = self.data.iter().map(|&x| ($to_f64)(x)).sum();
+                    Some(sum / self.data.len() as f64)
+                }
             }
 
-            // Vec-specific optimizations
-            $(
-                if $features.contains(&Feature::Aggregation) {
-                    fn sum(&self) -> Option<$element_type> where $element_type: Sum {
-                        Some(self.data.iter().cloned().sum())
-                    }
+            fn min(&self) -> Option<$element_type> where $element_type: Ord {
+                self.data.iter().cloned().min()
+            }
 
-                    fn mean(&self) -> Option<f64> where $element_type: Into<f64> {
-                        if self.data.is_empty() {
-                            None
-                        } else {
-                            Some(
-                                self.data.iter()
-                                    .map(|&x| x.into())
-                                    .sum::<f64>() / self.data.len() as f64
-                            )
-                        }
-                    }
+            fn max(&self) -> Option<$element_type> where $element_type: Ord {
+                self.data.iter().cloned().max()
+            }
 
-                    fn std_dev(&self) -> Option<f64> where $element_type: Into<f64> {
-                        if self.data.len() < 2 {
-                            None
-                        } else {
-                            let mean = self.mean()?;
-                            let variance = self.data.iter()
-                                .map(|&x| {
-                                    let diff = x.into() - mean;
-                                    diff * diff
-                                })
-                                .sum::<f64>() / (self.data.len() - 1) as f64;
-                            Some(variance.sqrt())
-                        }
-                    }
-
-                    fn variance(&self) -> Option<f64> where $element_type: Into<f64> {
-                        if self.data.len() < 2 {
-                            None
-                        } else {
-                            let mean = self.mean()?;
-                            Some(
-                                self.data.iter()
-                                    .map(|&x| {
-                                        let diff = x.into() - mean;
-                                        diff * diff
-                                    })
-                                    .sum::<f64>() / (self.data.len() - 1) as f64
-                            )
-                        }
-                    }
-
-                    fn median(&self) -> Option<$element_type> where $element_type: Ord {
-                        if self.data.is_empty() {
-                            None
-                        } else {
-                            let mut sorted = self.data.clone();
-                            sorted.sort();
-                            let mid = sorted.len() / 2;
-                            if sorted.len() % 2 == 0 {
-                                Some((sorted[mid - 1] + sorted[mid]) / 2)
-                            } else {
-                                Some(sorted[mid])
-                            }
-                        }
-                    }
-
-                    fn percentile(&self, p: f64) -> Option<$element_type> where $element_type: Ord {
-                        if self.data.is_empty() || p < 0.0 || p > 100.0 {
-                            None
-                        } else {
-                            let mut sorted = self.data.clone();
-                            sorted.sort();
-                            let index = ((p / 100.0) * (sorted.len() - 1) as f64).round() as usize;
-                            Some(sorted[index])
-                        }
-                    }
+            fn std_dev(&self) -> Option<f64> {
+                if self.data.len() < 2 { None } else {
+                    let mean = self.mean()?;
+                    let var: f64 = self.data.iter().map(|&x| { let d = ($to_f64)(x) - mean; d*d }).sum::<f64>() / (self.data.len() - 1) as f64;
+                    Some(var.sqrt())
                 }
-            )*
+            }
 
-            $(
-                if $features.contains(&Feature::Nullability) {
-                    fn is_null(&self, _index: usize) -> bool { false }
-                    fn null_count(&self) -> usize { 0 }
+            fn variance(&self) -> Option<f64> {
+                if self.data.len() < 2 { None } else {
+                    let mean = self.mean()?;
+                    Some(self.data.iter().map(|&x| { let d = ($to_f64)(x) - mean; d*d }).sum::<f64>() / (self.data.len() - 1) as f64)
                 }
-            )*
+            }
+
+            fn median(&self) -> Option<$element_type> where $element_type: Ord {
+                if self.data.is_empty() { None } else {
+                    let mut v = self.data.clone();
+                    v.sort();
+                    let mid = v.len() / 2;
+                    if v.len() % 2 == 0 { Some((v[mid - 1] + v[mid]) / 2) } else { Some(v[mid]) }
+                }
+            }
+
+            fn percentile(&self, p: f64) -> Option<$element_type> where $element_type: Ord {
+                if self.data.is_empty() || !(0.0..=100.0).contains(&p) { None } else {
+                    let mut v = self.data.clone();
+                    v.sort();
+                    let idx = ((p / 100.0) * (v.len() as f64 - 1.0)).round() as usize;
+                    Some(v[idx])
+                }
+            }
 
             fn binary_search(&self, key: &$element_type) -> Result<usize, usize> where $element_type: Ord {
                 self.data.binary_search(key)
             }
 
-            fn sort(&mut self) where $element_type: Ord {
-                self.data.sort();
-            }
+            fn sort(&mut self) where $element_type: Ord { self.data.sort(); }
 
-            fn to_vec(self) -> Vec<$element_type> {
-                self.data
-            }
+            fn to_vec(self) -> Vec<$element_type> { self.data }
+
+            fn as_slice(&self) -> &[$element_type] { &self.data }
+
+            fn is_null(&self, _index: usize) -> bool { false }
+            fn null_count(&self) -> usize { 0 }
+            fn default_value(&self) -> $element_type { $default_value }
+            fn backend(&self) -> crate::config::CollectionsBackend { crate::config::CollectionsBackend::Vec }
+            fn features(&self) -> &[crate::config::Extension] { &[] }
+            fn extensions(&self) -> &[crate::config::Extension] { &[] }
+            fn value_type(&self) -> crate::types::ValueType { $value_type }
+            fn with_capacity(capacity: usize) -> Self where Self: Sized { Self { data: Vec::with_capacity(capacity) } }
+            fn with_defaults(count: usize, default_value: $element_type) -> Self where Self: Sized { Self { data: vec![default_value; count] } }
         }
 
-        impl CollectionsFactory<$element_type> for $type_name {
-            fn new() -> Self {
-                Self::new()
-            }
-
-            fn with_capacity(capacity: usize) -> Self {
-                Self::with_capacity(capacity)
-            }
-
-            fn from_vec(values: Vec<$element_type>) -> Self {
-                Self {
-                    data: values,
-                    metadata: CollectionsMetadata {
-                        backend: CollectionsBackend::Vec,
-                        features: $features,
-                        extensions: $extensions,
-                        performance_profile: PerformanceProfile::default(),
-                    },
-                    extensions: ExtensionsRegistry::new($extensions),
-                }
-            }
-
-            fn from_slice(slice: &[$element_type]) -> Self {
-                Self {
-                    data: slice.to_vec(),
-                    metadata: CollectionsMetadata {
-                        backend: CollectionsBackend::Vec,
-                        features: $features,
-                        extensions: $extensions,
-                        performance_profile: PerformanceProfile::default(),
-                    },
-                    extensions: ExtensionsRegistry::new($extensions),
-                }
-            }
-
-            fn with_defaults(count: usize, default_value: $element_type) -> Self {
-                Self {
-                    data: vec![default_value; count],
-                    metadata: CollectionsMetadata {
-                        backend: CollectionsBackend::Vec,
-                        features: $features,
-                        extensions: $extensions,
-                        performance_profile: PerformanceProfile::default(),
-                    },
-                    extensions: ExtensionsRegistry::new($extensions),
-                }
-            }
+        impl crate::collections::traits::CollectionsFactory<$element_type> for $type_name {
+            fn new() -> Self { Self { data: Vec::new() } }
+            fn with_capacity(capacity: usize) -> Self { Self { data: Vec::with_capacity(capacity) } }
+            fn from_vec(values: Vec<$element_type>) -> Self { Self { data: values } }
+            fn from_slice(slice: &[$element_type]) -> Self { Self { data: slice.to_vec() } }
+            fn with_defaults(count: usize, default_value: $element_type) -> Self { Self { data: vec![default_value; count] } }
         }
     };
 }

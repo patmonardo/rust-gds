@@ -1,7 +1,9 @@
 //! Monadic Property: Simple Collections First Property
 //!
-//! A simplified property implementation that works directly with Collections,
+//! A standalone property implementation that works directly with Collections,
 //! independent of graph/node/relationship complexity.
+//!
+//! This is a proof-of-concept demonstrating the Collections First architecture.
 
 use crate::types::properties::Property;
 use crate::types::properties::PropertyValues;
@@ -11,6 +13,8 @@ use crate::types::PropertyState;
 use std::sync::Arc;
 
 /// Monadic property: Simple Collections First implementation
+///
+/// Works with ANY PropertyValues implementation, not specific to node/relationship/graph.
 #[derive(Debug, Clone)]
 pub struct MonadicProperty {
     values: Arc<dyn PropertyValues>,
@@ -92,18 +96,18 @@ impl Property for MonadicProperty {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::collections::backends::vec::VecLong;
-    use crate::types::properties::monadic_property_values::LongPropertyValues;
+    use super::super::property_values::{MonadicLongPropertyValues, MonadicDoublePropertyValues};
+    use crate::collections::backends::vec::{VecLong, VecDouble};
     use crate::types::ValueType;
 
     #[test]
     fn monadic_property_creation() {
-        // Create a simple Collections-backed property
+        // Create a simple property using Collections First
         let vec_long = VecLong::from(vec![1, 2, 3]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
-        let values: Arc<dyn PropertyValues> = Arc::new(long_values);
+        let values = MonadicLongPropertyValues::new(vec_long, 0);
+        let values_arc: Arc<dyn PropertyValues> = Arc::new(values);
         
-        let property = MonadicProperty::of("age", values.clone());
+        let property = MonadicProperty::of("age", values_arc.clone());
 
         assert_eq!(property.key(), "age");
         assert_eq!(
@@ -111,16 +115,16 @@ mod tests {
             PropertyState::Persistent
         );
         assert_eq!(property.property_schema().value_type(), ValueType::Long);
-        assert!(Arc::ptr_eq(&property.values_arc(), &values));
+        assert!(Arc::ptr_eq(&property.values_arc(), &values_arc));
     }
 
     #[test]
     fn monadic_property_with_state() {
         let vec_long = VecLong::from(vec![10, 20]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
-        let values: Arc<dyn PropertyValues> = Arc::new(long_values);
+        let values = MonadicLongPropertyValues::new(vec_long, 0);
+        let values_arc: Arc<dyn PropertyValues> = Arc::new(values);
         
-        let property = MonadicProperty::with_state("rank", PropertyState::Persistent, values);
+        let property = MonadicProperty::with_state("rank", PropertyState::Persistent, values_arc);
 
         assert_eq!(property.key(), "rank");
         assert_eq!(
@@ -131,15 +135,15 @@ mod tests {
 
     #[test]
     fn monadic_property_with_explicit_default() {
-        let vec_long = VecLong::from(vec![5, 6]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
-        let values: Arc<dyn PropertyValues> = Arc::new(long_values);
+        let vec_double = VecDouble::from(vec![5.0, 6.0]);
+        let values = MonadicDoublePropertyValues::new(vec_double, 0.0);
+        let values_arc: Arc<dyn PropertyValues> = Arc::new(values);
         
-        let default_value = DefaultValue::long(0);
+        let default_value = DefaultValue::double(0.0);
         let property = MonadicProperty::with_default(
             "score",
             PropertyState::Persistent,
-            values,
+            values_arc,
             default_value.clone(),
         );
 
@@ -150,10 +154,10 @@ mod tests {
     #[test]
     fn monadic_property_values_access() {
         let vec_long = VecLong::from(vec![1, 2, 3]);
-        let long_values = LongPropertyValues::new(vec_long, 0);
-        let values: Arc<dyn PropertyValues> = Arc::new(long_values);
+        let values = MonadicLongPropertyValues::new(vec_long, 0);
+        let values_arc: Arc<dyn PropertyValues> = Arc::new(values);
         
-        let property = MonadicProperty::of("age", values);
+        let property = MonadicProperty::of("age", values_arc);
 
         // Test trait object access
         let values_ref = property.values();
@@ -164,4 +168,3 @@ mod tests {
         assert_eq!(values_arc.element_count(), 3);
     }
 }
-

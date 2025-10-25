@@ -61,6 +61,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28; // ~268 million elements
 ///     }
 /// }
 /// ```
+#[derive(Debug, Clone)]
 pub enum HugeLongArray {
     /// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
     Single(SingleHugeLongArray),
@@ -471,6 +472,7 @@ impl<'a> HugeCursor<'a> for HugeLongArrayCursor<'a> {
 }
 
 /// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
+#[derive(Debug, Clone)]
 pub struct SingleHugeLongArray {
     data: Vec<i64>,
 }
@@ -521,6 +523,7 @@ impl SingleHugeLongArray {
 }
 
 /// Multi-page implementation for arrays > MAX_ARRAY_LENGTH
+#[derive(Debug, Clone)]
 pub struct PagedHugeLongArray {
     pages: Vec<Vec<i64>>,
     size: usize,
@@ -996,3 +999,18 @@ mod tests {
         assert_eq!(sum, 90); // 0 + 2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18
     }
 }
+
+// Collections impl via macro
+use crate::huge_collections;
+use crate::types::ValueType;
+huge_collections!(
+    HugeLongArray,
+    i64,
+    ValueType::Long,
+    0i64,
+    to_f64 = |x: i64| x as f64,
+    kind: Ord,
+    [],
+    [],
+    "Collections impl for HugeLongArray"
+);

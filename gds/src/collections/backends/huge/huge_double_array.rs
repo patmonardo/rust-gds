@@ -56,6 +56,7 @@ const MAX_ARRAY_LENGTH: usize = 1 << 28;
 ///     }
 /// }
 /// ```
+#[derive(Debug, Clone)]
 pub enum HugeDoubleArray {
     /// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
     Single(SingleHugeDoubleArray),
@@ -411,6 +412,7 @@ impl<'a> HugeCursor<'a> for HugeDoubleArrayCursor<'a> {
 }
 
 /// Single-page implementation for arrays ≤ MAX_ARRAY_LENGTH
+#[derive(Debug, Clone)]
 pub struct SingleHugeDoubleArray {
     data: Vec<f64>,
 }
@@ -457,6 +459,7 @@ impl SingleHugeDoubleArray {
 }
 
 /// Multi-page implementation for arrays > MAX_ARRAY_LENGTH
+#[derive(Debug, Clone)]
 pub struct PagedHugeDoubleArray {
     pages: Vec<Vec<f64>>,
     size: usize,
@@ -896,3 +899,18 @@ mod tests {
         assert_eq!(array.get(51), -1.0);
     }
 }
+
+// Collections impl via macro
+use crate::huge_collections;
+use crate::types::ValueType;
+huge_collections!(
+    HugeDoubleArray,
+    f64,
+    ValueType::Double,
+    0.0f64,
+    to_f64 = |x: f64| x,
+    kind: Float,
+    [],
+    [],
+    "Collections impl for HugeDoubleArray"
+);

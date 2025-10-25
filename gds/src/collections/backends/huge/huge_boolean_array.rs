@@ -675,3 +675,17 @@ mod tests {
         assert_eq!(count, 5); // Elements 0, 2, 4, 6, 8 are true
     }
 }
+
+// Collections impl via macro
+use crate::huge_collections;
+use crate::types::ValueType;
+huge_collections!(
+    HugeBooleanArray,
+    bool,
+    ValueType::Boolean,
+    false,
+    kind: OrdNoAgg,
+    [],
+    [],
+    "Collections impl for HugeBooleanArray"
+);

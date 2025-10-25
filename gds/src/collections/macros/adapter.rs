@@ -3,7 +3,6 @@
 //! This module provides macros for generating adapter code,
 //! including PropertyValues adapters and Collections adapters.
 
-/// Macro for generating PropertyValues adapter implementations
 #[macro_export]
 macro_rules! collections_property_values_adapter {
     (

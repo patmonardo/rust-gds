@@ -5,7 +5,6 @@
 //! - **Vec**: Enhanced standard library vectors
 //! - **Arrow**: Apache Arrow columnar arrays
 //! - **Extensions**: ndarray, GPU, distributed, compression, encryption
-//! - **Composition**: Hybrid, layered, adaptive collections
 //! - **Magic**: Auto-optimization, AI-powered features
 //!
 //! ## Architecture
@@ -15,7 +14,7 @@
 //!         ↓
 //! Adapter Layer (UniversalPropertyValues)
 //!         ↓
-//! Collections Layer (Huge/Vec/Arrow/Extensions/Composition/Magic)
+//! Collections Layer (Huge/Vec/Arrow/Extensions)
 //! ```
 //!
 //! ## Usage
@@ -44,12 +43,6 @@ pub mod backends;
 
 // Extension implementations
 pub mod extensions;
-
-// Composition implementations
-pub mod composition;
-
-// Magic implementations
-pub mod magic;
 
 // Macro system
 pub mod macros;

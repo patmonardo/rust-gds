@@ -5,7 +5,6 @@
 
 pub mod universal;
 pub mod factory;
-pub mod macros;
 
 pub use universal::*;
 pub use factory::*;
