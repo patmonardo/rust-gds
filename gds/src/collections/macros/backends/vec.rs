@@ -3,13 +3,6 @@
 //! This macro generates Vec-based Collections with enhanced features,
 //! including aggregation methods, nullability support, and extensions.
 
-use crate::collections::traits::{
-    Collections, PropertyValuesAdapter, CollectionsFactory,
-    AggregationSupport, NullabilitySupport, CompressionSupport,
-};
-use crate::collections::config::{CollectionsBackend, Extension, Feature};
-use crate::types::ValueType;
-use crate::types::default_value::DefaultValue;
 
 /// Vec Collections macro that generates Vec-based Collections implementations
 #[macro_export]

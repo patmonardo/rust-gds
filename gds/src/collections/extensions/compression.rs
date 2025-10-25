@@ -4,8 +4,7 @@
 //! This enables compression for any Collections implementation.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::Extension;
-use std::collections::HashMap;
+use crate::config::Extension;
 use std::marker::PhantomData;
 
 /// Compression extension trait for Collections
@@ -311,15 +310,15 @@ where
         self.inner.default_value()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
+    fn backend(&self) -> crate::config::CollectionsBackend {
         self.inner.backend()
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         &[Extension::Compression]
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         &[Extension::Compression]
     }
     

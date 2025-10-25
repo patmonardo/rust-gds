@@ -3,11 +3,8 @@
 //! This module provides factory functions for creating Collections instances,
 //! including Huge, Vec, Arrow, and other backend implementations.
 
-use crate::collections::traits::CollectionsFactory;
 use crate::collections::traits::Collections;
-use crate::collections::config::{CollectionsBackend, CollectionsConfig};
-use crate::types::ValueType;
-use crate::types::default_value::DefaultValue;
+use crate::config::{CollectionsBackend, CollectionsConfig};
 use std::iter::Sum;
 
 /// Collections factory for creating Collections instances

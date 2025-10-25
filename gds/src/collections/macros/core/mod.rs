@@ -4,4 +4,3 @@
 //! including the main Collections macro and trait generation macros.
 
 pub mod collections;
-pub use collections::*;

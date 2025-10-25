@@ -17,7 +17,7 @@ macro_rules! collections_property_values_adapter {
         $doc_desc:expr              // Documentation
     ) => {
         use crate::collections::traits::{Collections, PropertyValuesAdapter};
-        use crate::collections::config::{CollectionsBackend, Extension, Feature};
+        use crate::config::{CollectionsBackend, Extension, Feature};
         use crate::types::ValueType;
         use crate::types::default_value::DefaultValue;
         use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};

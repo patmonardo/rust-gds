@@ -4,7 +4,7 @@
 //! This provides paging capabilities as extensions to any Collections implementation.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::Extension;
+use crate::config::Extension;
 use std::marker::PhantomData;
 
 /// Paging extension trait for Collections
@@ -164,15 +164,15 @@ where
         self.inner.default_value()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
-        crate::collections::config::CollectionsBackend::Huge
+    fn backend(&self) -> crate::config::CollectionsBackend {
+        crate::config::CollectionsBackend::Huge
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         &[Extension::Paging]
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         &[Extension::Paging]
     }
     

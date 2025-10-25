@@ -7,6 +7,3 @@ pub mod profiling;
 pub mod benchmarking;
 pub mod optimization;
 
-pub use profiling::*;
-pub use benchmarking::*;
-pub use optimization::*;

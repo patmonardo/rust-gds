@@ -4,8 +4,7 @@
 //! must implement, providing a unified interface across all backends.
 
 use crate::types::ValueType;
-use crate::types::default_value::DefaultValue;
-use crate::collections::config::{CollectionsBackend, Extension};
+use crate::config::{CollectionsBackend, Extension};
 use std::iter::Sum;
 
 /// Main Collections trait that all Collections implementations must implement

@@ -4,10 +4,8 @@
 //! This provides memory estimation capabilities as extensions to any Collections implementation.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::Extension;
-use crate::mem::{
-    Estimate, MemoryEstimation, MemoryTree, MemoryRange
-};
+use crate::config::Extension;
+use crate::mem::Estimate;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
@@ -245,15 +243,15 @@ where
         self.inner.default_value()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
+    fn backend(&self) -> crate::config::CollectionsBackend {
         self.inner.backend()
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         &[Extension::MemoryEstimation]
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         &[Extension::MemoryEstimation]
     }
     

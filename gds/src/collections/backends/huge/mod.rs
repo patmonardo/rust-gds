@@ -165,11 +165,11 @@ impl Collections<i32> for HugeIntArray {
     fn is_null(&self, _index: usize) -> bool { false }
     fn null_count(&self) -> usize { 0 }
     fn default_value(&self) -> i32 { 0 }
-    fn backend(&self) -> crate::collections::config::CollectionsBackend { 
-        crate::collections::config::CollectionsBackend::Huge 
+    fn backend(&self) -> crate::config::CollectionsBackend { 
+        crate::config::CollectionsBackend::Huge 
     }
-    fn features(&self) -> &[crate::collections::config::Extension] { &[] }
-    fn extensions(&self) -> &[crate::collections::config::Extension] { &[] }
+    fn features(&self) -> &[crate::config::Extension] { &[] }
+    fn extensions(&self) -> &[crate::config::Extension] { &[] }
     fn value_type(&self) -> crate::types::ValueType { crate::types::ValueType::Int }
     fn with_capacity(capacity: usize) -> Self {
         Self::new(capacity)
@@ -310,11 +310,11 @@ impl Collections<i64> for HugeLongArray {
     fn is_null(&self, _index: usize) -> bool { false }
     fn null_count(&self) -> usize { 0 }
     fn default_value(&self) -> i64 { 0 }
-    fn backend(&self) -> crate::collections::config::CollectionsBackend { 
-        crate::collections::config::CollectionsBackend::Huge 
+    fn backend(&self) -> crate::config::CollectionsBackend { 
+        crate::config::CollectionsBackend::Huge 
     }
-    fn features(&self) -> &[crate::collections::config::Extension] { &[] }
-    fn extensions(&self) -> &[crate::collections::config::Extension] { &[] }
+    fn features(&self) -> &[crate::config::Extension] { &[] }
+    fn extensions(&self) -> &[crate::config::Extension] { &[] }
     fn value_type(&self) -> crate::types::ValueType { crate::types::ValueType::Long }
     fn with_capacity(capacity: usize) -> Self {
         Self::new(capacity)
@@ -455,11 +455,11 @@ impl Collections<f64> for HugeDoubleArray {
     fn is_null(&self, _index: usize) -> bool { false }
     fn null_count(&self) -> usize { 0 }
     fn default_value(&self) -> f64 { 0.0 }
-    fn backend(&self) -> crate::collections::config::CollectionsBackend { 
-        crate::collections::config::CollectionsBackend::Huge 
+    fn backend(&self) -> crate::config::CollectionsBackend { 
+        crate::config::CollectionsBackend::Huge 
     }
-    fn features(&self) -> &[crate::collections::config::Extension] { &[] }
-    fn extensions(&self) -> &[crate::collections::config::Extension] { &[] }
+    fn features(&self) -> &[crate::config::Extension] { &[] }
+    fn extensions(&self) -> &[crate::config::Extension] { &[] }
     fn value_type(&self) -> crate::types::ValueType { crate::types::ValueType::Double }
     fn with_capacity(capacity: usize) -> Self {
         Self::new(capacity)

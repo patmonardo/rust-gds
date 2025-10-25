@@ -4,7 +4,7 @@
 //! This enables performance tracking and OpenTelemetry integration for any Collections implementation.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::Extension;
+use crate::config::Extension;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::time::{Duration, Instant};
@@ -195,15 +195,15 @@ where
         self.inner.default_value()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
+    fn backend(&self) -> crate::config::CollectionsBackend {
         self.inner.backend()
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         &[Extension::Metrics]
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         &[Extension::Metrics]
     }
     

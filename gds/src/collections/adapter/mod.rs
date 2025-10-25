@@ -9,4 +9,3 @@ pub mod macros;
 
 pub use universal::*;
 pub use factory::*;
-pub use macros::*;

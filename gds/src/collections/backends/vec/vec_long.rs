@@ -30,6 +30,12 @@ impl VecLong {
     }
 }
 
+impl From<Vec<i64>> for VecLong {
+    fn from(data: Vec<i64>) -> Self {
+        Self { data }
+    }
+}
+
 impl Collections<i64> for VecLong {
     fn get(&self, index: usize) -> Option<i64> {
         self.data.get(index).map(|x| *x)
@@ -146,11 +152,11 @@ impl Collections<i64> for VecLong {
     fn is_null(&self, _index: usize) -> bool { false }
     fn null_count(&self) -> usize { 0 }
     fn default_value(&self) -> i64 { 0 }
-    fn backend(&self) -> crate::collections::config::CollectionsBackend { 
-        crate::collections::config::CollectionsBackend::Vec 
+    fn backend(&self) -> crate::config::CollectionsBackend { 
+        crate::config::CollectionsBackend::Vec 
     }
-    fn features(&self) -> &[crate::collections::config::Extension] { &[] }
-    fn extensions(&self) -> &[crate::collections::config::Extension] { &[] }
+    fn features(&self) -> &[crate::config::Extension] { &[] }
+    fn extensions(&self) -> &[crate::config::Extension] { &[] }
     fn value_type(&self) -> crate::types::ValueType { crate::types::ValueType::Long }
     fn with_capacity(capacity: usize) -> Self {
         Self { data: Vec::with_capacity(capacity) }

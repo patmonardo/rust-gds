@@ -465,6 +465,11 @@ impl<T> CollectionsConfigBuilder<T> {
         self
     }
 
+    pub fn with_backend(mut self, backend: CollectionsBackend) -> Self {
+        self.config.backend.primary = backend;
+        self
+    }
+
     pub fn performance(mut self, performance: PerformanceConfig) -> Self {
         self.config.performance = performance;
         self

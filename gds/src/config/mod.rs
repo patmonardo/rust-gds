@@ -5,6 +5,7 @@
 
 pub mod algo_config;
 pub mod base_types;
+pub mod collections_config;
 pub mod graph_config;
 pub mod graph_store_config;
 pub mod property_store_config;
@@ -18,6 +19,7 @@ pub mod validation;
 pub use crate::core::utils::partition::Partitioning;
 pub use algo_config::*;
 pub use base_types::*;
+pub use collections_config::*;
 pub use graph_config::*;
 pub use graph_store_config::*;
 pub use property_store_config::*;

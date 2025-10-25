@@ -4,9 +4,9 @@
 //! This provides queue capabilities as extensions to any Collections implementation.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::Extension;
+use crate::config::Extension;
 use crate::core::utils::queue::{
-    BoundedLongLongPriorityQueue, BoundedLongPriorityQueue, HugeLongPriorityQueue
+    BoundedLongPriorityQueue, HugeLongPriorityQueue
 };
 use std::marker::PhantomData;
 
@@ -187,15 +187,15 @@ where
         self.inner.default_value()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
+    fn backend(&self) -> crate::config::CollectionsBackend {
         self.inner.backend()
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         &[Extension::Queue]
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         &[Extension::Queue]
     }
     

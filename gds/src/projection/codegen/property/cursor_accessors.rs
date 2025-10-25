@@ -84,7 +84,7 @@ macro_rules! impl_cursor_smart_converter {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
     use crate::values::PrimitiveValues;
     use crate::types::ValueType;
 

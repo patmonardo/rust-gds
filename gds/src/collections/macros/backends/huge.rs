@@ -3,13 +3,6 @@
 //! This macro generates HugeArray-based Collections with paged memory management,
 //! including aggregation methods, nullability support, and extensions.
 
-use crate::collections::traits::{
-    Collections, PropertyValuesAdapter, CollectionsFactory,
-    AggregationSupport, NullabilitySupport, CompressionSupport,
-};
-use crate::collections::config::{CollectionsBackend, Extension, Feature};
-use crate::types::ValueType;
-use crate::types::default_value::DefaultValue;
 
 /// Huge Collections macro that generates HugeArray-based Collections implementations
 #[macro_export]

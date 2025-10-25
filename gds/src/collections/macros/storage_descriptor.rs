@@ -3,8 +3,7 @@
 //! This module provides macros for generating storage descriptors that integrate
 //! Collections with the Algo StorageRuntime systems.
 
-use crate::collections::traits::{Collections, StorageRuntimeIntegration, StorageDescriptor, MemoryLayout};
-use crate::collections::config::{CollectionsBackend, Extension};
+use crate::collections::traits::StorageRuntimeIntegration;
 
 /// Macro for generating storage descriptors for Collections
 #[macro_export]

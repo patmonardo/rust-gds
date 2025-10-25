@@ -130,11 +130,11 @@ impl Collections<f32> for VecFloat {
     fn is_null(&self, _index: usize) -> bool { false }
     fn null_count(&self) -> usize { 0 }
     fn default_value(&self) -> f32 { 0.0 }
-    fn backend(&self) -> crate::collections::config::CollectionsBackend { 
-        crate::collections::config::CollectionsBackend::Vec 
+    fn backend(&self) -> crate::config::CollectionsBackend { 
+        crate::config::CollectionsBackend::Vec 
     }
-    fn features(&self) -> &[crate::collections::config::Extension] { &[] }
-    fn extensions(&self) -> &[crate::collections::config::Extension] { &[] }
+    fn features(&self) -> &[crate::config::Extension] { &[] }
+    fn extensions(&self) -> &[crate::config::Extension] { &[] }
     fn value_type(&self) -> crate::types::ValueType { crate::types::ValueType::Float }
     fn with_capacity(capacity: usize) -> Self {
         Self { data: Vec::with_capacity(capacity) }

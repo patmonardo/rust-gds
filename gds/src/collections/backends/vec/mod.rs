@@ -4,8 +4,6 @@
 //! including aggregation methods, nullability support, and
 //! Arrow compatibility.
 
-use crate::collections::traits::Collections;
-use std::iter::Sum;
 
 // Enhanced Vec implementation
 pub mod enhanced_vec;

@@ -5,5 +5,3 @@
 
 pub mod vec;
 pub mod huge;
-pub use vec::*;
-pub use huge::*;

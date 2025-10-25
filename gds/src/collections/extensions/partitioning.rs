@@ -4,13 +4,12 @@
 //! This provides sophisticated parallel processing capabilities for ML workloads.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::Extension;
+use crate::config::Extension;
 use crate::core::utils::partition::{
     Partition, DegreePartition, IteratorPartition, LazyDegreePartitionIterator,
-    PartitionUtils, Partitioning, DegreeFunction, PartitionConsumer
+    PartitionUtils, Partitioning, DegreeFunction
 };
 use std::marker::PhantomData;
-use std::sync::Arc;
 
 /// Partitioning strategy for ML Collections
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -278,15 +277,15 @@ where
         self.inner.default_value()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
+    fn backend(&self) -> crate::config::CollectionsBackend {
         self.inner.backend()
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         &[Extension::Partitioning]
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         &[Extension::Partitioning]
     }
     

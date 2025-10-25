@@ -36,8 +36,7 @@
 //! let sum3 = arrow.sum();
 //! ```
 
-// Core configuration and traits
-pub mod config;
+// Core traits
 pub mod traits;
 
 // Backend implementations
@@ -62,12 +61,9 @@ pub mod utils;
 pub mod adapter;
 
 // Re-export commonly used types
-pub use config::*;
 pub use traits::*;
 pub use backends::*;
 pub use extensions::*;
-pub use composition::*;
-pub use magic::*;
 pub use macros::*;
 pub use utils::*;
 pub use adapter::*;

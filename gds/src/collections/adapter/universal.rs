@@ -5,10 +5,9 @@
 //! a unified interface for all Collections backends.
 
 use crate::collections::traits::{Collections, PropertyValuesAdapter};
-use crate::collections::config::{CollectionsBackend, Extension, Feature};
+use crate::config::{CollectionsBackend, Extension};
 use crate::types::ValueType;
-use crate::types::default_value::DefaultValue;
-use crate::types::properties::property_values::{PropertyValues, PropertyValuesResult};
+use crate::types::properties::property_values::PropertyValues;
 
 /// Universal PropertyValues adapter that wraps any Collections implementation
 #[derive(Debug)]
@@ -195,15 +194,15 @@ where
         self.default_value.clone()
     }
     
-    fn backend(&self) -> crate::collections::config::CollectionsBackend {
+    fn backend(&self) -> crate::config::CollectionsBackend {
         self.collection.backend()
     }
     
-    fn features(&self) -> &[crate::collections::config::Extension] {
+    fn features(&self) -> &[crate::config::Extension] {
         self.collection.features()
     }
     
-    fn extensions(&self) -> &[crate::collections::config::Extension] {
+    fn extensions(&self) -> &[crate::config::Extension] {
         self.collection.extensions()
     }
     

@@ -5,7 +5,6 @@
 //! system into a unified compute platform.
 
 use crate::collections::traits::Collections;
-use std::marker::PhantomData;
 use std::iter::Sum;
 
 /// Arrow-compatible compute kernels trait

@@ -7,6 +7,3 @@ pub mod auto_optimize;
 pub mod ai;
 pub mod predictive;
 
-pub use auto_optimize::*;
-pub use ai::*;
-pub use predictive::*;

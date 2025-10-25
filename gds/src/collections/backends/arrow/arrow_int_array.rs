@@ -4,7 +4,7 @@
 //! Apache Arrow and implement SIMD-accelerated compute kernels.
 
 use crate::collections::traits::Collections;
-use crate::collections::config::{CollectionsBackend, Extension};
+use crate::config::{CollectionsBackend, Extension};
 use crate::types::ValueType;
 use std::iter::Sum;
 

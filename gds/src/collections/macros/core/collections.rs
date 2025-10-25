@@ -3,13 +3,6 @@
 //! This macro generates the complete Collections ecosystem for any type,
 //! including traits, implementations, adapters, and extension points.
 
-use crate::collections::traits::{
-    Collections, PropertyValuesAdapter, CollectionsFactory,
-    AggregationSupport, NullabilitySupport, CompressionSupport,
-};
-use crate::collections::config::{CollectionsBackend, Extension, Feature};
-use crate::types::ValueType;
-use crate::types::default_value::DefaultValue;
 
 /// Main Collections macro that generates complete Collections implementations
 #[macro_export]
@@ -28,7 +21,7 @@ macro_rules! collections {
             Collections, PropertyValuesAdapter, CollectionsFactory,
             AggregationSupport, NullabilitySupport, CompressionSupport,
         };
-        use crate::collections::config::{CollectionsBackend, Extension, Feature};
+        use crate::config::{CollectionsBackend, Extension, Feature};
         use crate::types::ValueType;
         use crate::types::default_value::DefaultValue;
 

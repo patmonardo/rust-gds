@@ -10,5 +10,3 @@ pub mod single_page_cursor;
 
 pub use huge_cursor::*;
 pub use huge_cursor_support::*;
-pub use paged_cursor::*;
-pub use single_page_cursor::*;
