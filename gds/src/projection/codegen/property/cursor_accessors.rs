@@ -57,11 +57,11 @@ macro_rules! impl_cursor_smart_converter {
         impl $crate::projection::codegen::property::smart_converter::RelationshipCursorExt for $cursor_type {
             fn get<T: $crate::values::traits::FromGdsValue>(&self) -> Result<T, String> {
                 let value = self.$value_field;
-                let gds_value = crate::values::PrimitiveValues::long_value(value);
+                let gds_value = $crate::values::PrimitiveValues::long_value(value);
                 T::from_gds_value(gds_value.as_ref())
             }
             
-            fn get_typed<T: crate::values::traits::FromGdsValue>(&self, expected_type: crate::types::ValueType) -> Result<T, String> {
+            fn get_typed<T: $crate::values::traits::FromGdsValue>(&self, expected_type: crate::types::ValueType) -> Result<T, String> {
                 let value = self.$value_field;
                 let gds_value = crate::values::PrimitiveValues::long_value(value);
                 if gds_value.value_type() != expected_type {

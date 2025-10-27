@@ -48,7 +48,7 @@ macro_rules! typed_property_values {
 
         impl $crate::types::properties::property_values::PropertyValues for $struct_name {
             fn value_type(&self) -> $crate::types::ValueType {
-                crate::types::ValueType::$value_type_enum
+                $crate::types::ValueType::$value_type_enum
             }
 
             fn element_count(&self) -> usize {
@@ -58,7 +58,7 @@ macro_rules! typed_property_values {
 
         impl $struct_name {
             /// Gets a value with smart conversion
-            pub fn get<T: crate::values::traits::FromGdsValue>(&self, index: usize) -> crate::types::properties::property_values::PropertyValuesResult<T> {
+            pub fn get<T: $crate::values::traits::FromGdsValue>(&self, index: usize) -> crate::types::properties::property_values::PropertyValuesResult<T> {
                 if index >= self.values.len() {
                     return Err(crate::types::properties::property_values::PropertyValuesError::InvalidNodeId(index as u64));
                 }
@@ -187,7 +187,7 @@ macro_rules! typed_property_values_factory {
             pub fn create(value_type: $crate::types::ValueType, capacity: usize) -> std::sync::Arc<dyn $crate::types::properties::property_values::PropertyValues> {
                 match value_type {
                     $(
-                        crate::types::ValueType::$value_type_enum => {
+                        $crate::types::ValueType::$value_type_enum => {
                             std::sync::Arc::new($struct_name::new(Vec::with_capacity(capacity), $struct_name::default_value()))
                         }
                     )*
@@ -196,7 +196,7 @@ macro_rules! typed_property_values_factory {
             }
 
             /// Creates a PropertyValues instance from existing data
-            pub fn from_data<T>(value_type: crate::types::ValueType, data: Vec<T>) -> std::sync::Arc<dyn crate::types::properties::property_values::PropertyValues> {
+            pub fn from_data<T>(value_type: $crate::types::ValueType, data: Vec<T>) -> std::sync::Arc<dyn crate::types::properties::property_values::PropertyValues> {
                 match value_type {
                     $(
                         crate::types::ValueType::$value_type_enum => {
