@@ -213,7 +213,7 @@ mod tests {
     #[test]
     fn test_project_long_property() {
         // Create a simple PropertyValues column
-        let props = DefaultLongNodePropertyValues::new(vec![10, 20, 30], 3);
+        let props = DefaultLongNodePropertyValues::from_collection(crate::collections::backends::vec::VecLong::from(vec![10, 20, 30]), 3);
 
         // Project into Pregel DefaultValue
         let value = DefaultValue::from_property(&props, 0).unwrap();
@@ -226,7 +226,7 @@ mod tests {
 
     #[test]
     fn test_project_missing_property() {
-        let props = DefaultLongNodePropertyValues::new(vec![10, 20, 30], 3);
+        let props = DefaultLongNodePropertyValues::from_collection(crate::collections::backends::vec::VecLong::from(vec![10, 20, 30]), 3);
 
         // Out of bounds
         let value = DefaultValue::from_property(&props, 999);

@@ -38,4 +38,9 @@ impl From<Vec<i64>> for VecLong {
 
 use crate::vec_collections;
 use crate::types::ValueType;
+use crate::collections::traits::PropertyValuesAdapter;
+
 vec_collections!(VecLong, i64, ValueType::Long, 0i64, to_f64 = |x: i64| x as f64, kind = Ord);
+
+// Implement PropertyValuesAdapter (marker trait)
+impl PropertyValuesAdapter<i64> for VecLong {}

@@ -35,7 +35,7 @@ fn test_single_property_auto_selection() {
     let knows = RelationshipType::of("KNOWS");
 
     // Add single property
-    let weight_values = Arc::new(DefaultRelationshipPropertyValues::new(
+    let weight_values = Arc::new(DefaultRelationshipPropertyValues::with_values(
         vec![0.8, 0.6, 0.9],
         0.0,
         3,
@@ -77,12 +77,12 @@ fn test_multiple_properties_no_selector() {
     let knows = RelationshipType::of("KNOWS");
 
     // Add TWO properties
-    let weight_values = Arc::new(DefaultRelationshipPropertyValues::new(
+    let weight_values = Arc::new(DefaultRelationshipPropertyValues::with_values(
         vec![0.8, 0.6, 0.9],
         0.0,
         3,
     ));
-    let capacity_values = Arc::new(DefaultRelationshipPropertyValues::new(
+    let capacity_values = Arc::new(DefaultRelationshipPropertyValues::with_values(
         vec![100.0, 50.0, 75.0],
         0.0,
         3,
@@ -130,12 +130,12 @@ fn test_property_selection_per_relationship_type() {
     let works_at = RelationshipType::of("WORKS_AT");
 
     // Add properties to each type
-    let weight_values = Arc::new(DefaultRelationshipPropertyValues::new(vec![0.8], 0.0, 1));
+    let weight_values = Arc::new(DefaultRelationshipPropertyValues::with_values(vec![0.8], 0.0, 1));
     store
         .add_relationship_property(knows.clone(), "weight", weight_values)
         .expect("add weight to KNOWS");
 
-    let tenure_values = Arc::new(DefaultRelationshipPropertyValues::new(
+    let tenure_values = Arc::new(DefaultRelationshipPropertyValues::with_values(
         vec![24.0, 36.0],
         0.0,
         2,

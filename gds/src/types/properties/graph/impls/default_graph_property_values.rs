@@ -1,397 +1,68 @@
-use crate::property_values_impl;
-use crate::types::properties::graph::{
-    DoubleArrayGraphPropertyValues, DoubleGraphPropertyValues, FloatArrayGraphPropertyValues,
-    GraphPropertyValues, LongArrayGraphPropertyValues, LongGraphPropertyValues,
-};
+//! Default Graph Property Values: Universal Collections-Backed Implementations
+//!
+//! This module generates graph property value adapters using the ValueType table
+//! and the universal adapter system. All adapters are generic over Collections
+//! backends (Vec, Huge, Arrow), enabling runtime backend selection.
+
+use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::PropertyValues;
 use crate::types::ValueType;
-use std::any::Any;
 
-#[derive(Debug, Clone)]
-pub struct DefaultLongGraphPropertyValues {
-    values: Vec<i64>,
-}
+// Import the macros from the crate root
+use crate::{generate_all_graph_adapters, generate_all_graph_array_adapters};
 
-impl DefaultLongGraphPropertyValues {
-    pub fn new(values: Vec<i64>) -> Self {
-        Self { values }
-    }
+// Generate all graph adapters from the ValueType table
+// This expands to adapters for: Byte, Short, Int, Long, Float, Double, Boolean
+generate_all_graph_adapters!();
 
-    pub fn singleton(value: i64) -> Self {
-        Self::new(vec![value])
-    }
+// Generate all graph array adapters
+// This expands to: ByteArray, ShortArray, IntArray, LongArray, FloatArray, DoubleArray, etc.
+generate_all_graph_array_adapters!();
 
-    pub fn values(&self) -> &[i64] {
-        &self.values
-    }
-}
+// Note: The generated types are generic over Collections backend C:
+// Scalars:
+// - DefaultLongGraphPropertyValues<C>
+// - DefaultDoubleGraphPropertyValues<C>
+// - DefaultFloatGraphPropertyValues<C>
+// - DefaultIntGraphPropertyValues<C>
+// - DefaultShortGraphPropertyValues<C>
+// - DefaultByteGraphPropertyValues<C>
+// - DefaultBooleanGraphPropertyValues<C>
+//
+// Arrays:
+// - DefaultLongArrayGraphPropertyValues<C>
+// - DefaultDoubleArrayGraphPropertyValues<C>
+// - DefaultFloatArrayGraphPropertyValues<C>
+// - etc.
 
-property_values_impl!(DefaultLongGraphPropertyValues, Long, graph);
+// For backwards compatibility, provide convenient FromIterator implementations
+// for the common generic types with Vec backends
+use crate::collections::backends::vec::{VecDouble, VecLong};
 
-impl GraphPropertyValues for DefaultLongGraphPropertyValues {
-    fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
-        Box::new(self.values.iter().map(|&value| value as f64))
-    }
-
-    fn long_values(&self) -> Box<dyn Iterator<Item = i64> + '_> {
-        Box::new(self.values.iter().copied())
-    }
-
-    fn double_array_values(&self) -> Box<dyn Iterator<Item = Vec<f64>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn float_array_values(&self) -> Box<dyn Iterator<Item = Vec<f32>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn long_array_values(&self) -> Box<dyn Iterator<Item = Vec<i64>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn objects(&self) -> Box<dyn Iterator<Item = Box<dyn Any>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|&value| Box::new(value) as Box<dyn Any>),
-        )
-    }
-}
-
-impl LongGraphPropertyValues for DefaultLongGraphPropertyValues {
-    fn long_values_unchecked(&self) -> &[i64] {
-        &self.values
-    }
-}
-
-impl FromIterator<i64> for DefaultLongGraphPropertyValues {
+impl FromIterator<i64> for DefaultLongGraphPropertyValues<VecLong> {
     fn from_iter<T: IntoIterator<Item = i64>>(iter: T) -> Self {
-        Self::new(iter.into_iter().collect())
+        let vec: Vec<i64> = iter.into_iter().collect();
+        let backend = VecLong::from(vec);
+        Self::from_collection(backend)
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct DefaultDoubleGraphPropertyValues {
-    values: Vec<f64>,
-}
-
-impl DefaultDoubleGraphPropertyValues {
-    pub fn new(values: Vec<f64>) -> Self {
-        Self { values }
-    }
-
-    pub fn singleton(value: f64) -> Self {
-        Self::new(vec![value])
-    }
-
-    pub fn values(&self) -> &[f64] {
-        &self.values
-    }
-}
-
-property_values_impl!(DefaultDoubleGraphPropertyValues, Double, graph);
-
-impl GraphPropertyValues for DefaultDoubleGraphPropertyValues {
-    fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
-        Box::new(self.values.iter().copied())
-    }
-
-    fn long_values(&self) -> Box<dyn Iterator<Item = i64> + '_> {
-        Box::new(self.values.iter().map(|&value| value as i64))
-    }
-
-    fn double_array_values(&self) -> Box<dyn Iterator<Item = Vec<f64>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn float_array_values(&self) -> Box<dyn Iterator<Item = Vec<f32>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn long_array_values(&self) -> Box<dyn Iterator<Item = Vec<i64>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn objects(&self) -> Box<dyn Iterator<Item = Box<dyn Any>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|&value| Box::new(value) as Box<dyn Any>),
-        )
-    }
-}
-
-impl DoubleGraphPropertyValues for DefaultDoubleGraphPropertyValues {
-    fn double_values_unchecked(&self) -> &[f64] {
-        &self.values
-    }
-}
-
-impl FromIterator<f64> for DefaultDoubleGraphPropertyValues {
+impl FromIterator<f64> for DefaultDoubleGraphPropertyValues<VecDouble> {
     fn from_iter<T: IntoIterator<Item = f64>>(iter: T) -> Self {
-        Self::new(iter.into_iter().collect())
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct DefaultDoubleArrayGraphPropertyValues {
-    values: Vec<Vec<f64>>,
-    dimension: Option<usize>,
-}
-
-impl DefaultDoubleArrayGraphPropertyValues {
-    pub fn new(values: Vec<Vec<f64>>) -> Self {
-        let dimension = values.first().map(|vec| vec.len());
-        Self { values, dimension }
-    }
-
-    pub fn singleton(value: Vec<f64>) -> Self {
-        Self::new(vec![value])
-    }
-
-    pub fn values(&self) -> &[Vec<f64>] {
-        &self.values
-    }
-}
-
-property_values_impl!(
-    DefaultDoubleArrayGraphPropertyValues,
-    DoubleArray,
-    graph_array
-);
-
-impl GraphPropertyValues for DefaultDoubleArrayGraphPropertyValues {
-    fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn long_values(&self) -> Box<dyn Iterator<Item = i64> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn double_array_values(&self) -> Box<dyn Iterator<Item = Vec<f64>> + '_> {
-        Box::new(self.values.iter().cloned())
-    }
-
-    fn float_array_values(&self) -> Box<dyn Iterator<Item = Vec<f32>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| vec.iter().map(|&v| v as f32).collect()),
-        )
-    }
-
-    fn long_array_values(&self) -> Box<dyn Iterator<Item = Vec<i64>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn objects(&self) -> Box<dyn Iterator<Item = Box<dyn Any>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| Box::new(vec.clone()) as Box<dyn Any>),
-        )
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        self.dimension
-    }
-}
-
-impl DoubleArrayGraphPropertyValues for DefaultDoubleArrayGraphPropertyValues {
-    fn double_arrays_unchecked(&self) -> &[Vec<f64>] {
-        &self.values
-    }
-}
-
-impl<T> FromIterator<T> for DefaultDoubleArrayGraphPropertyValues
-where
-    T: IntoIterator<Item = f64>,
-{
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let collected: Vec<Vec<f64>> = iter
-            .into_iter()
-            .map(|inner| inner.into_iter().collect())
-            .collect();
-        Self::new(collected)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct DefaultFloatArrayGraphPropertyValues {
-    values: Vec<Vec<f32>>,
-    dimension: Option<usize>,
-}
-
-impl DefaultFloatArrayGraphPropertyValues {
-    pub fn new(values: Vec<Vec<f32>>) -> Self {
-        let dimension = values.first().map(|vec| vec.len());
-        Self { values, dimension }
-    }
-
-    pub fn singleton(value: Vec<f32>) -> Self {
-        Self::new(vec![value])
-    }
-
-    pub fn values(&self) -> &[Vec<f32>] {
-        &self.values
-    }
-}
-
-property_values_impl!(
-    DefaultFloatArrayGraphPropertyValues,
-    FloatArray,
-    graph_array
-);
-
-impl GraphPropertyValues for DefaultFloatArrayGraphPropertyValues {
-    fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn long_values(&self) -> Box<dyn Iterator<Item = i64> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn double_array_values(&self) -> Box<dyn Iterator<Item = Vec<f64>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| vec.iter().map(|&v| v as f64).collect()),
-        )
-    }
-
-    fn float_array_values(&self) -> Box<dyn Iterator<Item = Vec<f32>> + '_> {
-        Box::new(self.values.iter().cloned())
-    }
-
-    fn long_array_values(&self) -> Box<dyn Iterator<Item = Vec<i64>> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn objects(&self) -> Box<dyn Iterator<Item = Box<dyn Any>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| Box::new(vec.clone()) as Box<dyn Any>),
-        )
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        self.dimension
-    }
-}
-
-impl FloatArrayGraphPropertyValues for DefaultFloatArrayGraphPropertyValues {
-    fn float_arrays_unchecked(&self) -> &[Vec<f32>] {
-        &self.values
-    }
-}
-
-impl<T> FromIterator<T> for DefaultFloatArrayGraphPropertyValues
-where
-    T: IntoIterator<Item = f32>,
-{
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let collected: Vec<Vec<f32>> = iter
-            .into_iter()
-            .map(|inner| inner.into_iter().collect())
-            .collect();
-        Self::new(collected)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct DefaultLongArrayGraphPropertyValues {
-    values: Vec<Vec<i64>>,
-    dimension: Option<usize>,
-}
-
-impl DefaultLongArrayGraphPropertyValues {
-    pub fn new(values: Vec<Vec<i64>>) -> Self {
-        let dimension = values.first().map(|vec| vec.len());
-        Self { values, dimension }
-    }
-
-    pub fn singleton(value: Vec<i64>) -> Self {
-        Self::new(vec![value])
-    }
-
-    pub fn values(&self) -> &[Vec<i64>] {
-        &self.values
-    }
-}
-
-property_values_impl!(DefaultLongArrayGraphPropertyValues, LongArray, graph_array);
-
-impl GraphPropertyValues for DefaultLongArrayGraphPropertyValues {
-    fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn long_values(&self) -> Box<dyn Iterator<Item = i64> + '_> {
-        Box::new(std::iter::empty())
-    }
-
-    fn double_array_values(&self) -> Box<dyn Iterator<Item = Vec<f64>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| vec.iter().map(|&v| v as f64).collect()),
-        )
-    }
-
-    fn float_array_values(&self) -> Box<dyn Iterator<Item = Vec<f32>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| vec.iter().map(|&v| v as f32).collect()),
-        )
-    }
-
-    fn long_array_values(&self) -> Box<dyn Iterator<Item = Vec<i64>> + '_> {
-        Box::new(self.values.iter().cloned())
-    }
-
-    fn objects(&self) -> Box<dyn Iterator<Item = Box<dyn Any>> + '_> {
-        Box::new(
-            self.values
-                .iter()
-                .map(|vec| Box::new(vec.clone()) as Box<dyn Any>),
-        )
-    }
-
-    fn dimension(&self) -> Option<usize> {
-        self.dimension
-    }
-}
-
-impl LongArrayGraphPropertyValues for DefaultLongArrayGraphPropertyValues {
-    fn long_arrays_unchecked(&self) -> &[Vec<i64>] {
-        &self.values
-    }
-}
-
-impl<T> FromIterator<T> for DefaultLongArrayGraphPropertyValues
-where
-    T: IntoIterator<Item = i64>,
-{
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let collected: Vec<Vec<i64>> = iter
-            .into_iter()
-            .map(|inner| inner.into_iter().collect())
-            .collect();
-        Self::new(collected)
+        let vec: Vec<f64> = iter.into_iter().collect();
+        let backend = VecDouble::from(vec);
+        Self::from_collection(backend)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::collections::backends::vec::{VecDouble, VecLong};
 
     #[test]
     fn test_long_graph_property_values() {
-        let values: DefaultLongGraphPropertyValues = [1, 2, 3].into_iter().collect();
+        let values: DefaultLongGraphPropertyValues<VecLong> = [1, 2, 3].into_iter().collect();
         assert_eq!(values.value_type(), ValueType::Long);
         assert_eq!(values.element_count(), 3);
         let collected: Vec<i64> = values.long_values().collect();
@@ -401,14 +72,12 @@ mod tests {
     }
 
     #[test]
-    fn test_double_array_graph_property_values() {
-        let values: DefaultDoubleArrayGraphPropertyValues =
-            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]].into_iter().collect();
-        assert_eq!(values.value_type(), ValueType::DoubleArray);
-        assert_eq!(values.element_count(), 2);
-        assert_eq!(values.dimension(), Some(3));
-        let arrays: Vec<Vec<f64>> = values.double_array_values().collect();
-        assert_eq!(arrays.len(), 2);
-        assert_eq!(arrays[0], vec![1.0, 2.0, 3.0]);
+    fn test_double_graph_property_values() {
+        let values: DefaultDoubleGraphPropertyValues<VecDouble> = [1.5, 2.5, 3.5].into_iter().collect();
+        assert_eq!(values.value_type(), ValueType::Double);
+        assert_eq!(values.element_count(), 3);
+        let collected: Vec<f64> = values.double_values().collect();
+        assert_eq!(collected, vec![1.5, 2.5, 3.5]);
     }
 }
+

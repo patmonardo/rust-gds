@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn default_relationship_property_creation() {
         let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::new(vec![1.0, 2.5, 3.7], 0.0, 3),
+            DefaultRelationshipPropertyValues::with_values(vec![1.0, 2.5, 3.7], 0.0, 3),
         );
         let property = DefaultRelationshipProperty::of("weight", values.clone());
 
@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn relationship_property_with_state() {
         let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::new(vec![10.0, 20.0], 0.0, 2),
+            DefaultRelationshipPropertyValues::with_values(vec![10.0, 20.0], 0.0, 2),
         );
         let property =
             DefaultRelationshipProperty::with_state("distance", PropertyState::Transient, values);
@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn relationship_property_with_explicit_default() {
         let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::new(vec![5.5, 6.6], 1.0, 2),
+            DefaultRelationshipPropertyValues::with_values(vec![5.5, 6.6], 1.0, 2),
         );
         let default_value = DefaultValue::double(1.0); // ← CLEAN API!
         let property = DefaultRelationshipProperty::with_default(
@@ -145,7 +145,7 @@ mod tests {
     #[test]
     fn relationship_property_values_access() {
         let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::new(vec![1.0, 2.0, 3.0], 0.0, 3),
+            DefaultRelationshipPropertyValues::with_values(vec![1.0, 2.0, 3.0], 0.0, 3),
         );
         let property = DefaultRelationshipProperty::of("weight", values);
 
@@ -161,7 +161,7 @@ mod tests {
     #[test]
     fn relationship_property_schema_defaults() {
         let values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::new(vec![1.0, 2.0], 0.0, 2),
+            DefaultRelationshipPropertyValues::with_values(vec![1.0, 2.0], 0.0, 2),
         );
         let property = DefaultRelationshipProperty::of("test", values);
 

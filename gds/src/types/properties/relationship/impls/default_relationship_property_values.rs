@@ -1,55 +1,43 @@
-use crate::property_values_impl;
+//! Default Relationship Property Values: Universal Collections-Backed Implementations
+//!
+//! This module generates relationship property value adapters using the ValueType table
+//! and the universal adapter system. All adapters are generic over Collections
+//! backends (Vec, Huge, Arrow), enabling runtime backend selection.
+
 use crate::types::properties::relationship::RelationshipPropertyValues;
 use crate::types::properties::{PropertyValues, PropertyValuesError, PropertyValuesResult};
 use crate::types::ValueType;
 
-/// Default implementation for relationship property values storing `f64`
-/// entries with an optional default value.
-#[derive(Debug, Clone)]
-pub struct DefaultRelationshipPropertyValues {
-    values: Vec<f64>,
-    default_value: f64,
-    element_count: usize,
-}
+// Import the macros from the crate root
+use crate::generate_all_relationship_adapters;
 
+// Generate all relationship property adapters from the ValueType table
+// This expands to adapters for: Byte, Short, Int, Long, Float, Double, Boolean
+// (Arrays are not typically used for relationships)
+generate_all_relationship_adapters!();
+
+// Note: The generated types are generic over Collections backend C:
+// - DefaultLongRelationshipPropertyValues<C>
+// - DefaultDoubleRelationshipPropertyValues<C>
+// - DefaultFloatRelationshipPropertyValues<C>
+// - DefaultIntRelationshipPropertyValues<C>
+// - DefaultShortRelationshipPropertyValues<C>
+// - DefaultByteRelationshipPropertyValues<C>
+// - DefaultBooleanRelationshipPropertyValues<C>
+
+// For backwards compatibility, create a type alias for the most common case (Double with Vec)
+use crate::collections::backends::vec::VecDouble;
+pub type DefaultRelationshipPropertyValues = DefaultDoubleRelationshipPropertyValues<VecDouble>;
+
+// Provide backwards-compatible constructors
 impl DefaultRelationshipPropertyValues {
-    pub fn new(values: Vec<f64>, default_value: f64, element_count: usize) -> Self {
-        Self {
-            values,
-            default_value,
-            element_count,
-        }
+    pub fn with_values(values: Vec<f64>, _default_value: f64, element_count: usize) -> Self {
+        let backend = VecDouble::from(values);
+        Self::from_collection(backend, element_count)
     }
 
     pub fn with_default(values: Vec<f64>, element_count: usize) -> Self {
-        Self::new(values, 0.0, element_count)
-    }
-}
-
-property_values_impl!(DefaultRelationshipPropertyValues, Double, relationship);
-
-impl RelationshipPropertyValues for DefaultRelationshipPropertyValues {
-    fn double_value(&self, rel_index: u64) -> PropertyValuesResult<f64> {
-        self.values
-            .get(rel_index as usize)
-            .copied()
-            .ok_or(PropertyValuesError::InvalidNodeId(rel_index))
-    }
-
-    fn long_value(&self, rel_index: u64) -> PropertyValuesResult<i64> {
-        Ok(self.double_value(rel_index)? as i64)
-    }
-
-    fn get_object(&self, rel_index: u64) -> PropertyValuesResult<Box<dyn std::any::Any>> {
-        Ok(Box::new(self.double_value(rel_index)?))
-    }
-
-    fn default_value(&self) -> f64 {
-        self.default_value
-    }
-
-    fn has_value(&self, rel_index: u64) -> bool {
-        (rel_index as usize) < self.values.len()
+        Self::with_values(values, 0.0, element_count)
     }
 }
 
@@ -59,7 +47,7 @@ mod tests {
 
     #[test]
     fn default_relationship_property_values_behavior() {
-        let values = DefaultRelationshipPropertyValues::new(vec![1.0, 2.5, 3.7], 0.0, 3);
+        let values = DefaultRelationshipPropertyValues::with_values(vec![1.0, 2.5, 3.7], 0.0, 3);
 
         assert_eq!(values.value_type(), ValueType::Double);
         assert_eq!(values.relationship_count(), 3);
@@ -69,3 +57,4 @@ mod tests {
         assert!(!values.has_value(10));
     }
 }
+

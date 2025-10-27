@@ -5,7 +5,8 @@ use crate::types::graph_store::{
     GraphStore, GraphStoreError,
 };
 use crate::types::properties::graph::impls::default_graph_property_values::DefaultDoubleGraphPropertyValues;
-use crate::types::properties::node::DefaultDoubleNodePropertyValues;
+use crate::types::properties::node::impls::default_node_property_values::DefaultDoubleNodePropertyValues;
+use crate::collections::backends::vec::VecDouble;
 use crate::types::schema::{Direction, MutableGraphSchema};
 use crate::types::ValueType;
 use rand::rngs::StdRng;
@@ -192,7 +193,7 @@ impl Default for RandomNodeDoublePropertyConfig {
     }
 }
 
-impl Randomizable<RandomNodeDoublePropertyConfig> for DefaultDoubleNodePropertyValues {
+impl Randomizable<RandomNodeDoublePropertyConfig> for DefaultDoubleNodePropertyValues<VecDouble> {
     type Error = RandomGraphError;
 
     fn random_with_rng<R: Rng + ?Sized>(
@@ -217,7 +218,9 @@ impl Randomizable<RandomNodeDoublePropertyConfig> for DefaultDoubleNodePropertyV
             .map(|_| rng.gen_range(config.min..config.max))
             .collect();
 
-        Ok(Self::new(values, config.node_count))
+        // Create VecDouble backend from values
+        let backend = VecDouble::from(values);
+        Ok(Self::from_collection(backend, config.node_count))
     }
 }
 
@@ -309,7 +312,7 @@ impl Randomizable<RandomGraphConfig> for DefaultGraphStore {
         );
 
         // Add a random floating-point score for each node.
-        let node_property_values = Arc::new(<DefaultDoubleNodePropertyValues as Randomizable<
+        let node_property_values = Arc::new(<DefaultDoubleNodePropertyValues<VecDouble> as Randomizable<
             RandomNodeDoublePropertyConfig,
         >>::random_with_rng(
             &RandomNodeDoublePropertyConfig {
@@ -339,7 +342,7 @@ impl Randomizable<RandomGraphConfig> for DefaultGraphStore {
         } else {
             total_relationships as f64 / max_edges as f64
         };
-        let graph_property_values = Arc::new(DefaultDoubleGraphPropertyValues::singleton(density));
+        let graph_property_values = Arc::new(DefaultDoubleGraphPropertyValues::<crate::collections::backends::vec::VecDouble>::singleton(density));
         store.add_graph_property("edge_density", graph_property_values)?;
 
         Ok(store)

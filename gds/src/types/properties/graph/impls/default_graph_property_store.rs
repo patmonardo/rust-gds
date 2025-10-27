@@ -166,7 +166,9 @@ impl DefaultGraphPropertyStoreBuilder {
         key: impl Into<String>,
         values: Vec<i64>,
     ) -> Self {
-        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultLongGraphPropertyValues::new(values));
+        use crate::collections::backends::vec::VecLong;
+        let backend = VecLong::from(values);
+        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultLongGraphPropertyValues::<VecLong>::from_collection(backend));
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
@@ -181,7 +183,9 @@ impl DefaultGraphPropertyStoreBuilder {
         key: impl Into<String>,
         values: Vec<f64>,
     ) -> Self {
-        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultDoubleGraphPropertyValues::new(values));
+        use crate::collections::backends::vec::VecDouble;
+        let backend = VecDouble::from(values);
+        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(backend));
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);

@@ -166,7 +166,7 @@ impl DefaultRelationshipPropertyStoreBuilder {
     ) -> Self {
         let element_count = values.len();
         let pv: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::new(values, default_value, element_count),
+            DefaultRelationshipPropertyValues::with_values(values, default_value, element_count),
         );
         let key_str = key.into();
         use crate::types::PropertyState;

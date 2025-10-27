@@ -21,5 +21,5 @@
 #[macro_use]
 mod eval_macro;
 
-// Re-export the main macro
-pub use crate::value_type_table;
+// Note: The main value_type_table! macro is now in codegen/values
+// and is available via projection::codegen::value_type_table!

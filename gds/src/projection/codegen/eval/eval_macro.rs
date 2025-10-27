@@ -41,7 +41,7 @@
 ///   - `Functor` struct implementing GrossSubtleFunctor
 ///   - Typed accessor helpers
 #[macro_export]
-macro_rules! value_type_table {
+macro_rules! eval_value_type_table {
     (
         $(
             $type_name:ident {

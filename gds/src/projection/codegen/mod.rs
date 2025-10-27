@@ -125,5 +125,5 @@ pub use property::*;
 // pub use collections::*;
 
 // Values macros (re-exported at crate root via #[macro_export])
-// Note: Values module is available but not yet actively used
-// pub use values::*;
+// Note: ValueType table is now the Master Controller for all property value generation
+pub use values::*;

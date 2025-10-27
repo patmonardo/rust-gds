@@ -4,12 +4,16 @@ use crate::types::properties::node::{NodePropertyStore, NodePropertyStoreBuilder
 use crate::types::properties::PropertyStore;
 use crate::types::PropertyState;
 use crate::config::PropertyStoreConfig;
+// Note: The generated property value types are now generic over Collections backend.
+// They should be used as DefaultLongNodePropertyValues<C>, DefaultDoubleNodePropertyValues<C>, etc.
+// where C is a Collections implementation like VecLong, VecDouble, HugeLong, etc.
 use crate::types::properties::node::impls::default_node_property_values::{
-    DefaultDoubleArrayNodePropertyValues,
-    DefaultDoubleNodePropertyValues,
-    DefaultLongArrayNodePropertyValues,
     DefaultLongNodePropertyValues,
+    DefaultDoubleNodePropertyValues,
+    DefaultDoubleArrayNodePropertyValues,
+    DefaultLongArrayNodePropertyValues,
 };
+use crate::collections::backends::vec::{VecLong, VecDouble};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -167,7 +171,8 @@ impl DefaultNodePropertyStoreBuilder {
         values: Vec<i64>,
     ) -> Self {
         let node_count = values.len();
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultLongNodePropertyValues::new(values, node_count));
+        let backend = VecLong::from(values);
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, node_count));
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
@@ -181,38 +186,37 @@ impl DefaultNodePropertyStoreBuilder {
         values: Vec<f64>,
     ) -> Self {
         let node_count = values.len();
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleNodePropertyValues::new(values, node_count));
+        let backend = VecDouble::from(values);
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(backend, node_count));
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
     }
 
     /// Convenience: create and put a DoubleArray property from a Vec<Option<Vec<f64>>>.
+    /// NOTE: Array types not yet implemented with universal adapters - this method is temporarily disabled.
+    #[allow(dead_code)]
     pub fn put_double_array_from_vec(
         mut self,
         _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
-        values: Vec<Option<Vec<f64>>>,
+        _values: Vec<Option<Vec<f64>>>,
     ) -> Self {
-        let node_count = values.len();
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleArrayNodePropertyValues::new(values, node_count));
-        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
-        self.properties.insert(prop.key().to_string(), prop);
-        self
+        // TODO: Implement when array types are added to universal adapters
+        unimplemented!("DoubleArray not yet migrated to universal adapters");
     }
 
     /// Convenience: create and put a LongArray property from a Vec<Option<Vec<i64>>>.
+    /// NOTE: Array types not yet implemented with universal adapters - this method is temporarily disabled.
+    #[allow(dead_code)]
     pub fn put_long_array_from_vec(
         mut self,
         _cfg: &PropertyStoreConfig,
         key: impl Into<String>,
-        values: Vec<Option<Vec<i64>>>,
+        _values: Vec<Option<Vec<i64>>>,
     ) -> Self {
-        let node_count = values.len();
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultLongArrayNodePropertyValues::new(values, node_count));
-        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
-        self.properties.insert(prop.key().to_string(), prop);
-        self
+        // TODO: Implement when array types are added to universal adapters
+        unimplemented!("LongArray not yet migrated to universal adapters");
     }
 }
 
@@ -228,7 +232,7 @@ mod tests {
         use std::sync::Arc;
 
         let values: Arc<dyn NodePropertyValues> =
-            Arc::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
+            Arc::new(DefaultLongNodePropertyValues::from_collection(crate::collections::backends::vec::VecLong::from(vec![1, 2, 3]), 3));
         let default_value = DefaultValue::of(values.value_type());
         NodeProperty::with_default(
             key.to_string(),

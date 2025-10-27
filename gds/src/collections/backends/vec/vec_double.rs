@@ -38,4 +38,9 @@ impl From<Vec<f64>> for VecDouble {
 
 use crate::vec_collections;
 use crate::types::ValueType;
+use crate::collections::traits::PropertyValuesAdapter;
+
 vec_collections!(VecDouble, f64, ValueType::Double, 0.0f64, kind = Float);
+
+// Implement PropertyValuesAdapter (marker trait)
+impl PropertyValuesAdapter<f64> for VecDouble {}

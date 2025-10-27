@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_property_creation() {
-        let values = DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3);
+        let values = DefaultLongNodePropertyValues::from_collection(crate::collections::backends::vec::VecLong::from(vec![1, 2, 3]), 3);
         let schema = PropertySchema::new(
             "test_prop",
             ValueType::Long,

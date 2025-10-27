@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn default_graph_property_creation() {
         let values: Arc<dyn GraphPropertyValues> =
-            Arc::new(DefaultLongGraphPropertyValues::singleton(42));
+            Arc::new(DefaultLongGraphPropertyValues::<crate::collections::backends::vec::VecLong>::singleton(42));
         let property = DefaultGraphProperty::of("node_count", values.clone());
 
         assert_eq!(property.key(), "node_count");
