@@ -24,9 +24,6 @@
 //! }
 //! ```
 
-pub mod config;
 pub mod define_config;
 pub mod validation;
 
-// Re-export the macros
-pub use crate::generate_config;

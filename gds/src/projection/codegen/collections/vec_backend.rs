@@ -60,7 +60,7 @@ macro_rules! vec_collections {
             fn default_value(&self) -> $element_type { $default_value }
             fn backend(&self) -> $crate::config::CollectionsBackend { $crate::config::CollectionsBackend::Vec }
             fn features(&self) -> &[$crate::config::Extension] { &[] }
-            fn extensions(&self) -> &[crate::config::Extension] { &[] }
+            fn extensions(&self) -> &[$crate::config::Extension] { &[] }
             fn value_type(&self) -> crate::types::ValueType { $value_type }
             fn with_capacity(capacity: usize) -> Self where Self: Sized { Self { data: Vec::with_capacity(capacity) } }
             fn with_defaults(count: usize, default_value: $element_type) -> Self where Self: Sized { Self { data: vec![default_value; count] } }

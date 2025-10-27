@@ -42,7 +42,7 @@ macro_rules! huge_collections {
             fn default_value(&self) -> $element_type { $default_value }
             fn backend(&self) -> $crate::config::CollectionsBackend { $crate::config::CollectionsBackend::Huge }
             fn features(&self) -> &[$crate::config::Extension] { &[] }
-            fn extensions(&self) -> &[crate::config::Extension] { &[] }
+            fn extensions(&self) -> &[$crate::config::Extension] { &[] }
             fn value_type(&self) -> crate::types::ValueType { $value_type }
             fn with_capacity(capacity: usize) -> Self where Self: Sized { Self::new(capacity) }
             fn with_defaults(count: usize, default_value: $element_type) -> Self where Self: Sized {

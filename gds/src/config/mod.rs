@@ -10,7 +10,7 @@ pub mod graph_config;
 pub mod graph_store_config;
 pub mod io_config;
 pub mod model_config;
-pub mod morph_config;
+// pub mod morph_config;  // OLD: unused legacy macro, deferred to reality
 pub mod pregel_config;
 pub mod validation;
 
@@ -23,6 +23,6 @@ pub use graph_config::*;
 pub use graph_store_config::*;
 pub use io_config::*;
 pub use model_config::*;
-pub use morph_config::*;
+// pub use morph_config::*;  // OLD: unused legacy macro
 pub use pregel_config::*;
 pub use validation::*;

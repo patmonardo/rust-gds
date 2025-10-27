@@ -1,19 +1,23 @@
-//! Property Codegen: The Smart Converter Foundation
+//! Property Codegen: Universal Adapter System
 //!
-//! This module consolidates all property-related macros that generate:
-//! - PropertyValues implementations (typed storage backends)
-//! - Smart converter traits (type-driven dispatch)
-//! - Cursor accessors (zero-copy typed getters)
-//! - Selector validation (ValueType compatibility)
+//! This module provides the macro system for generating property value adapters
+//! from the ValueType table. All adapters are generic over Collections backends,
+//! enabling runtime backend selection (Vec, Huge, Arrow).
 //!
-//! **Philosophy**: Every property column is a Smart Converter that accepts all queries
-//! and either returns exact type (zero-cost), converts compatible types (i64→f64), 
-//! or throws error if incompatible (Long→LongArray).
+//! **Philosophy**: Universal adapter pattern where all property columns accept
+//! all queries and either return exact type (zero-cost), convert compatible types
+//! (i64→f64), or throw error if incompatible.
 //!
-//! **Aesthetic**: First-class terms via barrel imports:
-//! - `projection::codegen::property_values_impl!` (not buried in submodules)
-//! - `projection::codegen::smart_converter!` (primary reality)
-//! - `projection::codegen::cursor_accessors!` (unified access)
+//! **Architecture**:
+//! ```
+//! ValueType Table (Master Controller)
+//!     ↓
+//! Universal Adapter Macros (triadic_macros.rs)
+//!     ↓
+//! Trait Implementation Helpers (property_values.rs)
+//!     ↓
+//! Generated Adapters (DefaultLongNodePropertyValues<C>, etc.)
+//! ```
 
 /// Core PropertyValues implementation macros
 /// 
@@ -22,42 +26,12 @@
 #[macro_use]
 mod property_values;
 
-/// Smart converter trait macros
+/// Triadic PropertyStore matrix macros
 /// 
-/// Generates type-driven dispatch for `get<T>()` pattern that
-/// eliminates namespace pollution while maintaining type safety.
-#[macro_use]
-mod smart_converter;
-
-/// Cursor accessor macros
-/// 
-/// Generates zero-copy typed getters for relationship/node cursors
-/// with Arrow/HugeArray backend support.
-#[macro_use]
-mod cursor_accessors;
-
-/// Selector validation macros
-/// 
-/// Generates spec-time ValueType compatibility checks for weights,
-/// keys, and other property constraints.
-#[macro_use]
-mod selector_validation;
-
-/// Typed PropertyValues macros
-/// 
-/// Generates typed PropertyValues implementations for each ValueType
-/// with dense Vec, Arrow-backed, and sparse variants.
-#[macro_use]
-mod typed_property_values;
-
-/// Triadic PropertyStore matrix macros (Level × Component × ValueTypes)
+/// Generates property adapters for Node, Relationship, and Graph properties
+/// using the universal adapter pattern with Collections backends.
 #[macro_use]
 mod triadic_macros;
 
 // Re-export all macros at module level for barrel imports
 pub use property_values::*;
-pub use smart_converter::*;
-pub use selector_validation::*;
-// Note: cursor_accessors and typed_property_values are available but not yet used
-// pub use cursor_accessors::*;
-// pub use typed_property_values::*;
