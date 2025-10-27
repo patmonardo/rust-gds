@@ -11,7 +11,7 @@
 //!
 //! # References
 //!
-//! Node2Vec: Scalable Feature Learning for Networks (Grover & Leskovec, 201.06)
+//! Node2Vec: Scalable Feature Learning for Networks (Grover & Leskovec, 2016)
 //!
 //! # Examples
 //!
@@ -22,8 +22,8 @@
 //!     &graph,
 //!     |node_id| graph.degree(node_id as i64) as f64,
 //!     walk_length: 80,
-//!     return_factor: 1.0.0,  // p parameter
-//!     in_out_factor: 1.0.0,  // q parameter
+//!     return_factor: 1.0,  // p parameter
+//!     in_out_factor: 1.0,  // q parameter
 //!     random_seed: 42,
 //! );
 //!
@@ -321,13 +321,13 @@ mod tests {
         let graph = store.graph();
 
         let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
-        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
+        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 100, 1.0, 1.0, 42);
 
         let walk = sampler.walk(0);
 
         // Walk should have some nodes
         assert!(!walk.is_empty());
-        assert!(walk.len() <= 1.00);
+        assert!(walk.len() <= 100);
 
         // First node should be start node
         assert_eq!(walk[0], 0);
@@ -340,9 +340,9 @@ mod tests {
 
         let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
-        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.0, 1.0, 1.0, 42);
+        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
 
-        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.0, 1.0, 1.0, 42);
+        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 10, 1.0, 1.0, 42);
 
         let walk1 = sampler1.walk(0);
         let walk2 = sampler2.walk(0);
@@ -357,9 +357,9 @@ mod tests {
 
         let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
-        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
+        let mut sampler1 = RandomWalkSampler::create(graph.clone(), weight_fn, 100, 1.0, 1.0, 42);
 
-        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 43);
+        let mut sampler2 = RandomWalkSampler::create(graph.clone(), weight_fn, 100, 1.0, 1.0, 43);
 
         let walk1 = sampler1.walk(5);
         let walk2 = sampler2.walk(5);
@@ -375,7 +375,7 @@ mod tests {
 
         let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
 
-        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
+        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 100, 1.0, 1.0, 42);
 
         sampler.prepare_for_new_node(5);
         let walk1 = sampler.walk(5);
@@ -399,8 +399,8 @@ mod tests {
             graph.clone(),
             weight_fn,
             20,
-            0.1.0, // Low return factor = high return probability
-            1.0.0,
+            0.1, // Low return factor = high return probability
+            1.0,
             42,
         );
 
@@ -420,7 +420,7 @@ mod tests {
             graph.clone(),
             weight_fn,
             20,
-            1.0.0,
+            1.0,
             0.5, // Low q = encourage outward movement
             42,
         );
@@ -431,7 +431,7 @@ mod tests {
 
     #[test]
     fn test_memory_estimation() {
-        let (min_mem, max_mem) = RandomWalkSampler::<fn(u64) -> f64>::memory_estimation(1.000);
+        let (min_mem, max_mem) = RandomWalkSampler::<fn(u64) -> f64>::memory_estimation(1000);
 
         assert!(min_mem > 0);
         assert!(max_mem >= min_mem);
@@ -444,7 +444,7 @@ mod tests {
         let graph = store.graph();
 
         let weight_fn = |node_id: u64| graph.degree(node_id as i64) as f64;
-        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 1.00, 1.0.0, 1.0.0, 42);
+        let mut sampler = RandomWalkSampler::create(graph.clone(), weight_fn, 100, 1.0, 1.0, 42);
 
         // Walk from all nodes - shouldn't panic
         for node_id_idx in 0..graph.node_count() {

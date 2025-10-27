@@ -11,3 +11,11 @@ pub type ConceptPayload = Vec<u8>;
 /// Tetradic layer a `Concepts` value represents the pair (left, right) dyads
 /// — e.g. (features, labels).
 pub type Concepts = (ConceptPayload, ConceptPayload);
+
+/// Compatibility alias: a TetradicProperty is a pair of DyadicProperty instances
+/// (primary, secondary). This keeps examples that expect `TetradicProperty` working
+/// while the canonical `Concepts` remains the lower-level payload alias.
+pub type TetradicProperty = (
+    crate::types::properties::hyper::dyadic::DyadicProperty,
+    crate::types::properties::hyper::dyadic::DyadicProperty,
+);

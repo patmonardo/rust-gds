@@ -231,13 +231,13 @@ mod tests {
     fn test_astar_storage_runtime_creation() {
         let storage = AStarStorageRuntime::new(
             0,
-            1.0,
+            1,
             "latitude".to_string(),
             "longitude".to_string(),
         );
         
         assert_eq!(storage.source_node(), 0);
-        assert_eq!(storage.target_node(), 1.0);
+        assert_eq!(storage.target_node(), 1);
         assert_eq!(storage.latitude_property(), "latitude");
         assert_eq!(storage.longitude_property(), "longitude");
     }
@@ -245,10 +245,10 @@ mod tests {
     #[test]
     fn test_haversine_distance_calculation() {
         // Test with known coordinates (New York to Los Angeles)
-        let ny_lat = 40.71.028;
+        let ny_lat = 40.7128;
         let ny_lon = -74.0060;
         let la_lat = 34.0522;
-        let la_lon = -1.01.08.2437;
+        let la_lon = -118.2437;
         
         let distance = AStarStorageRuntime::haversine_distance(ny_lat, ny_lon, la_lat, la_lon);
         
@@ -258,20 +258,20 @@ mod tests {
 
     #[test]
     fn test_haversine_distance_same_point() {
-        let lat = 40.71.028;
+        let lat = 40.7128;
         let lon = -74.0060;
         
         let distance = AStarStorageRuntime::haversine_distance(lat, lon, lat, lon);
         
         // Distance to same point should be 0
-        assert!((distance - 0.0).abs() < 1.0e-1.00);
+        assert!((distance - 0.0).abs() < 1e-10);
     }
 
     #[test]
     fn test_coordinate_caching() {
         let mut storage = AStarStorageRuntime::new(
             0,
-            1.0,
+            1,
             "lat".to_string(),
             "lon".to_string(),
         );
@@ -290,7 +290,7 @@ mod tests {
     fn test_astar_path_computation() {
         let mut storage = AStarStorageRuntime::new(
             0,
-            1.0,
+            1,
             "lat".to_string(),
             "lon".to_string(),
         );
@@ -302,7 +302,7 @@ mod tests {
         assert!(result.path.is_some());
         assert_eq!(result.path.as_ref().unwrap().len(), 2);
         assert_eq!(result.path.as_ref().unwrap()[0], 0);
-        assert_eq!(result.path.as_ref().unwrap()[1.0], 1.0);
+        assert_eq!(result.path.as_ref().unwrap()[1], 1);
         assert!(result.total_cost >= 0.0);
         assert_eq!(result.nodes_explored, 2);
     }
@@ -321,9 +321,9 @@ mod tests {
         let result = storage.compute_astar_path(&mut computation, None, 0).unwrap();
         
         assert!(result.path.is_some());
-        assert_eq!(result.path.as_ref().unwrap().len(), 1.0);
+        assert_eq!(result.path.as_ref().unwrap().len(), 1);
         assert_eq!(result.path.as_ref().unwrap()[0], 5);
         assert_eq!(result.total_cost, 0.0);
-        assert_eq!(result.nodes_explored, 1.0);
+        assert_eq!(result.nodes_explored, 1);
     }
 }

@@ -4,7 +4,7 @@
 
 use gds::concurrency::virtual_threads::{Executor, WorkerLocalAggregator};
 use gds::concurrency::Concurrency;
-use gds::termination::TerminationFlag;
+use gds::concurrency::TerminationFlag;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 

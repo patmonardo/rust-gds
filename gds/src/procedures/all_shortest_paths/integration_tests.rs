@@ -3,13 +3,11 @@
 //! This module tests the integration between our focused macros and the
 //! eval/procedure/executor to prove they work together correctly.
 
-use crate::procedures::all_shortest_paths::ALL_SHORTEST_PATHSAlgorithmSpec;
-use crate::projection::eval::procedure::*;
-use serde_json::json;
-
 #[cfg(test)]
 mod integration_tests {
-    use super::*;
+    use crate::procedures::all_shortest_paths::ALL_SHORTEST_PATHSAlgorithmSpec;
+    use crate::projection::eval::procedure::{ComputationResult, ExecutionContext, ExecutionMode, ProcedureExecutor, AlgorithmSpec, ProjectionHint};
+    use serde_json::json;
 
     #[test]
     fn test_all_shortest_paths_algorithm_spec_contract() {

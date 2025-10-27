@@ -1,3 +1,4 @@
+use gds::collections::backends::vec::{VecDouble, VecLong};
 use gds::types::properties::node::{
     node_property_of, DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues,
     DefaultNodePropertyStore, NodePropertyStore, NodePropertyStoreBuilder, NodePropertyValues,
@@ -19,12 +20,16 @@ fn main() {
         "  3. to_builder() enables copy-on-write updates; put_property(key, values) handles wrapping for you\n"
     );
 
-    let age_values: Arc<dyn NodePropertyValues> =
-        Arc::new(DefaultLongNodePropertyValues::new(vec![29, 35, 41], 3));
-    let score_values: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleNodePropertyValues::new(
-        vec![0.82, 0.91, 0.76],
-        3,
-    ));
+    // Collections-backed property values: construct a Vec backend then adapt it
+    let age_backend = VecLong::from(vec![29i64, 35, 41]);
+    let age_values: Arc<dyn NodePropertyValues> = Arc::new(
+        DefaultLongNodePropertyValues::from_collection(age_backend, 3),
+    );
+
+    let score_backend = VecDouble::from(vec![0.82f64, 0.91, 0.76]);
+    let score_values: Arc<dyn NodePropertyValues> = Arc::new(
+        DefaultDoubleNodePropertyValues::from_collection(score_backend, 3),
+    );
 
     let age_property = node_property_of("age", PropertyState::Persistent, age_values.clone());
     let score_property = node_property_of("score", PropertyState::Persistent, score_values.clone());
@@ -34,8 +39,10 @@ fn main() {
         .put("score", score_property)
         .build();
 
-    let depth_values: Arc<dyn NodePropertyValues> =
-        Arc::new(DefaultLongNodePropertyValues::new(vec![1, 2, 3], 3));
+    let depth_backend = VecLong::from(vec![1i64, 2, 3]);
+    let depth_values: Arc<dyn NodePropertyValues> = Arc::new(
+        DefaultLongNodePropertyValues::from_collection(depth_backend, 3),
+    );
 
     let store = store
         .to_builder()

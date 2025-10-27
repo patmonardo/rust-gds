@@ -191,8 +191,8 @@ mod tests {
 
     #[test]
     fn test_dfs_path_computation() {
-        let storage = DfsStorageRuntime::new(0, vec![3], None, true, 1.0);
-        let mut computation = DfsComputationRuntime::new(0, true, 1.0);
+        let storage = DfsStorageRuntime::new(0, vec![3], None, true, 1);
+        let mut computation = DfsComputationRuntime::new(0, true, 1);
         
         let result = storage.compute_dfs(&mut computation, None).unwrap();
         
@@ -203,12 +203,12 @@ mod tests {
 
     #[test]
     fn test_dfs_path_same_source_target() {
-        let storage = DfsStorageRuntime::new(0, vec![0], None, true, 1.0);
-        let mut computation = DfsComputationRuntime::new(0, true, 1.0);
+        let storage = DfsStorageRuntime::new(0, vec![0], None, true, 1);
+        let mut computation = DfsComputationRuntime::new(0, true, 1);
         
         let result = storage.compute_dfs(&mut computation, None).unwrap();
         
-        assert!(result.nodes_visited >= 1.0);
+        assert!(result.nodes_visited >= 1);
         assert!(!result.paths.is_empty());
         assert_eq!(result.paths[0].source_node, 0);
         assert_eq!(result.paths[0].target_node, 0);
@@ -217,12 +217,12 @@ mod tests {
 
     #[test]
     fn test_dfs_max_depth_constraint() {
-        let storage = DfsStorageRuntime::new(0, vec![], Some(1.0), false, 1.0);
-        let mut computation = DfsComputationRuntime::new(0, false, 1.0);
+        let storage = DfsStorageRuntime::new(0, vec![], Some(1), false, 1);
+        let mut computation = DfsComputationRuntime::new(0, false, 1);
         
         let result = storage.compute_dfs(&mut computation, None).unwrap();
         
-        // With max_depth=1.0, we should only visit nodes at distance 0 and 1.0
+        // With max_depth=1, we should only visit nodes at distance 0 and 1
         assert!(result.nodes_visited <= 3); // Source + immediate neighbors
         assert!(result.computation_time_ms >= 0);
     }

@@ -1,7 +1,0 @@
-Here are high-signal, freely available graph algorithms resources:
-Diestel – Graph Theory (free electronic edition): rigorous graph theory reference with proofs and intuition. diestel-graph-theory.com
-CP-Algorithms (e-maxx) – Graph section: practical recipes for BFS/DFS, shortest paths, flows, matching, etc. cp-algorithms.com/graph
-Sedgewick/Wayne – Algorithms (algs4): lectures, slides, assignments, and Java code for graph algorithms (MST, SP, flows). algs4.cs.princeton.edu
-MIT OpenCourseWare (6.006/6.046) notes: solid PDFs on shortest paths, MST, flows, matchings. ocw.mit.edu
-Stanford CS161/CS224W: algorithm design (CS161) and network analysis (CS224W) notes/slides. cs161.stanford.edu, cs224w.stanford.edu
-Competitive Programmer’s Handbook (Laaksonen) – free PDF: concise graph chapters with code patterns. cses.fi/book/book.pdf

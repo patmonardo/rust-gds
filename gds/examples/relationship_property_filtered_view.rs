@@ -1,3 +1,4 @@
+use gds::config::GraphStoreConfig;
 use gds::projection::RelationshipType;
 use gds::types::graph::id_map::SimpleIdMap;
 use gds::types::graph::topology::RelationshipTopology;
@@ -7,7 +8,7 @@ use gds::types::graph_store::{
     GraphStore,
 };
 use gds::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use gds::types::properties::relationship::{DefaultRelationshipPropertyValues, PropertyValue};
+use gds::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
 use gds::types::schema::GraphSchema;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -26,10 +27,10 @@ fn main() {
     let trusts = RelationshipType::of("TRUSTS");
 
     let knows_weights: Arc<dyn RelationshipPropertyValues> = Arc::new(
-        DefaultRelationshipPropertyValues::new(vec![0.6, 0.85], 0.0, 2),
+        DefaultRelationshipPropertyValues::with_values(vec![0.6, 0.85], 0.0, 2),
     );
     let trust_scores: Arc<dyn RelationshipPropertyValues> = Arc::new(
-        DefaultRelationshipPropertyValues::new(vec![0.95, 0.4], 0.0, 2),
+        DefaultRelationshipPropertyValues::with_values(vec![0.95, 0.4], 0.0, 2),
     );
 
     store
@@ -61,6 +62,7 @@ fn main() {
 }
 
 fn build_store_with_multiple_relationship_types() -> DefaultGraphStore {
+    let config = GraphStoreConfig::default();
     let graph_name = GraphName::new("relationship_filtered_demo");
     let database_info = DatabaseInfo::new(
         DatabaseId::new("demo-db"),
@@ -78,6 +80,7 @@ fn build_store_with_multiple_relationship_types() -> DefaultGraphStore {
     topologies.insert(RelationshipType::of("TRUSTS"), trusts_topology);
 
     DefaultGraphStore::new(
+        config,
         graph_name,
         database_info,
         schema,
@@ -89,12 +92,12 @@ fn build_store_with_multiple_relationship_types() -> DefaultGraphStore {
 
 fn print_graph(title: &str, graph: &dyn Graph) {
     println!("{title}:");
-    const FALLBACK: PropertyValue = -1.0;
+    const FALLBACK: f64 = -1.0;
 
     for node_id in 0..graph.node_count() as u64 {
         println!("  node {node_id} outgoing:");
         let mut count = 0usize;
-        for cursor in graph.stream_relationships(node_id, FALLBACK) {
+        for cursor in graph.stream_relationships(node_id as i64, FALLBACK) {
             count += 1;
             println!(
                 "    {} -> {} (property {:.3})",

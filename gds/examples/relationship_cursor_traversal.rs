@@ -1,3 +1,4 @@
+use gds::config::GraphStoreConfig;
 use gds::projection::RelationshipType;
 use gds::types::graph::id_map::{IdMap, SimpleIdMap};
 use gds::types::graph::topology::RelationshipTopology;
@@ -6,9 +7,8 @@ use gds::types::graph_store::{
     GraphStore,
 };
 use gds::types::properties::relationship::relationship_property_values::RelationshipPropertyValues;
-use gds::types::properties::relationship::{
-    DefaultRelationshipPropertyValues, PropertyValue, RelationshipIterator,
-};
+use gds::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
+use gds::types::properties::relationship::RelationshipIterator;
 use gds::types::schema::GraphSchema;
 use std::collections::HashMap;
 use std::error::Error;
@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let relationship_type = RelationshipType::of("KNOWS");
 
     let weight_values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-        DefaultRelationshipPropertyValues::new(vec![0.9, 0.7, 0.4], 0.0, 3),
+        DefaultRelationshipPropertyValues::with_values(vec![0.9, 0.7, 0.4], 0.0, 3),
     );
     store.add_relationship_property(
         relationship_type.clone(),
@@ -42,12 +42,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
 
     let graph = store.graph();
-    const FALLBACK: PropertyValue = -1.0;
+    const FALLBACK: f64 = -1.0;
 
     for node_id in 0..graph.node_count() as u64 {
         println!("Node {node_id} outgoing:");
         let mut count = 0usize;
-        for cursor in graph.stream_relationships(node_id, FALLBACK) {
+        for cursor in graph.stream_relationships(node_id as i64, FALLBACK) {
             count += 1;
             println!(
                 "  {} -> {} (weight {:.3})",
@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let target_node = 2u64;
+    let target_node = 2i64;
     println!("\nIncoming relationships to node {target_node}:");
     let mut incoming = 0usize;
     for cursor in graph.stream_inverse_relationships(target_node, FALLBACK) {
@@ -88,6 +88,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn build_sample_store() -> DefaultGraphStore {
+    let config = GraphStoreConfig::default();
     let graph_name = GraphName::new("relationship_cursor_demo");
     let database_info = DatabaseInfo::new(
         DatabaseId::new("demo-db"),
@@ -103,6 +104,7 @@ fn build_sample_store() -> DefaultGraphStore {
     topologies.insert(RelationshipType::of("KNOWS"), knows_topology);
 
     DefaultGraphStore::new(
+        config,
         graph_name,
         database_info,
         schema,

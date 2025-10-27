@@ -1,9 +1,6 @@
 //! Test PageRank using the new define_algorithm! macro
 
 use crate::define_algorithm;
-// Note: These imports are used in the macro implementations but not in the module itself
-// use crate::projection::eval::procedure::*;
-// use crate::types::prelude::GraphStore;
 use std::time::Duration;
 
 // Define PageRank using the new macro
@@ -65,6 +62,7 @@ mod tests {
 
     #[test]
     fn test_pagerank_algorithm_spec() {
+        use crate::projection::eval::procedure::{AlgorithmSpec, ProjectionHint};
         let spec = PAGERANKAlgorithmSpec::new("test_graph".to_string(), PAGERANKConfig::default());
         assert_eq!(spec.name(), "pagerank");
         assert_eq!(spec.graph_name(), "test_graph");

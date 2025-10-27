@@ -19,21 +19,28 @@
 //!
 //! ## Usage
 //!
-//! ```rust
-//! use crate::collections::{HugeIntArray, VecInt, ArrowInt};
-//! use crate::collections::Collections;
-//! use crate::collections::UniversalPropertyValues;
+//! ### Using the Prelude (Recommended)
 //!
-//! // All implement same interface
-//! let huge: HugeIntArray = HugeIntArray::new(1000);
-//! let vec: VecInt = VecInt::new();
-//! let arrow: ArrowInt = ArrowInt::new();
+//! ```rust
+//! use crate::collections::prelude::*;
+//!
+//! // All collections work the same way
+//! let huge = HugeIntArray::new(1000);
+//! let vec = VecInt::new();
 //!
 //! // Same API for all
 //! let sum1 = huge.sum();
 //! let sum2 = vec.sum();
-//! let sum3 = arrow.sum();
 //! ```
+//!
+//! ### Selective Import
+//!
+//! ```rust
+//! use crate::collections::{HugeIntArray, VecInt, CollectionsBackend};
+//! ```
+
+// Prelude - curated exports for common use
+pub mod prelude;
 
 // Core traits
 pub mod traits;
@@ -82,6 +89,10 @@ pub mod primitive;
 
 // Re-export types from core for backward compatibility
 pub use crate::core::utils::paged::HugeAtomicBitSet;
+
+// Re-export BitSet and HugeSparseLongArray for backward compatibility
+pub use bit_set::BitSet;
+pub use huge_sparse_array::HugeSparseLongArray;
 
 // Backend selection
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

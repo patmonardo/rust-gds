@@ -267,8 +267,8 @@ mod tests {
 
     #[test]
     fn test_bfs_path_computation() {
-        let storage = BfsStorageRuntime::new(0, vec![3], None, true, 1.0, 64);
-        let mut computation = BfsComputationRuntime::new(0, true, 1.0);
+        let storage = BfsStorageRuntime::new(0, vec![3], None, true, 1, 64);
+        let mut computation = BfsComputationRuntime::new(0, true, 1);
         
         let result = storage.compute_bfs(&mut computation, None).unwrap();
         
@@ -278,23 +278,23 @@ mod tests {
 
     #[test]
     fn test_bfs_path_same_source_target() {
-        let storage = BfsStorageRuntime::new(0, vec![0], None, true, 1.0, 64);
-        let mut computation = BfsComputationRuntime::new(0, true, 1.0);
+        let storage = BfsStorageRuntime::new(0, vec![0], None, true, 1, 64);
+        let mut computation = BfsComputationRuntime::new(0, true, 1);
         
         let result = storage.compute_bfs(&mut computation, None).unwrap();
         
-        assert!(result.nodes_visited >= 1.0);
+        assert!(result.nodes_visited >= 1);
         assert!(result.computation_time_ms >= 0);
     }
 
     #[test]
     fn test_bfs_max_depth_constraint() {
-        let storage = BfsStorageRuntime::new(0, vec![], Some(1.0), false, 1.0, 64);
-        let mut computation = BfsComputationRuntime::new(0, false, 1.0);
+        let storage = BfsStorageRuntime::new(0, vec![], Some(1), false, 1, 64);
+        let mut computation = BfsComputationRuntime::new(0, false, 1);
         
         let result = storage.compute_bfs(&mut computation, None).unwrap();
         
-        // With max_depth=1.0, we should only visit nodes at distance 0 and 1.0
+        // With max_depth=1, we should only visit nodes at distance 0 and 1
         assert!(result.nodes_visited <= 3); // Source + immediate neighbors
         assert!(result.computation_time_ms >= 0);
     }

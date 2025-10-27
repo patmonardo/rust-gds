@@ -6,34 +6,53 @@
 use gds::collections::traits::Collections;
 
 // Vec backends
-use gds::collections::backends::vec::{VecLong, VecDouble};
+use gds::collections::backends::vec::{VecDouble, VecLong};
 
 // Huge backends
-use gds::collections::backends::huge::{HugeLongArray, HugeDoubleArray};
+use gds::collections::backends::huge::{HugeDoubleArray, HugeLongArray};
 use gds::concurrency::Concurrency;
 
 // Huge paging
-use gds::collections::cursor::{HugeCursor, init_cursor};
+use gds::collections::cursor::{init_cursor, HugeCursor};
 
 fn portable_vec_demo() {
     let v = VecLong::from(vec![1, 2, 3, 4, 5]);
-    println!("[VecLong] len={} sum={:?} mean={:?} median={:?}", v.len(), v.sum(), v.mean(), v.median());
+    println!(
+        "[VecLong] len={} sum={:?} mean={:?} median={:?}",
+        v.len(),
+        v.sum(),
+        v.mean(),
+        v.median()
+    );
 
     let d = VecDouble::from(vec![1.5, 2.5, 3.5, 4.5]);
-    println!("[VecDouble] len={} sum={:?} mean={:?} p90={:?}", d.len(), d.sum(), d.mean(), d.percentile(90.0));
+    // Percentile requires `T: Ord` on Collections; f64 does not implement Ord.
+    // Print mean instead for floating-point collections.
+    println!(
+        "[VecDouble] len={} sum={:?} mean={:?}",
+        d.len(),
+        d.sum(),
+        d.mean()
+    );
 }
 
 fn portable_huge_demo() {
     // Small size for demo; same API scales to billions
     let h = HugeLongArray::with_generator(1_000, Concurrency::of(4), |i| (i as i64) % 10);
-    println!("[HugeLong] len={} sum={:?} mean={:?} median={:?}", h.len(), h.sum(), h.mean(), h.median());
+    println!(
+        "[HugeLong] len={} sum={:?} mean={:?} median={:?}",
+        h.len(),
+        h.sum(),
+        h.mean(),
+        h.median()
+    );
 
     let hd = HugeDoubleArray::with_generator(1_000, Concurrency::of(2), |i| (i as f64) * 0.5);
-    println!("[HugeDouble] len={} mean={:?} p75={:?}", hd.len(), hd.mean(), hd.percentile(75.0));
+    println!("[HugeDouble] len={} mean={:?}", hd.len(), hd.mean());
 }
 
 fn huge_paging_demo() {
-    let mut h = HugeLongArray::with_generator(128, Concurrency::of(1), |i| (i as i64));
+    let h = HugeLongArray::with_generator(128, Concurrency::of(1), |i| i as i64);
     // Portable access still available
     println!("[HugeLong paging] mean={:?}", h.mean());
 
@@ -56,5 +75,3 @@ fn main() {
     portable_huge_demo();
     huge_paging_demo();
 }
-
-

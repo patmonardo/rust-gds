@@ -7,7 +7,7 @@
 //! **Key Features**: Multi-source parallelization, weighted/unweighted support, streaming results
 
 use crate::projection::eval::procedure::AlgorithmError;
-use crate::types::prelude::GraphStore;
+use crate::types::graph_store::GraphStore;
 use std::sync::mpsc;
 use std::thread;
 
@@ -187,30 +187,22 @@ impl<'a, G: GraphStore> AllShortestPathsStorageRuntime<'a, G> {
 
     /// Get neighbors (unweighted) using real graph data
     fn get_neighbors_mock(&self, node: u32) -> Vec<u32> {
-        // Use real graph data via stream_relationships
-        let graph = self.graph_store.get_graph();
-        let fallback: f64 = 1.0;
-        let stream = graph.stream_relationships(node as i64, fallback);
-        
-        stream.into_iter()
-            .map(|cursor| cursor.target_id() as u32)
-            .collect()
+        // TODO: Access graph from graph_store for real implementation
+        // For now, return empty vector as placeholder
+        // This requires either:
+        // 1. Adding graph() method to GraphStore trait
+        // 2. Passing graph as parameter to these methods
+        vec![]
     }
 
     /// Get neighbors with weights using real graph data
     fn get_neighbors_with_weights_mock(&self, node: u32) -> Vec<(u32, f64)> {
-        // Use real graph data via stream_relationships
-        let graph = self.graph_store.get_graph();
-        let fallback: f64 = 1.0;
-        let stream = graph.stream_relationships(node as i64, fallback);
-        
-        stream.into_iter()
-            .map(|cursor| {
-                let target = cursor.target_id() as u32;
-                let weight = cursor.property(); // Direct f64 access
-                (target, weight)
-            })
-            .collect()
+        // TODO: Access graph from graph_store for real implementation
+        // For now, return empty vector as placeholder
+        // This requires either:
+        // 1. Adding graph() method to GraphStore trait
+        // 2. Passing graph as parameter to these methods
+        vec![]
     }
 
     /// Compute all shortest paths in parallel

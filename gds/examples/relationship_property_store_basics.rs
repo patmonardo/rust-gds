@@ -1,9 +1,8 @@
 use gds::types::properties::relationship::relationship_property_of;
 use gds::types::properties::relationship::RelationshipPropertyValues;
+use gds::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
 use gds::types::properties::relationship::{
-    DefaultRelationshipPropertyStore, DefaultRelationshipPropertyValues,
-};
-use gds::types::properties::relationship::{
+    DefaultRelationshipPropertyStore,
     RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
 use gds::types::property_state::PropertyState;
@@ -26,10 +25,10 @@ fn main() {
     );
 
     let weight_values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-        DefaultRelationshipPropertyValues::new(vec![1.2, 0.8, 1.5], 0.0, 3),
+        DefaultRelationshipPropertyValues::with_values(vec![1.2, 0.8, 1.5], 0.0, 3),
     );
     let capacity_values: Arc<dyn RelationshipPropertyValues> = Arc::new(
-        DefaultRelationshipPropertyValues::new(vec![100.0, 80.0, 120.0], 0.0, 3),
+        DefaultRelationshipPropertyValues::with_values(vec![100.0, 80.0, 120.0], 0.0, 3),
     );
 
     // Relationship stores expect a RelationshipProperty, which wraps values with schema metadata

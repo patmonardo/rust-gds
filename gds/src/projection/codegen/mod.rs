@@ -1,60 +1,5 @@
-//! PROJECTION CODEGEN: The Ground Concept (Five-Fold Synthesis)
-//!
-//! This module is the ABSOLUTE GROUND from which all recursive descents flow.
-//! It is the FIRST APPEARANCE of @reality in rust-gds.
-//! It demonstrates the Genetic Method: how one concept unfolds from pure thought
-//! into determinate being through its own internal necessity.
-//!
-//! ╔════════════════════════════════════════════════════════════════════════╗
-//! ║ PROJECTION: THE FIVE-FOLD SYNTHESIS (GROUND CONCEPT)                  ║
-//! ╠════════════════════════════════════════════════════════════════════════╣
-//! ║                                                                        ║
-//! ║ This is the root principle. All modules in src/projection/ are       ║
-//! ║ RECURSIVE DESCENTS of this concept, applied to specific domains.     ║
-//! ║                                                                        ║
-//! ║ 1. TRANSFORM (Absolute Ground / Brahma Principle)                     ║
-//! ║    The undifferentiated unity from which all determination flows       ║
-//! ║    Descriptor ≡ Runtime through Transform                             ║
-//! ║                                                                        ║
-//! ║ 2. DESCRIPTOR (Identity Pole / Sat / Static Being)                    ║
-//! ║    What the concept IS in-itself (timeless, unchanging)               ║
-//! ║    - ComputationDescriptor, PropertyDescriptor, StorageDescriptor      ║
-//! ║                                                                        ║
-//! ║ 3. MEMBERSHIP (First Division / Chit / Inherence)                     ║
-//! ║    What is inherent in each descriptor's being?                       ║
-//! ║    Constraints linking each extreme to all others                     ║
-//! ║                                                                        ║
-//! ║ 4. RUNTIME (Difference Pole / Ananda / Dynamic Manifestation)         ║
-//! ║    How the descriptor manifests in time, in execution                 ║
-//! ║    - Computer, PropertyValues, StorageRuntime, ProcedureFacade        ║
-//! ║                                                                        ║
-//! ║ 5. CONSEQUENCE (Second Division / Sat-Chit-Ananda / Entailment)       ║
-//! ║    What MUST follow from Descriptor + Membership?                     ║
-//! ║    Logical rules that determine runtime requirements                  ║
-//! ║                                                                        ║
-//! ╠════════════════════════════════════════════════════════════════════════╣
-//! ║ RECURSIVE DESCENT: registry and catalog                              ║
-//! ╠════════════════════════════════════════════════════════════════════════╣
-//! ║                                                                        ║
-//! ║ registry = Projection PROJECTED INTO Computation Domain               ║
-//! ║   (first recursive descent, see ../registry/mod.rs)                   ║
-//! ║   Direction: Descriptor → Analyze → Schema                           ║
-//! ║   "What can we KNOW about computation?"                               ║
-//! ║   Inherits Five-Fold and specializes it to computation.               ║
-//! ║                                                                        ║
-//! ║ catalog = Projection PROJECTED INTO Storage Domain                    ║
-//! ║   (second recursive descent, see ../catalog/mod.rs)                   ║
-//! ║   Direction: Schema → Create Consequences → Runtime                   ║
-//! ║   "What shall we CREATE in storage being?"                            ║
-//! ║   Inherits Five-Fold and specializes it to storage.                   ║
-//! ║                                                                        ║
-//! ║ UNIFICATION: registry ∘ catalog = Complete Projection Manifest        ║
-//! ║              Knowledge + Power = Omniscience + Omnipotence             ║
-//! ║              registry ∘ catalog = Pipeline                            ║
-//! ║                                                                        ║
-//! ╚════════════════════════════════════════════════════════════════════════╝
-//!
-//! ## Organization (The Five-Fold in Code)
+
+//! ## Organization 
 //!
 //! - `macros/` - Tools that PROJECT (eval_macro, config, procedure macros)
 //! - `descriptors/` - IDENTITY/Science (property, computation, storage, pipeline)
@@ -89,9 +34,9 @@
 // MODULE DECLARATIONS
 // ============================================================================
 
-// Note: Algorithm module deactivated - test_algorithm.rs references PageRank
-// #[macro_use]
-// pub mod algorithm;
+// Algorithm module - provides define_algorithm_spec and related macros
+#[macro_use]
+pub mod algorithm;
 #[macro_use]
 pub mod config;
 #[macro_use]
@@ -108,8 +53,7 @@ pub mod values;
 // ============================================================================
 
 // Algorithm macros (re-exported at crate root via #[macro_export])
-// Note: Algorithm module deactivated - test_algorithm.rs references PageRank
-// pub use algorithm::*;
+pub use algorithm::*;
 
 // Config macros (re-exported at crate root via #[macro_export])
 pub use config::*;
