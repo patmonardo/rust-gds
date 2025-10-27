@@ -8,6 +8,12 @@ pub struct VecLong {
     pub data: Vec<i64>,
 }
 
+impl Default for VecLong {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VecLong {
     pub fn new() -> Self {
         Self {

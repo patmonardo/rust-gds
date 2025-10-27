@@ -88,7 +88,6 @@ pub trait GraphExt: Graph {
 	/// Helper that replicates the TypeScript static `Graph.nthTarget` convenience function.
 	fn nth_target_or_not_found(&self, source_id: MappedNodeId, offset: usize) -> i64 {
 		self.nth_target(source_id, offset)
-			.map(|id| id as i64)
 			.unwrap_or(NOT_FOUND)
 	}
 }

@@ -229,7 +229,7 @@ where
     
     fn page_count(&self) -> usize {
         if let Some(ref config) = self.paging_config {
-            (self.inner.len() + config.page_size - 1) / config.page_size
+            self.inner.len().div_ceil(config.page_size)
         } else {
             1
         }
@@ -265,7 +265,7 @@ impl PagingUtils {
     
     /// Estimate memory usage for paged collection
     pub fn estimate_memory<T>(element_count: usize, page_size: usize) -> usize {
-        let pages_needed = (element_count + page_size - 1) / page_size;
+        let pages_needed = element_count.div_ceil(page_size);
         let page_overhead = 24; // Array header overhead
         let total_overhead = pages_needed * page_overhead;
         let data_size = element_count * std::mem::size_of::<T>();

@@ -283,6 +283,12 @@ pub struct HyperFactStore {
     next_id: Mutex<u64>,
 }
 
+impl Default for HyperFactStore {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HyperFactStore {
     pub fn new() -> Self {
         Self {

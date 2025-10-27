@@ -8,6 +8,12 @@ pub struct EnhancedVec<T> {
     data: Vec<T>,
 }
 
+impl<T> Default for EnhancedVec<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> EnhancedVec<T> {
     pub fn new() -> Self {
         Self {
@@ -35,7 +41,7 @@ where
     T: Clone + Default + Ord + Sum + Send + Sync,
 {
     fn get(&self, index: usize) -> Option<T> {
-        self.data.get(index).map(|x| x.clone())
+        self.data.get(index).cloned()
     }
 
     fn set(&mut self, index: usize, value: T) {
@@ -97,7 +103,7 @@ where
     }
 
     fn percentile(&self, p: f64) -> Option<T> where T: Ord {
-        if self.data.is_empty() || p < 0.0 || p > 100.0 {
+        if self.data.is_empty() || !(0.0..=100.0).contains(&p) {
             None
         } else {
             let mut sorted = self.data.clone();

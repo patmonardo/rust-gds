@@ -5,8 +5,7 @@
 //! backends (Vec, Huge, Arrow), enabling runtime backend selection.
 
 use crate::types::properties::relationship::RelationshipPropertyValues;
-use crate::types::properties::{PropertyValues, PropertyValuesError, PropertyValuesResult};
-use crate::types::ValueType;
+use crate::types::properties::PropertyValues;
 
 // Import the macros from the crate root
 use crate::generate_all_relationship_adapters;
@@ -49,6 +48,7 @@ impl DefaultRelationshipPropertyValues {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::ValueType;
 
     #[test]
     fn default_relationship_property_values_behavior() {

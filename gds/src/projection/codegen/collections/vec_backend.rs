@@ -22,7 +22,7 @@ macro_rules! vec_collections {
         $default_value:expr,
         kind = Float
     ) => {
-        impl crate::collections::traits::Collections<$element_type> for $type_name {
+        impl $crate::collections::traits::Collections<$element_type> for $type_name {
             fn get(&self, index: usize) -> Option<$element_type> { self.data.get(index).cloned() }
             fn set(&mut self, index: usize, value: $element_type) {
                 if index < self.data.len() { self.data[index] = value; }
@@ -58,7 +58,7 @@ macro_rules! vec_collections {
             fn is_null(&self, _index: usize) -> bool { false }
             fn null_count(&self) -> usize { 0 }
             fn default_value(&self) -> $element_type { $default_value }
-            fn backend(&self) -> crate::config::CollectionsBackend { crate::config::CollectionsBackend::Vec }
+            fn backend(&self) -> $crate::config::CollectionsBackend { crate::config::CollectionsBackend::Vec }
             fn features(&self) -> &[crate::config::Extension] { &[] }
             fn extensions(&self) -> &[crate::config::Extension] { &[] }
             fn value_type(&self) -> crate::types::ValueType { $value_type }

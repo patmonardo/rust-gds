@@ -27,7 +27,6 @@ mod factory_macros;
 mod primitive_generator;
 
 // Re-export the ValueType table for use across the codebase
-pub use value_type_table::*;
 
 // Re-export all macros at module level for barrel imports
 // Note: These macros are available but not yet actively used in the current codebase

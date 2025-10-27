@@ -20,7 +20,8 @@ use gds::types::graph_store::{
     GraphStore,
 };
 use gds::types::properties::relationship::{
-    DefaultRelationshipPropertyValues, RelationshipIterator,
+    default_relationship_property_values::DefaultRelationshipPropertyValues,
+    RelationshipIterator,
 };
 use gds::types::schema::GraphSchema;
 use std::collections::HashMap;
@@ -206,6 +207,7 @@ fn build_simple_graph() -> DefaultGraphStore {
     topologies.insert(RelationshipType::of("KNOWS"), topology);
 
     DefaultGraphStore::new(
+        gds::config::GraphStoreConfig::default(),
         GraphName::new("simple-test"),
         DatabaseInfo::new(
             DatabaseId::new("test"),
@@ -231,6 +233,7 @@ fn build_multi_type_graph() -> DefaultGraphStore {
     topologies.insert(RelationshipType::of("WORKS_AT"), works_topology);
 
     DefaultGraphStore::new(
+        gds::config::GraphStoreConfig::default(),
         GraphName::new("multi-type-test"),
         DatabaseInfo::new(
             DatabaseId::new("test"),

@@ -4,7 +4,6 @@ use crate::types::properties::relationship::{
     relationship_property_values::RelationshipPropertyValues,
 };
 use crate::types::properties::PropertyStore;
-use crate::config::PropertyStoreConfig;
 use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -156,22 +155,45 @@ impl DefaultRelationshipPropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put a Double relationship property from Vec using Vec-backed defaults.
-    pub fn put_double_from_vec(
+    /// Create and put a Double relationship property using CollectionsConfig for backend selection.
+    pub fn put_double_with_config(
         mut self,
-        _cfg: &PropertyStoreConfig,
+        config: &crate::config::CollectionsConfig<f64>,
         key: impl Into<String>,
         values: Vec<f64>,
         default_value: f64,
     ) -> Self {
         let element_count = values.len();
+        
+        // Use config to select backend
+        let backend = crate::collections::backends::factory::create_double_backend_from_config(config, values);
+        
+        // Create property values with selected backend
+        use crate::collections::traits::Collections;
         let pv: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::with_values(values, default_value, element_count),
+            DefaultRelationshipPropertyValues::with_values(
+                (0..backend.len()).filter_map(|i| backend.get(i)).collect(), // Convert backend to vec
+                default_value,
+                element_count
+            ),
         );
+        
         let key_str = key.into();
         use crate::types::PropertyState;
         let prop = RelationshipProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
         self.properties.insert(key_str, prop);
         self
+    }
+
+    /// Convenience: create and put a Double relationship property from Vec using Vec-backed defaults.
+    pub fn put_double_from_vec(
+        self,
+        key: impl Into<String>,
+        values: Vec<f64>,
+        default_value: f64,
+    ) -> Self {
+        // Default to Vec backend
+        let default_config = crate::config::CollectionsConfig::<f64>::default();
+        self.put_double_with_config(&default_config, key, values, default_value)
     }
 }

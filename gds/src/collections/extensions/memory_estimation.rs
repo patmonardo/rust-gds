@@ -94,6 +94,12 @@ pub struct SimpleMemoryTracker {
     total_memory: usize,
 }
 
+impl Default for SimpleMemoryTracker {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SimpleMemoryTracker {
     pub fn new() -> Self {
         Self { total_memory: 0 }
@@ -289,7 +295,7 @@ where
         }
         
         if self.memory_config.include_null_bitmap && self.dimensions.null_count > 0 {
-            let null_bitmap_size = (self.dimensions.element_count + 7) / 8; // 1 bit per element
+            let null_bitmap_size = self.dimensions.element_count.div_ceil(8); // 1 bit per element
             total_size += null_bitmap_size;
             breakdown.insert("null_bitmap".to_string(), null_bitmap_size);
         }
@@ -323,7 +329,7 @@ where
         }
         
         if self.memory_config.include_null_bitmap && dimensions.null_count > 0 {
-            let null_bitmap_size = (dimensions.element_count + 7) / 8;
+            let null_bitmap_size = dimensions.element_count.div_ceil(8);
             total_size += null_bitmap_size;
             breakdown.insert("null_bitmap".to_string(), null_bitmap_size);
         }
@@ -348,7 +354,7 @@ where
         }
         
         if self.memory_config.include_null_bitmap && self.dimensions.null_count > 0 {
-            let null_bitmap_size = (self.dimensions.element_count + 7) / 8;
+            let null_bitmap_size = self.dimensions.element_count.div_ceil(8);
             breakdown.insert("null_bitmap".to_string(), null_bitmap_size);
         }
         
@@ -420,11 +426,11 @@ impl MemoryEstimationUtils {
             "vec" => base_size + Estimate::BYTES_ARRAY_HEADER,
             "huge" => {
                 let page_size = 4096;
-                let pages_needed = (element_count + page_size - 1) / page_size;
+                let pages_needed = element_count.div_ceil(page_size);
                 base_size + pages_needed * Estimate::BYTES_ARRAY_HEADER
             },
             "arrow" => {
-                let null_bitmap_size = (element_count + 7) / 8;
+                let null_bitmap_size = element_count.div_ceil(8);
                 base_size + null_bitmap_size + Estimate::BYTES_ARRAY_HEADER
             },
             _ => base_size,

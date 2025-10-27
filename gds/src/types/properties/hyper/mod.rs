@@ -106,6 +106,12 @@ pub struct HyperProgression {
     current: HyperDimension,
 }
 
+impl Default for HyperProgression {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HyperProgression {
     pub fn new() -> Self {
         Self {

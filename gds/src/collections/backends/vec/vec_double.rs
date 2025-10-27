@@ -8,6 +8,12 @@ pub struct VecDouble {
     pub data: Vec<f64>,
 }
 
+impl Default for VecDouble {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VecDouble {
     pub fn new() -> Self {
         Self {

@@ -115,7 +115,6 @@ pub mod values;
 pub use config::*;
 
 // Eval macros (re-exported at crate root via #[macro_export])
-pub use eval::*;
 
 // Property macros (re-exported at crate root via #[macro_export])
 pub use property::*;
@@ -126,4 +125,3 @@ pub use property::*;
 
 // Values macros (re-exported at crate root via #[macro_export])
 // Note: ValueType table is now the Master Controller for all property value generation
-pub use values::*;

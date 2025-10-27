@@ -5,6 +5,12 @@ use crate::collections::traits::Collections;
 pub struct VecFloat {
     pub data: Vec<f32>,
 }
+impl Default for VecFloat {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VecFloat {
     pub fn new() -> Self {
         Self { data: Vec::new() }

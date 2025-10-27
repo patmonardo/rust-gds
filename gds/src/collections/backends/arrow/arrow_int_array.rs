@@ -15,6 +15,12 @@ pub struct ArrowIntArray {
     null_count: usize,
 }
 
+impl Default for ArrowIntArray {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ArrowIntArray {
     pub fn new() -> Self {
         Self {
@@ -119,7 +125,7 @@ impl Collections<i32> for ArrowIntArray {
             let mut sorted = self.data.clone();
             sorted.sort();
             let mid = sorted.len() / 2;
-            if sorted.len() % 2 == 0 {
+            if sorted.len().is_multiple_of(2) {
                 Some((sorted[mid - 1] + sorted[mid]) / 2)
             } else {
                 Some(sorted[mid])
@@ -128,7 +134,7 @@ impl Collections<i32> for ArrowIntArray {
     }
     
     fn percentile(&self, p: f64) -> Option<i32> where i32: Ord {
-        if self.data.is_empty() || p < 0.0 || p > 100.0 {
+        if self.data.is_empty() || !(0.0..=100.0).contains(&p) {
             None
         } else {
             let mut sorted = self.data.clone();

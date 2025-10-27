@@ -153,8 +153,8 @@ impl PropertyAccumulator {
                     }
                 }
 
-                Ok(Box::new(DefaultLongNodePropertyValues::new(
-                    dense, node_count,
+                Ok(Box::new(DefaultLongNodePropertyValues::from_collection(
+                    crate::collections::backends::vec::VecLong::from(dense), node_count,
                 )))
             }
             ValueType::Double => {
@@ -169,8 +169,8 @@ impl PropertyAccumulator {
                     }
                 }
 
-                Ok(Box::new(DefaultDoubleNodePropertyValues::new(
-                    dense, node_count,
+                Ok(Box::new(DefaultDoubleNodePropertyValues::from_collection(
+                    crate::collections::backends::vec::VecDouble::from(dense), node_count,
                 )))
             }
             ValueType::LongArray => {
@@ -184,8 +184,8 @@ impl PropertyAccumulator {
                     }
                 }
 
-                Ok(Box::new(DefaultLongArrayNodePropertyValues::new(
-                    dense, node_count,
+                Ok(Box::new(DefaultLongArrayNodePropertyValues::from_collection(
+                    crate::collections::backends::vec::VecLongArray::from(dense), node_count,
                 )))
             }
             ValueType::DoubleArray => {
@@ -199,24 +199,16 @@ impl PropertyAccumulator {
                     }
                 }
 
-                Ok(Box::new(DefaultDoubleArrayNodePropertyValues::new(
-                    dense, node_count,
+                Ok(Box::new(DefaultDoubleArrayNodePropertyValues::from_collection(
+                    crate::collections::backends::vec::VecDoubleArray::from(dense), node_count,
                 )))
             }
             ValueType::FloatArray => {
-                let mut dense = vec![None; node_count];
-
-                for (original_id, value) in self.values {
-                    if let Some(mapped_id) = id_map.safe_to_mapped_node_id(original_id) {
-                        if let PropertyValue::FloatArray(v) = value {
-                            dense[mapped_id as usize] = Some(v);
-                        }
-                    }
-                }
-
-                Ok(Box::new(DefaultFloatArrayNodePropertyValues::new(
-                    dense, node_count,
-                )))
+                // FloatArray backend (VecFloatArray) is not implemented yet
+                Err(ImporterError::UnsupportedPropertyType {
+                    property_key: self.config.key.clone(),
+                    value_type: self.config.value_type,
+                })
             }
             _ => Err(ImporterError::UnsupportedPropertyType {
                 property_key: self.config.key.clone(),

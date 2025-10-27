@@ -3,15 +3,12 @@ use crate::types::properties::node::NodePropertyValues;
 use crate::types::properties::node::{NodePropertyStore, NodePropertyStoreBuilder};
 use crate::types::properties::PropertyStore;
 use crate::types::PropertyState;
-use crate::config::PropertyStoreConfig;
 // Note: The generated property value types are now generic over Collections backend.
 // They should be used as DefaultLongNodePropertyValues<C>, DefaultDoubleNodePropertyValues<C>, etc.
 // where C is a Collections implementation like VecLong, VecDouble, HugeLong, etc.
 use crate::types::properties::node::impls::default_node_property_values::{
     DefaultLongNodePropertyValues,
     DefaultDoubleNodePropertyValues,
-    DefaultDoubleArrayNodePropertyValues,
-    DefaultLongArrayNodePropertyValues,
 };
 use crate::collections::backends::vec::{VecLong, VecDouble};
 use std::collections::HashMap;
@@ -163,16 +160,52 @@ impl DefaultNodePropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put a Long property from a Vec using Vec-backed defaults.
-    pub fn put_long_from_vec(
+    /// Create and put a Long property using CollectionsConfig for backend selection.
+    pub fn put_long_with_config(
         mut self,
-        _cfg: &PropertyStoreConfig,
+        config: &crate::config::CollectionsConfig<i64>,
         key: impl Into<String>,
         values: Vec<i64>,
     ) -> Self {
         let node_count = values.len();
-        let backend = VecLong::from(values);
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, node_count));
+        
+        // Use config to select backend
+        let backend = crate::collections::backends::factory::create_long_backend_from_config(config, values);
+        
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(
+            DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, node_count)
+        );
+        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
+        self.properties.insert(prop.key().to_string(), prop);
+        self
+    }
+
+    /// Convenience: create and put a Long property from a Vec using Vec-backed defaults.
+    pub fn put_long_from_vec(
+        self,
+        key: impl Into<String>,
+        values: Vec<i64>,
+    ) -> Self {
+        // Default to Vec backend
+        let default_config = crate::config::CollectionsConfig::<i64>::default();
+        self.put_long_with_config(&default_config, key, values)
+    }
+
+    /// Create and put a Double property using CollectionsConfig for backend selection.
+    pub fn put_double_with_config(
+        mut self,
+        config: &crate::config::CollectionsConfig<f64>,
+        key: impl Into<String>,
+        values: Vec<f64>,
+    ) -> Self {
+        let node_count = values.len();
+        
+        // Use config to select backend
+        let backend = crate::collections::backends::factory::create_double_backend_from_config(config, values);
+        
+        let pv: Arc<dyn NodePropertyValues> = Arc::new(
+            DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(backend, node_count)
+        );
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
@@ -180,25 +213,20 @@ impl DefaultNodePropertyStoreBuilder {
 
     /// Convenience: create and put a Double property from a Vec using Vec-backed defaults.
     pub fn put_double_from_vec(
-        mut self,
-        _cfg: &PropertyStoreConfig,
+        self,
         key: impl Into<String>,
         values: Vec<f64>,
     ) -> Self {
-        let node_count = values.len();
-        let backend = VecDouble::from(values);
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(backend, node_count));
-        let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
-        self.properties.insert(prop.key().to_string(), prop);
-        self
+        // Default to Vec backend
+        let default_config = crate::config::CollectionsConfig::<f64>::default();
+        self.put_double_with_config(&default_config, key, values)
     }
 
     /// Convenience: create and put a DoubleArray property from a Vec<Option<Vec<f64>>>.
     /// NOTE: Array types not yet implemented with universal adapters - this method is temporarily disabled.
     #[allow(dead_code)]
     pub fn put_double_array_from_vec(
-        mut self,
-        _cfg: &PropertyStoreConfig,
+        self,
         key: impl Into<String>,
         _values: Vec<Option<Vec<f64>>>,
     ) -> Self {
@@ -210,8 +238,7 @@ impl DefaultNodePropertyStoreBuilder {
     /// NOTE: Array types not yet implemented with universal adapters - this method is temporarily disabled.
     #[allow(dead_code)]
     pub fn put_long_array_from_vec(
-        mut self,
-        _cfg: &PropertyStoreConfig,
+        self,
         key: impl Into<String>,
         _values: Vec<Option<Vec<i64>>>,
     ) -> Self {

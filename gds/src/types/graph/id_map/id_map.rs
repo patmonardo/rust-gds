@@ -46,7 +46,6 @@ pub trait IdMap: PartialIdMap + NodeIterator + BatchNodeIterable {
     /// Convenience helper exposing the sentinel-based variant used by the Java/TypeScript APIs.
     fn safe_to_mapped_or_not_found(&self, original_node_id: OriginalNodeId) -> i64 {
         self.safe_to_mapped_node_id(original_node_id)
-            .map(|id| id as i64)
             .unwrap_or(NOT_FOUND)
     }
 

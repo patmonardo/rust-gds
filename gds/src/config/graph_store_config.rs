@@ -5,7 +5,7 @@
 
 use super::base_types::ConcurrencyConfig;
 use super::validation::ConfigValidation;
-use super::property_store_config::PropertyStoreConfig;
+use super::collections_config::{CollectionsBackend, CollectionsConfig, CollectionsConfigBuilder};
 use crate::define_config;
 
 define_config!(
@@ -95,20 +95,124 @@ impl ConcurrencyConfig for GraphStoreComputeConfig {
     }
 }
 
+/// Properties configuration for Collections-backed property storage
+///
+/// This config drives the selection of Collections backends for different property levels.
+/// It replaces the deprecated PropertyStoreConfig with a Collections-first approach.
+define_config!(
+    pub struct GraphStorePropertiesConfig {
+        validate = |cfg: &GraphStorePropertiesConfig| {
+            ConfigValidation::validate_positive(cfg.huge_array_threshold as f64, "hugeArrayThreshold")?;
+            Ok(())
+        },
+        /// Default backend for node properties
+        default_node_backend: CollectionsBackend = CollectionsBackend::Vec,
+        /// Default backend for relationship properties
+        default_relationship_backend: CollectionsBackend = CollectionsBackend::Vec,
+        /// Default backend for graph properties
+        default_graph_backend: CollectionsBackend = CollectionsBackend::Vec,
+        /// Element count threshold for switching Vec -> Huge (10M elements)
+        huge_array_threshold: usize = 10_000_000,
+        /// Enable automatic backend selection based on size
+        enable_adaptive_backend: bool = true,
+        /// Prefer Arrow when available (for future Arrow backend)
+        prefer_arrow: bool = false,
+        // Note: optimization_level is part of CollectionsConfig's PerformanceConfig
+        // We'll set sensible defaults when creating CollectionsConfig instances
+    }
+);
+
 define_config!(
     pub struct GraphStoreConfig {
         validate = |cfg: &GraphStoreConfig| {
             cfg.memory.validate()?;
             cfg.cache.validate()?;
             cfg.compute.validate()?;
+            cfg.properties.validate()?;
             Ok(())
         },
         memory: GraphStoreMemoryConfig = GraphStoreMemoryConfig::default(),
         cache: GraphStoreCacheConfig = GraphStoreCacheConfig::default(),
         compute: GraphStoreComputeConfig = GraphStoreComputeConfig::default(),
-        properties: PropertyStoreConfig = PropertyStoreConfig::default(),
+        properties: GraphStorePropertiesConfig = GraphStorePropertiesConfig::default(),
     }
 );
+
+impl GraphStoreConfig {
+    /// Creates a CollectionsConfig for node properties of type T
+    ///
+    /// Uses the store's properties config to select the appropriate backend,
+    /// with adaptive selection based on element count if enabled.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let config = GraphStoreConfig::default();
+    /// let node_config: CollectionsConfig<i64> = config.node_collections_config(1_000_000);
+    /// // Uses Vec backend for 1M elements
+    /// ```
+    pub fn node_collections_config<T>(&self, element_count: usize) -> CollectionsConfig<T> {
+        let backend = self.select_backend(
+            self.properties.default_node_backend,
+            element_count,
+        );
+
+        CollectionsConfigBuilder::<T>::new()
+            .with_backend(backend)
+            .build()
+    }
+
+    /// Creates a CollectionsConfig for relationship properties of type T
+    ///
+    /// Similar to node_collections_config but uses relationship-specific defaults.
+    pub fn relationship_collections_config<T>(&self, element_count: usize) -> CollectionsConfig<T> {
+        let backend = self.select_backend(
+            self.properties.default_relationship_backend,
+            element_count,
+        );
+
+        CollectionsConfigBuilder::<T>::new()
+            .with_backend(backend)
+            .build()
+    }
+
+    /// Creates a CollectionsConfig for graph properties of type T
+    ///
+    /// Graph properties are typically small (single value), so adaptive
+    /// backend selection is less relevant.
+    pub fn graph_collections_config<T>(&self, element_count: usize) -> CollectionsConfig<T> {
+        let backend = self.properties.default_graph_backend;
+
+        CollectionsConfigBuilder::<T>::new()
+            .with_backend(backend)
+            .build()
+    }
+
+    /// Selects the appropriate backend based on element count and config
+    ///
+    /// If adaptive backend is enabled and element count exceeds the threshold,
+    /// switches from Vec to Huge. In the future, this will also handle Arrow
+    /// selection when prefer_arrow is true.
+    fn select_backend(&self, default_backend: CollectionsBackend, element_count: usize) -> CollectionsBackend {
+        // Future: Check prefer_arrow first
+        if self.properties.prefer_arrow {
+            // TODO: When Arrow backend is ready, return CollectionsBackend::Arrow
+            // For now, fall through to size-based selection
+        }
+
+        // Adaptive backend selection based on size
+        if self.properties.enable_adaptive_backend
+            && element_count > self.properties.huge_array_threshold
+        {
+            // Large collections should use Huge backend for memory efficiency
+            match default_backend {
+                CollectionsBackend::Vec | CollectionsBackend::Std => CollectionsBackend::Huge,
+                other => other, // Respect explicit backend choices
+            }
+        } else {
+            default_backend
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -216,5 +320,109 @@ mod tests {
             .build();
 
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_properties_config_default() {
+        let config = GraphStorePropertiesConfig::default();
+        assert_eq!(config.default_node_backend, CollectionsBackend::Vec);
+        assert_eq!(config.default_relationship_backend, CollectionsBackend::Vec);
+        assert_eq!(config.default_graph_backend, CollectionsBackend::Vec);
+        assert_eq!(config.huge_array_threshold, 10_000_000);
+        assert!(config.enable_adaptive_backend);
+        assert!(!config.prefer_arrow);
+        assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_properties_config_builder() {
+        let config = GraphStorePropertiesConfig::builder()
+            .default_node_backend(CollectionsBackend::Huge)
+            .huge_array_threshold(5_000_000)
+            .prefer_arrow(true)
+            .build()
+            .unwrap();
+
+        assert_eq!(config.default_node_backend, CollectionsBackend::Huge);
+        assert_eq!(config.huge_array_threshold, 5_000_000);
+        assert!(config.prefer_arrow);
+    }
+
+    #[test]
+    fn test_graphstore_config_with_properties() {
+        let properties = GraphStorePropertiesConfig::builder()
+            .default_node_backend(CollectionsBackend::Huge)
+            .enable_adaptive_backend(true)
+            .build()
+            .unwrap();
+
+        let config = GraphStoreConfig::builder()
+            .properties(properties)
+            .build()
+            .unwrap();
+
+        assert_eq!(config.properties.default_node_backend, CollectionsBackend::Huge);
+        assert!(config.properties.enable_adaptive_backend);
+        assert!(config.validate().is_ok());
+    }
+
+    #[test]
+    fn test_collections_config_creation_small() {
+        let config = GraphStoreConfig::default();
+        
+        // Small collection (1M elements) should use Vec
+        let node_config: CollectionsConfig<i64> = config.node_collections_config(1_000_000);
+        assert_eq!(node_config.backend.primary, CollectionsBackend::Vec);
+    }
+
+    #[test]
+    fn test_collections_config_creation_large() {
+        let config = GraphStoreConfig::default();
+        
+        // Large collection (20M elements) should auto-switch to Huge
+        let node_config: CollectionsConfig<i64> = config.node_collections_config(20_000_000);
+        assert_eq!(node_config.backend.primary, CollectionsBackend::Huge);
+    }
+
+    #[test]
+    fn test_collections_config_adaptive_disabled() {
+        let config = GraphStoreConfig::builder()
+            .properties(
+                GraphStorePropertiesConfig::builder()
+                    .enable_adaptive_backend(false)
+                    .build()
+                    .unwrap()
+            )
+            .build()
+            .unwrap();
+        
+        // Even with 20M elements, should stay Vec when adaptive is disabled
+        let node_config: CollectionsConfig<i64> = config.node_collections_config(20_000_000);
+        assert_eq!(node_config.backend.primary, CollectionsBackend::Vec);
+    }
+
+    #[test]
+    fn test_collections_config_per_level() {
+        let config = GraphStoreConfig::builder()
+            .properties(
+                GraphStorePropertiesConfig::builder()
+                    .default_node_backend(CollectionsBackend::Huge)
+                    .default_relationship_backend(CollectionsBackend::Vec)
+                    .default_graph_backend(CollectionsBackend::Vec)
+                    .enable_adaptive_backend(false)
+                    .build()
+                    .unwrap()
+            )
+            .build()
+            .unwrap();
+        
+        // Each level uses its configured backend
+        let node_config: CollectionsConfig<i64> = config.node_collections_config(1000);
+        let rel_config: CollectionsConfig<f64> = config.relationship_collections_config(1000);
+        let graph_config: CollectionsConfig<f64> = config.graph_collections_config(1);
+        
+        assert_eq!(node_config.backend.primary, CollectionsBackend::Huge);
+        assert_eq!(rel_config.backend.primary, CollectionsBackend::Vec);
+        assert_eq!(graph_config.backend.primary, CollectionsBackend::Vec);
     }
 }

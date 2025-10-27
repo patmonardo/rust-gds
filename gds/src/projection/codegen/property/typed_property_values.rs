@@ -46,8 +46,8 @@ macro_rules! typed_property_values {
             }
         }
 
-        impl crate::types::properties::property_values::PropertyValues for $struct_name {
-            fn value_type(&self) -> crate::types::ValueType {
+        impl $crate::types::properties::property_values::PropertyValues for $struct_name {
+            fn value_type(&self) -> $crate::types::ValueType {
                 crate::types::ValueType::$value_type_enum
             }
 
@@ -184,7 +184,7 @@ macro_rules! typed_property_values_factory {
 
         impl $factory_name {
             /// Creates a new PropertyValues instance for the given ValueType
-            pub fn create(value_type: crate::types::ValueType, capacity: usize) -> std::sync::Arc<dyn crate::types::properties::property_values::PropertyValues> {
+            pub fn create(value_type: $crate::types::ValueType, capacity: usize) -> std::sync::Arc<dyn $crate::types::properties::property_values::PropertyValues> {
                 match value_type {
                     $(
                         crate::types::ValueType::$value_type_enum => {

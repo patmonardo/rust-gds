@@ -9,7 +9,7 @@
 //! Thing-Property → Appearance as Aspect
 //! Presupposing Facticity and Appearance
 
-use super::fact_store::{FactStore, ProjectionLevel};
+use super::fact_store::ProjectionLevel;
 
 /// Relation: The fundamental structure of Essential Relation
 /// 

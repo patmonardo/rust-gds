@@ -5,6 +5,12 @@ use crate::collections::traits::Collections;
 pub struct VecInt {
     pub data: Vec<i32>,
 }
+impl Default for VecInt {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VecInt {
     pub fn new() -> Self {
         Self {

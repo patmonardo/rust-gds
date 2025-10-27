@@ -10,7 +10,7 @@
 //! Any alteration completely falls apart!
 
 use super::fact_store::{MonadicFactStore, DyadicFactStore, TriadicFactStore, ProjectionLevel, Sentinel};
-use crate::collections::hyper_store::{HyperStore, VecHyperStore};
+use crate::collections::hyper_store::HyperStore;
 
 /// ProjectiveKernel: The genetic process of projection
 /// 

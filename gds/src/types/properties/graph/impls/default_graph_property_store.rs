@@ -2,12 +2,8 @@ use crate::types::properties::graph::GraphProperty;
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::graph::{GraphPropertyStore, GraphPropertyStoreBuilder};
 use crate::types::properties::PropertyStore;
-use crate::config::PropertyStoreConfig;
 use crate::types::properties::graph::impls::default_graph_property_values::{
-    DefaultDoubleArrayGraphPropertyValues,
     DefaultDoubleGraphPropertyValues,
-    DefaultFloatArrayGraphPropertyValues,
-    DefaultLongArrayGraphPropertyValues,
     DefaultLongGraphPropertyValues,
 };
 use std::collections::HashMap;
@@ -159,16 +155,54 @@ impl DefaultGraphPropertyStoreBuilder {
         self
     }
 
-    /// Convenience: create and put Long graph property from Vec using Vec-backed defaults.
-    pub fn put_long_from_vec(
+    /// Create and put a Long graph property using CollectionsConfig for backend selection.
+    pub fn put_long_with_config(
         mut self,
-        _cfg: &PropertyStoreConfig,
+        config: &crate::config::CollectionsConfig<i64>,
         key: impl Into<String>,
         values: Vec<i64>,
     ) -> Self {
         use crate::collections::backends::vec::VecLong;
-        let backend = VecLong::from(values);
-        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultLongGraphPropertyValues::<VecLong>::from_collection(backend));
+        
+        // Use config to select backend
+        let backend = crate::collections::backends::factory::create_long_backend_from_config(config, values);
+        
+        let pv: Arc<dyn GraphPropertyValues> = Arc::new(
+            DefaultLongGraphPropertyValues::<VecLong>::from_collection(backend)
+        );
+        use crate::types::PropertyState;
+        let key_str = key.into();
+        let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
+        self.properties.insert(key_str, prop);
+        self
+    }
+
+    /// Convenience: create and put Long graph property from Vec using Vec-backed defaults.
+    pub fn put_long_from_vec(
+        self,
+        key: impl Into<String>,
+        values: Vec<i64>,
+    ) -> Self {
+        // Default to Vec backend
+        let default_config = crate::config::CollectionsConfig::<i64>::default();
+        self.put_long_with_config(&default_config, key, values)
+    }
+
+    /// Create and put a Double graph property using CollectionsConfig for backend selection.
+    pub fn put_double_with_config(
+        mut self,
+        config: &crate::config::CollectionsConfig<f64>,
+        key: impl Into<String>,
+        values: Vec<f64>,
+    ) -> Self {
+        use crate::collections::backends::vec::VecDouble;
+        
+        // Use config to select backend
+        let backend = crate::collections::backends::factory::create_double_backend_from_config(config, values);
+        
+        let pv: Arc<dyn GraphPropertyValues> = Arc::new(
+            DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(backend)
+        );
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
@@ -178,18 +212,12 @@ impl DefaultGraphPropertyStoreBuilder {
 
     /// Convenience: create and put Double graph property from Vec using Vec-backed defaults.
     pub fn put_double_from_vec(
-        mut self,
-        _cfg: &PropertyStoreConfig,
+        self,
         key: impl Into<String>,
         values: Vec<f64>,
     ) -> Self {
-        use crate::collections::backends::vec::VecDouble;
-        let backend = VecDouble::from(values);
-        let pv: Arc<dyn GraphPropertyValues> = Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(backend));
-        use crate::types::PropertyState;
-        let key_str = key.into();
-        let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
-        self.properties.insert(key_str, prop);
-        self
+        // Default to Vec backend
+        let default_config = crate::config::CollectionsConfig::<f64>::default();
+        self.put_double_with_config(&default_config, key, values)
     }
 }

@@ -388,7 +388,7 @@ impl StackUtils {
         if use_paged {
             // Paged stack memory estimation
             let page_size = 4096;
-            let pages_needed = (capacity + page_size - 1) / page_size;
+            let pages_needed = capacity.div_ceil(page_size);
             pages_needed * page_size * std::mem::size_of::<i64>()
         } else if use_huge {
             // Huge stack memory estimation

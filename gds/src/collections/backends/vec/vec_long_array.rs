@@ -10,6 +10,12 @@ pub struct VecLongArray {
     pub data: Vec<Option<Vec<i64>>>,
 }
 
+impl Default for VecLongArray {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VecLongArray {
     pub fn new() -> Self {
         Self { data: Vec::new() }

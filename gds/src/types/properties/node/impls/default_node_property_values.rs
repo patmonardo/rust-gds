@@ -4,12 +4,8 @@
 //! and the universal adapter system. All adapters are generic over Collections
 //! backends (Vec, Huge, Arrow), enabling runtime backend selection.
 
-use crate::types::properties::node::{
-    DoubleArrayNodePropertyValues, DoubleNodePropertyValues, FloatArrayNodePropertyValues,
-    LongArrayNodePropertyValues, LongNodePropertyValues, NodePropertyValues,
-};
-use crate::types::properties::{PropertyValues, PropertyValuesError, PropertyValuesResult};
-use crate::types::ValueType;
+use crate::types::properties::node::NodePropertyValues;
+use crate::types::properties::PropertyValues;
 
 // Import the macros from the crate root
 use crate::{generate_all_node_adapters, generate_all_node_array_adapters};
@@ -40,7 +36,6 @@ generate_all_node_array_adapters!();
 
 // For backwards compatibility, create type aliases using Vec backends
 // These can be used where the old non-generic types were expected
-use crate::collections::backends::vec::{VecLong, VecDouble, VecFloat, VecInt, VecShort, VecByte};
 
 // Re-export the generated types with their full generic signatures
 pub use self::{

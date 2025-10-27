@@ -69,6 +69,7 @@ pub struct PerformanceConfig {
 
 /// Extension configuration
 #[derive(Debug, Clone, PartialEq)]
+#[derive(Default)]
 pub struct ExtensionConfig {
     /// Enabled extensions
     pub enabled: Vec<Extension>,
@@ -78,6 +79,7 @@ pub struct ExtensionConfig {
 
 /// ML-specific configuration
 #[derive(Debug, Clone, PartialEq)]
+#[derive(Default)]
 pub struct MLConfig {
     /// Tensor configuration
     pub tensor: TensorConfig,
@@ -226,6 +228,7 @@ pub enum TypeConstraint {
 
 /// Backend-specific settings
 #[derive(Debug, Clone, PartialEq)]
+#[derive(Default)]
 pub struct BackendSettings {
     /// Page size for paged backends
     pub page_size: Option<usize>,
@@ -272,6 +275,7 @@ pub struct MemoryConfig {
 
 /// Extension settings
 #[derive(Debug, Clone, PartialEq)]
+#[derive(Default)]
 pub struct ExtensionSettings {
     /// Extension-specific configuration
     pub config: std::collections::HashMap<String, String>,
@@ -313,6 +317,7 @@ pub struct VectorConfig {
 
 /// ML optimizations
 #[derive(Debug, Clone, PartialEq)]
+#[derive(Default)]
 pub struct MLOptimizations {
     /// Enable GPU acceleration
     pub gpu_acceleration: bool,
@@ -326,6 +331,7 @@ pub struct MLOptimizations {
 
 /// Dataset settings
 #[derive(Debug, Clone, PartialEq)]
+#[derive(Default)]
 pub struct DatasetSettings {
     /// Dataset-specific configuration
     pub config: std::collections::HashMap<String, String>,
@@ -439,6 +445,12 @@ pub struct CollectionsConfigBuilder<T> {
     _phantom: PhantomData<T>,
 }
 
+impl<T> Default for CollectionsConfigBuilder<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> CollectionsConfigBuilder<T> {
     pub fn new() -> Self {
         Self {
@@ -532,16 +544,6 @@ impl Default for BackendConfig {
     }
 }
 
-impl Default for BackendSettings {
-    fn default() -> Self {
-        Self {
-            page_size: None,
-            cache_size: None,
-            compression_level: None,
-            encryption_key: None,
-        }
-    }
-}
 
 impl Default for PerformanceConfig {
     fn default() -> Self {
@@ -584,33 +586,8 @@ impl Default for MemoryConfig {
     }
 }
 
-impl Default for ExtensionConfig {
-    fn default() -> Self {
-        Self {
-            enabled: Vec::new(),
-            settings: ExtensionSettings::default(),
-        }
-    }
-}
 
-impl Default for ExtensionSettings {
-    fn default() -> Self {
-        Self {
-            config: std::collections::HashMap::new(),
-        }
-    }
-}
 
-impl Default for MLConfig {
-    fn default() -> Self {
-        Self {
-            tensor: TensorConfig::default(),
-            matrix: MatrixConfig::default(),
-            vector: VectorConfig::default(),
-            optimizations: MLOptimizations::default(),
-        }
-    }
-}
 
 impl Default for TensorConfig {
     fn default() -> Self {
@@ -643,16 +620,6 @@ impl Default for VectorConfig {
     }
 }
 
-impl Default for MLOptimizations {
-    fn default() -> Self {
-        Self {
-            gpu_acceleration: false,
-            quantization: false,
-            pruning: false,
-            distillation: false,
-        }
-    }
-}
 
 impl Default for DatasetConfig {
     fn default() -> Self {
@@ -664,13 +631,6 @@ impl Default for DatasetConfig {
     }
 }
 
-impl Default for DatasetSettings {
-    fn default() -> Self {
-        Self {
-            config: std::collections::HashMap::new(),
-        }
-    }
-}
 
 impl Default for DataSourceConfig {
     fn default() -> Self {

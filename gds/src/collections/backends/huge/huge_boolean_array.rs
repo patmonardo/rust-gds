@@ -475,9 +475,9 @@ impl PagedHugeBooleanArray {
             let mid = (low + high) / 2;
             let mid_val = self.get(mid as usize);
 
-            if mid_val < search_value {
+            if !mid_val & search_value {
                 low = mid + 1;
-            } else if mid_val > search_value {
+            } else if mid_val & !search_value {
                 high = mid - 1;
             } else {
                 return mid; // Found

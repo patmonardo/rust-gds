@@ -11,5 +11,4 @@ pub mod types;
 pub use in_memory::*;
 pub use prelude::*;
 pub use property_values::*;
-pub use traits::*;
 pub use types::*;

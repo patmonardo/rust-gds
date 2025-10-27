@@ -639,6 +639,7 @@ mod tests {
         relationship_topologies.insert(RelationshipType::of("KNOWS"), topology);
 
         DefaultGraphStore::new(
+            crate::config::GraphStoreConfig::default(),
             graph_name,
             database_info,
             schema,

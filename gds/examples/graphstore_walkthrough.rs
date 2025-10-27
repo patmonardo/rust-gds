@@ -1,3 +1,8 @@
+use gds::collections::backends::vec::{VecDouble, VecLong};
+use gds::config::{
+    CacheEvictionStrategy, CollectionsBackend, GraphStoreCacheConfig, GraphStoreComputeConfig,
+    GraphStoreConfig, GraphStoreMemoryConfig, GraphStorePropertiesConfig,
+};
 use gds::projection::{NodeLabel, RelationshipType};
 use gds::types::graph::id_map::{IdMap, MappedNodeId, SimpleIdMap};
 use gds::types::graph::topology::RelationshipTopology;
@@ -6,9 +11,8 @@ use gds::types::graph_store::{
     Capabilities, DatabaseId, DatabaseInfo, DatabaseLocation, DefaultGraphStore, GraphName,
     GraphStore, GraphStoreResult,
 };
-use gds::types::properties::graph::DefaultDoubleGraphPropertyValues;
-use gds::types::properties::node::DefaultLongNodePropertyValues;
-use gds::types::graph::PropertyValue;
+use gds::types::properties::graph::impls::default_graph_property_values::DefaultDoubleGraphPropertyValues;
+use gds::types::properties::node::impls::default_node_property_values::DefaultLongNodePropertyValues;
 use gds::types::random::{RandomGraphConfig, RandomGraphResult, RandomRelationshipConfig};
 use gds::types::schema::{Direction, MutableGraphSchema};
 use gds::types::value_type::ValueType;
@@ -18,10 +22,12 @@ use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("\n=== GraphStore Walkthrough ===\n");
-    println!("This example demonstrates the core GraphStore construction and inspection APIs.");
-    println!("We'll build a graph manually (showing all components) and via Random generation.\n");
+    println!("This example demonstrates the modern GraphStore with integrated configuration.");
+    println!("We'll explore manual construction, configuration options, and random generation.\n");
 
     manual_walkthrough()?;
+    println!("\n---\n");
+    config_walkthrough()?;
     println!("\n---\n");
     random_walkthrough()?;
 
@@ -31,12 +37,23 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn manual_walkthrough() -> GraphStoreResult<()> {
     println!("=== Manual Construction: Building a GraphStore from Scratch ===\n");
     println!("The GraphStore is the central container managing:");
+    println!("  - Configuration (memory, caching, compute, adaptive property backends)");
     println!("  - Schema (node labels, relationship types, property definitions)");
     println!("  - Topology (adjacency structure via RelationshipTopology)");
-    println!("  - Properties (columnar PropertyValues attached to graph/nodes/relationships)");
+    println!("  - Properties (columnar PropertyValues with Collections backends)");
     println!("  - Metadata (capabilities, timestamps, database info)\n");
 
-    println!("Step 1: Naming, database info, and capabilities");
+    println!("Step 1: Configuration - The foundation of the modern GraphStore");
+    println!("  GraphStoreConfig provides centralized control over:");
+    println!("    • Memory management and GC thresholds");
+    println!("    • Caching strategies (node, relationship, property)");
+    println!("    • Compute parallelism and work-stealing");
+    println!("    • Adaptive property backend selection (Vec ↔ Huge ↔ Arrow)");
+    let config = GraphStoreConfig::default();
+    println!("  Using default config: Vec backend, 4GB memory, {} threads", 
+             config.compute.concurrency);
+
+    println!("\nStep 2: Naming, database info, and capabilities");
     println!("  GraphName identifies this store; DatabaseInfo tracks provenance.");
     let graph_name = GraphName::new("neo4j-movies");
     let database_info = DatabaseInfo::new(
@@ -47,7 +64,7 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     capabilities.add_feature("transient");
     capabilities.add_feature("write");
 
-    println!("\nStep 2: Schema with node labels, properties, and relationship types");
+    println!("\nStep 3: Schema with node labels, properties, and relationship types");
     println!("  Schema defines the 'shape' of the graph: what labels/types exist,");
     println!("  what properties they can have, and their value types (Long/Double/etc).");
     let person = NodeLabel::of("Person");
@@ -71,7 +88,7 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     );
     let schema = schema_builder.build();
 
-    println!("\nStep 3: ID mapping between original IDs and compact node IDs");
+    println!("\nStep 4: ID mapping between original IDs and compact node IDs");
     println!("  IdMap translates original node IDs (e.g., from Neo4j) to compact 0..N range.");
     println!("  This enables efficient columnar storage and array-based topology.");
     let mut id_map = SimpleIdMap::from_original_ids([0, 1, 2, 3]);
@@ -82,7 +99,7 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     id_map.add_node_id_to_label(2, movie.clone());
     id_map.add_node_id_to_label(3, movie.clone());
 
-    println!("\nStep 4: Relationship topology (adjacency lists)");
+    println!("\nStep 5: Relationship topology (adjacency lists)");
     println!("  RelationshipTopology stores the graph structure as adjacency lists.");
     println!("  For directed graphs: outgoing[node_id] = [target_ids...]");
     println!("  Inverse indices (incoming edges) can be added for bidirectional traversal.");
@@ -91,10 +108,12 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     let mut relationship_topologies = HashMap::new();
     relationship_topologies.insert(acted_in.clone(), topology);
 
-    println!("\nStep 5: Assemble the DefaultGraphStore");
-    println!("  DefaultGraphStore::new combines all components into a mutable store.");
+    println!("\nStep 6: Assemble the DefaultGraphStore with Config");
+    println!("  DefaultGraphStore::new now takes config as its first parameter!");
+    println!("  The config flows through the store and into all Graph views.");
     println!("  At this point, the graph structure is fixed; properties can be added/removed.");
     let mut store = DefaultGraphStore::new(
+        config,
         graph_name,
         database_info,
         schema,
@@ -103,21 +122,21 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
         relationship_topologies,
     );
 
-    println!("\nStep 6: Attach graph and node properties");
-    println!("  Properties are columnar: PropertyValues = Arc<dyn *PropertyValues>.");
+    println!("\nStep 7: Attach graph and node properties");
+    println!("  Properties are columnar: PropertyValues backed by Collections.");
     println!("  Node properties are label-scoped; graph properties are global scalars.");
-    println!(
-        "  The store holds Arc clones; multiple views can share the same columns (zero-copy)."
-    );
-    let experience = Arc::new(DefaultLongNodePropertyValues::new(vec![20, 12, 0, 0], 4));
+    println!("  The store holds Arc clones; multiple views share columns (zero-copy).");
+    println!("  Future: Config will drive adaptive backend selection (Vec/Huge/Arrow).");
+    let backend = VecLong::from(vec![20i64, 12, 0, 0]);
+    let experience = Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, 4));
     let mut person_only = HashSet::new();
     person_only.insert(person.clone());
     store.add_node_property(person_only, "experience_years", experience)?;
 
-    let density = Arc::new(DefaultDoubleGraphPropertyValues::singleton(0.5));
+    let density = Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::singleton(0.5));
     store.add_graph_property("edge_density", density)?;
 
-    println!("\nStep 7: Inspect the graph view for validation");
+    println!("\nStep 8: Inspect the graph view for validation");
     println!("  GraphStore::graph() creates a lightweight, immutable Graph view.");
     println!("  The Graph trait provides traversal, degree queries, and property access.");
     println!("  Views share topology/properties via Arc; creating views is cheap.");
@@ -129,10 +148,119 @@ fn manual_walkthrough() -> GraphStoreResult<()> {
     println!("  Movie nodes: {}", store.node_count_for_label(&movie));
     print_relationship_sample(&*graph, 0, "  Sample outgoing relationships from node 0");
 
-    println!("8. Schema summary");
+    println!("\nStep 9: Schema summary");
     print_sorted_labels("  Node labels", &store.node_labels());
     print_sorted_relationships("  Relationship types", &store.relationship_types());
 
+    Ok(())
+}
+
+fn config_walkthrough() -> Result<(), Box<dyn Error>> {
+    println!("=== Advanced Configuration: Tuning GraphStore for Your Workload ===\n");
+    println!("GraphStoreConfig provides fine-grained control over the graph system.");
+    println!("Let's explore different configuration strategies for various use cases.\n");
+
+    println!("Example 1: Memory-Constrained Environment");
+    println!("  Limit memory usage, enable disk offload, aggressive GC.");
+    let memory_config = GraphStoreMemoryConfig::builder()
+        .max_memory_bytes(1 * 1024 * 1024 * 1024) // 1GB
+        .gc_threshold_ratio(0.7) // GC at 70% capacity
+        .allow_disk_offload(true)
+        .offload_path(Some("/tmp/gds-offload".to_string()))
+        .build()?;
+    println!("  → Max memory: {}GB", memory_config.max_memory_bytes / (1024*1024*1024));
+    println!("  → GC threshold: {:.0}%", memory_config.gc_threshold_ratio * 100.0);
+    println!("  → Disk offload: {}", memory_config.allow_disk_offload);
+
+    println!("\nExample 2: High-Performance Compute Configuration");
+    println!("  Maximize parallelism, enable work-stealing, large batches.");
+    let compute_config = GraphStoreComputeConfig::builder()
+        .concurrency(32)
+        .batch_size(50_000)
+        .enable_parallel_execution(true)
+        .enable_work_stealing(true)
+        .worker_pool_size(32)
+        .computation_timeout_secs(Some(600))
+        .build()?;
+    println!("  → Concurrency: {} threads", compute_config.concurrency);
+    println!("  → Batch size: {} nodes", compute_config.batch_size);
+    println!("  → Work stealing: {}", compute_config.enable_work_stealing);
+    println!("  → Timeout: {}s", compute_config.computation_timeout_secs.unwrap_or(0));
+
+    println!("\nExample 3: Caching Strategy for Hot Graphs");
+    println!("  Large caches with LFU eviction for frequently accessed data.");
+    let cache_config = GraphStoreCacheConfig::builder()
+        .enable_node_cache(true)
+        .node_cache_size(100_000)
+        .enable_relationship_cache(true)
+        .relationship_cache_size(1_000_000)
+        .enable_property_cache(true)
+        .property_cache_size(500_000)
+        .cache_eviction_strategy(CacheEvictionStrategy::Lfu)
+        .build()?;
+    println!("  → Node cache: {}", cache_config.node_cache_size);
+    println!("  → Relationship cache: {}", cache_config.relationship_cache_size);
+    println!("  → Property cache: {}", cache_config.property_cache_size);
+    println!("  → Eviction: {:?}", cache_config.cache_eviction_strategy);
+
+    println!("\nExample 4: Adaptive Property Backend Selection");
+    println!("  The new Collections-backed property system with adaptive backends!");
+    println!("  Small graphs → Vec (fast, simple)");
+    println!("  Large graphs → Huge (memory-efficient off-heap arrays)");
+    println!("  Future → Arrow (columnar, zero-copy, ML-friendly)");
+    
+    let properties_config = GraphStorePropertiesConfig::builder()
+        .default_node_backend(CollectionsBackend::Vec)
+        .default_relationship_backend(CollectionsBackend::Vec)
+        .default_graph_backend(CollectionsBackend::Vec)
+        .huge_array_threshold(5_000_000) // Switch to Huge at 5M elements
+        .enable_adaptive_backend(true)
+        .prefer_arrow(false) // Not yet implemented
+        .build()?;
+    println!("  → Node backend: {:?}", properties_config.default_node_backend);
+    println!("  → Huge threshold: {} elements", properties_config.huge_array_threshold);
+    println!("  → Adaptive: {}", properties_config.enable_adaptive_backend);
+
+    println!("\nExample 5: Complete Custom Configuration");
+    println!("  Combining all config sections for a production-grade setup.");
+    let full_config = GraphStoreConfig::builder()
+        .memory(memory_config)
+        .compute(compute_config)
+        .cache(cache_config)
+        .properties(properties_config)
+        .build()?;
+    
+    println!("  ✓ Memory: {}GB with offload", 
+             full_config.memory.max_memory_bytes / (1024*1024*1024));
+    println!("  ✓ Compute: {} threads, batches of {}", 
+             full_config.compute.concurrency, 
+             full_config.compute.batch_size);
+    println!("  ✓ Cache: Node/Rel/Prop = {}/{}/{}", 
+             full_config.cache.node_cache_size,
+             full_config.cache.relationship_cache_size,
+             full_config.cache.property_cache_size);
+    println!("  ✓ Properties: {:?} backend with adaptive switching at {}M elements",
+             full_config.properties.default_node_backend,
+             full_config.properties.huge_array_threshold / 1_000_000);
+
+    println!("\nExample 6: Demonstrating CollectionsConfig Generation");
+    println!("  GraphStoreConfig can generate typed CollectionsConfig for property stores.");
+    let default_config = GraphStoreConfig::default();
+    
+    // Small graph scenario
+    let small_node_count = 1_000;
+    let small_config = default_config.node_collections_config::<i64>(small_node_count);
+    println!("  Small graph (1K nodes) → Backend: {:?}", small_config.backend.primary);
+    
+    // Large graph scenario
+    let large_node_count = 20_000_000;
+    let large_config = default_config.node_collections_config::<i64>(large_node_count);
+    println!("  Large graph (20M nodes) → Backend: {:?} (auto-switched!)", 
+             large_config.backend.primary);
+    
+    println!("\nThe modern GraphStore is configuration-driven and adaptive!");
+    println!("This enables researchers to tune performance for their specific workloads.");
+    
     Ok(())
 }
 
@@ -217,7 +345,7 @@ fn print_sorted_relationships(title: &str, relationships: &HashSet<RelationshipT
 }
 
 fn print_relationship_sample(graph: &dyn Graph, node_id: MappedNodeId, title: &str) {
-    const FALLBACK: PropertyValue = 0.0;
+    const FALLBACK: f64 = 0.0;
     println!("{}", title);
 
     let mut count = 0usize;
@@ -225,7 +353,7 @@ fn print_relationship_sample(graph: &dyn Graph, node_id: MappedNodeId, title: &s
     for (index, cursor) in graph.stream_relationships(node_id, FALLBACK).enumerate() {
         if index < 5 {
             println!(
-                "    {} -> {} (property {:.3})",
+                "    {} -> {} (property {})",
                 cursor.source_id(),
                 cursor.target_id(),
                 cursor.property()

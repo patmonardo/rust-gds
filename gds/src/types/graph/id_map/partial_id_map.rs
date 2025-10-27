@@ -23,7 +23,6 @@ pub trait PartialIdMap: Send + Sync {
     /// sentinel is provided for compatibility with existing logic.
     fn to_mapped_or_not_found(&self, original_node_id: OriginalNodeId) -> i64 {
         self.to_mapped_node_id(original_node_id)
-            .map(|id| id as i64)
             .unwrap_or(super::NOT_FOUND)
     }
 }

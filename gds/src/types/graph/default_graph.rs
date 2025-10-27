@@ -15,12 +15,14 @@ use crate::types::properties::relationship::{
     WeightedRelationshipStream,
 };
 use crate::types::schema::{GraphSchema, NodeLabel};
+use crate::config::GraphStoreConfig;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 /// Default in-memory graph implementation backed by [`SimpleIdMap`] and [`RelationshipTopology`].
 #[derive(Debug, Clone)]
 pub struct DefaultGraph {
+    config: Arc<GraphStoreConfig>,
     schema: Arc<GraphSchema>,
     id_map: Arc<SimpleIdMap>,
     characteristics: GraphCharacteristics,
@@ -64,6 +66,7 @@ impl DefaultGraph {
     /// Creates a new graph instance from the provided components.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
+        config: Arc<GraphStoreConfig>,
         schema: Arc<GraphSchema>,
         id_map: Arc<SimpleIdMap>,
         characteristics: GraphCharacteristics,
@@ -86,6 +89,7 @@ impl DefaultGraph {
         let has_relationship_properties = !selected_relationship_properties.is_empty();
 
         Self {
+            config,
             schema,
             id_map,
             characteristics,
@@ -480,6 +484,7 @@ impl Graph for DefaultGraph {
             .collect::<HashMap<_, _>>();
 
         let filtered_graph = DefaultGraph::new(
+            Arc::clone(&self.config),
             filtered_schema,
             Arc::clone(&self.id_map),
             filtered_characteristics,
@@ -831,6 +836,7 @@ mod tests {
         topologies.insert(rel_type.clone(), Arc::new(topology));
 
         DefaultGraph::new(
+            Arc::new(crate::config::GraphStoreConfig::default()),
             schema,
             id_map,
             GraphCharacteristicsBuilder::new().directed().build(),

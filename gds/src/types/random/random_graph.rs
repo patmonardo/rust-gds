@@ -302,7 +302,9 @@ impl Randomizable<RandomGraphConfig> for DefaultGraphStore {
         );
 
         // Use DefaultGraphStore::new() with the SimpleIdMap we built
+        let graph_store_config = crate::config::GraphStoreConfig::default();
         let mut store = DefaultGraphStore::new(
+            graph_store_config,
             graph_name,
             database_info,
             schema,

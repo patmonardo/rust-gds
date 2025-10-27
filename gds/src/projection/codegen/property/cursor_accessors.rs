@@ -54,8 +54,8 @@ macro_rules! cursor_accessors {
 #[macro_export]
 macro_rules! impl_cursor_smart_converter {
     ($cursor_type:ty, $value_field:ident) => {
-        impl crate::projection::codegen::property::smart_converter::RelationshipCursorExt for $cursor_type {
-            fn get<T: crate::values::traits::FromGdsValue>(&self) -> Result<T, String> {
+        impl $crate::projection::codegen::property::smart_converter::RelationshipCursorExt for $cursor_type {
+            fn get<T: $crate::values::traits::FromGdsValue>(&self) -> Result<T, String> {
                 let value = self.$value_field;
                 let gds_value = crate::values::PrimitiveValues::long_value(value);
                 T::from_gds_value(gds_value.as_ref())

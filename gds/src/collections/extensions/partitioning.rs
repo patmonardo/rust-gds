@@ -191,7 +191,7 @@ where
     
     /// Calculate batch size for partitioning
     fn calculate_batch_size(node_count: usize, concurrency: usize, min_batch_size: usize) -> usize {
-        let batch_size = (node_count + concurrency - 1) / concurrency; // Ceiling division
+        let batch_size = node_count.div_ceil(concurrency); // Ceiling division
         std::cmp::max(batch_size, min_batch_size)
     }
 }
@@ -527,7 +527,7 @@ impl MLPartitioningUtils {
     {
         let total_samples = collection.len();
         let samples_per_epoch = total_samples / num_epochs;
-        let partitions_per_epoch = (samples_per_epoch + batch_size - 1) / batch_size;
+        let partitions_per_epoch = samples_per_epoch.div_ceil(batch_size);
         
         let partitions = PartitionUtils::range_partition(
             partitions_per_epoch,

@@ -9,6 +9,7 @@ use crate::types::graph::{
 };
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::ValueType;
+use crate::config::GraphStoreConfig;
 
 use crate::types::properties::node::NodePropertyValues;
 
@@ -29,6 +30,7 @@ use std::sync::Arc;
 /// In-memory [`GraphStore`] backed by [`SimpleIdMap`] and [`RelationshipTopology`].
 #[derive(Debug, Clone)]
 pub struct DefaultGraphStore {
+    config: Arc<GraphStoreConfig>,
     graph_name: GraphName,
     database_info: DatabaseInfo,
     schema: Arc<GraphSchema>,
@@ -53,6 +55,7 @@ impl DefaultGraphStore {
     /// Creates a new store from the provided components.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
+        config: GraphStoreConfig,
         graph_name: GraphName,
         database_info: DatabaseInfo,
         schema: GraphSchema,
@@ -61,6 +64,7 @@ impl DefaultGraphStore {
         relationship_topologies: HashMap<RelationshipType, RelationshipTopology>,
     ) -> Self {
         let now = Utc::now();
+        let config = Arc::new(config);
         let schema = Arc::new(schema);
         let id_map = Arc::new(id_map);
         let relationship_topologies = relationship_topologies
@@ -69,6 +73,7 @@ impl DefaultGraphStore {
             .collect();
 
         let mut store = Self {
+            config: Arc::clone(&config),
             graph_name,
             database_info,
             schema,
@@ -105,6 +110,7 @@ impl DefaultGraphStore {
             .collect::<HashMap<_, _>>();
 
         Arc::new(DefaultGraph::new(
+            Arc::clone(&self.config),
             Arc::clone(&self.schema),
             Arc::clone(&self.id_map),
             self.graph_characteristics,
@@ -129,6 +135,96 @@ impl DefaultGraphStore {
             .into_iter()
             .map(|label| NodeLabel::of(label.name()))
             .collect()
+    }
+
+    // === Property Management with Config ===
+
+    /// Add a node property with i64 values using the store's config for backend selection.
+    pub fn add_node_property_i64(
+        &mut self,
+        key: String,
+        values: Vec<i64>,
+    ) -> Result<(), GraphStoreError> {
+        let node_count = self.id_map.node_count();
+        
+        // Use config to create CollectionsConfig
+        let collections_config = self.config.node_collections_config::<i64>(node_count);
+        
+        // Create property using config
+        use crate::types::properties::node::impls::default_node_property_values::DefaultLongNodePropertyValues;
+        use crate::collections::backends::vec::VecLong;
+        
+        let backend = crate::collections::backends::factory::create_long_backend_from_config(&collections_config, values);
+        let pv = Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, node_count));
+        
+        self.node_properties.insert(key, pv);
+        self.set_modified();
+        Ok(())
+    }
+
+    /// Add a node property with f64 values using the store's config for backend selection.
+    pub fn add_node_property_f64(
+        &mut self,
+        key: String,
+        values: Vec<f64>,
+    ) -> Result<(), GraphStoreError> {
+        let node_count = self.id_map.node_count();
+        
+        // Use config to create CollectionsConfig
+        let collections_config = self.config.node_collections_config::<f64>(node_count);
+        
+        // Create property using config
+        use crate::types::properties::node::impls::default_node_property_values::DefaultDoubleNodePropertyValues;
+        use crate::collections::backends::vec::VecDouble;
+        
+        let backend = crate::collections::backends::factory::create_double_backend_from_config(&collections_config, values);
+        let pv = Arc::new(DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(backend, node_count));
+        
+        self.node_properties.insert(key, pv);
+        self.set_modified();
+        Ok(())
+    }
+
+    /// Add a graph property with i64 values using the store's config for backend selection.
+    pub fn add_graph_property_i64(
+        &mut self,
+        key: String,
+        values: Vec<i64>,
+    ) -> Result<(), GraphStoreError> {
+        // Use config to create CollectionsConfig (graph properties don't scale with node count)
+        let collections_config = self.config.graph_collections_config::<i64>(values.len());
+        
+        // Create property using config
+        use crate::types::properties::graph::impls::default_graph_property_values::DefaultLongGraphPropertyValues;
+        use crate::collections::backends::vec::VecLong;
+        
+        let backend = crate::collections::backends::factory::create_long_backend_from_config(&collections_config, values);
+        let pv = Arc::new(DefaultLongGraphPropertyValues::<VecLong>::from_collection(backend));
+        
+        self.graph_properties.insert(key, pv);
+        self.set_modified();
+        Ok(())
+    }
+
+    /// Add a graph property with f64 values using the store's config for backend selection.
+    pub fn add_graph_property_f64(
+        &mut self,
+        key: String,
+        values: Vec<f64>,
+    ) -> Result<(), GraphStoreError> {
+        // Use config to create CollectionsConfig
+        let collections_config = self.config.graph_collections_config::<f64>(values.len());
+        
+        // Create property using config
+        use crate::types::properties::graph::impls::default_graph_property_values::DefaultDoubleGraphPropertyValues;
+        use crate::collections::backends::vec::VecDouble;
+        
+        let backend = crate::collections::backends::factory::create_double_backend_from_config(&collections_config, values);
+        let pv = Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(backend));
+        
+        self.graph_properties.insert(key, pv);
+        self.set_modified();
+        Ok(())
     }
 
     fn to_schema_label(label: &NodeLabel) -> NodeLabel {
@@ -574,6 +670,7 @@ impl GraphStore for DefaultGraphStore {
             .collect::<HashMap<_, _>>();
 
         Arc::new(DefaultGraph::new(
+            Arc::clone(&self.config),
             Arc::clone(&self.schema),
             Arc::clone(&self.id_map),
             self.graph_characteristics,
@@ -672,12 +769,13 @@ impl GraphStore for DefaultGraphStore {
             .collect::<HashMap<_, _>>();
 
         let filtered_graph = DefaultGraph::new(
+            Arc::clone(&self.config),
             Arc::clone(&self.schema),
             Arc::clone(&self.id_map),
             filtered_characteristics,
             topologies,
-            ordered_types.drain(..).collect(),
-            inverse_indexed_types.drain().collect(),
+            std::mem::take(&mut ordered_types),
+            std::mem::take(&mut inverse_indexed_types),
             relationship_count,
             has_parallel_edges,
             self.node_properties.clone(),
@@ -738,6 +836,7 @@ mod tests {
         relationship_topologies.insert(RelationshipType::of("KNOWS"), topology);
 
         DefaultGraphStore::new(
+            crate::config::GraphStoreConfig::default(),
             graph_name,
             database_info,
             schema,
@@ -757,6 +856,61 @@ mod tests {
         assert_eq!(graph.relationship_count(), 3);
         assert!(graph.characteristics().is_undirected());
         assert_eq!(graph.degree(0), 2);
+    }
+
+    #[test]
+    fn test_add_node_property_with_config() {
+        use crate::config::{GraphStoreConfig, GraphStorePropertiesConfig, CollectionsBackend};
+        
+        // Create config with specific backend
+        let config = GraphStoreConfig::default();
+        
+        let mut store = DefaultGraphStore::new(
+            config,
+            GraphName::new("test"),
+            DatabaseInfo::new(
+                DatabaseId::new("test"),
+                DatabaseLocation::remote("localhost", 7687, None, None),
+            ),
+            GraphSchema::empty(),
+            Capabilities::default(),
+            SimpleIdMap::from_original_ids([0, 1, 2]),
+            HashMap::new(),
+        );
+        
+        // Add property - should use Vec backend from config
+        store.add_node_property_i64("age".to_string(), vec![1, 2, 3]).unwrap();
+        
+        // Verify property exists
+        assert!(store.node_properties.contains_key("age"));
+        assert_eq!(store.node_properties.len(), 1);
+    }
+
+    #[test]
+    fn test_add_graph_property_with_config() {
+        use crate::config::{GraphStoreConfig, GraphStorePropertiesConfig, CollectionsBackend};
+        
+        let config = GraphStoreConfig::default();
+        
+        let mut store = DefaultGraphStore::new(
+            config,
+            GraphName::new("test"),
+            DatabaseInfo::new(
+                DatabaseId::new("test"),
+                DatabaseLocation::remote("localhost", 7687, None, None),
+            ),
+            GraphSchema::empty(),
+            Capabilities::default(),
+            SimpleIdMap::from_original_ids([0, 1, 2]),
+            HashMap::new(),
+        );
+        
+        // Add graph property
+        store.add_graph_property_f64("density".to_string(), vec![0.5]).unwrap();
+        
+        // Verify property exists
+        assert!(store.graph_properties.contains_key("density"));
+        assert_eq!(store.graph_properties.len(), 1);
     }
 
     #[test]

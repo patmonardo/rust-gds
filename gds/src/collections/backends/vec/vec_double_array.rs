@@ -10,6 +10,12 @@ pub struct VecDoubleArray {
     pub data: Vec<Option<Vec<f64>>>,
 }
 
+impl Default for VecDoubleArray {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VecDoubleArray {
     pub fn new() -> Self {
         Self { data: Vec::new() }

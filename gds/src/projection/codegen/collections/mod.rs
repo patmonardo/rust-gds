@@ -68,8 +68,6 @@ mod atomic_collection;
 mod cursor_support;
 
 // Re-export active backend macros
-pub use vec_backend::*;
-pub use huge_backend::*;
 
 // Future expansion macros (not yet activated)
 // pub use huge_array::*;
