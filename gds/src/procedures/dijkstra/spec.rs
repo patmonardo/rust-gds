@@ -215,6 +215,8 @@ define_algorithm_spec! {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::projection::eval::procedure::ExecutionContext;
+    use serde_json::json;
 
     #[test]
     fn test_dijkstra_config_default() {

@@ -200,6 +200,8 @@ define_algorithm_spec! {
 mod tests {
     use super::*;
     use serde_json::json;
+    use crate::projection::eval::procedure::ExecutionContext;
+    use crate::procedures::spanning_tree::SpanningTree;
     
     #[test]
     fn test_spanning_tree_config_default() {

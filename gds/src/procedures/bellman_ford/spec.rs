@@ -182,6 +182,7 @@ define_algorithm_spec! {
 mod tests {
     use super::*;
     use crate::projection::eval::procedure::ExecutionContext;
+    use serde_json::json;
 
     #[test]
     fn test_bellman_ford_config_default() {
