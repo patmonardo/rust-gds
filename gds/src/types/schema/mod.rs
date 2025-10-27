@@ -5,6 +5,7 @@
 
 pub mod direction;
 pub mod graph_schema;
+pub mod hyper;
 pub mod node_schema;
 pub mod property_schema;
 pub mod relationship_schema;
@@ -12,6 +13,7 @@ pub mod relationship_schema;
 pub use crate::types::ValueType;
 pub use direction::*;
 pub use graph_schema::*;
+pub use hyper::*;
 pub use node_schema::*;
 pub use property_schema::*;
 pub use relationship_schema::*;

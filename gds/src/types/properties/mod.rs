@@ -5,9 +5,8 @@ pub mod property_values;
 #[cfg(feature = "triadic_codegen_preview")]
 pub mod triadic_invoke;
 
-// NEW: Collections First PropertyStores (Experimental)
-pub mod monadic;   // Universal single-level store
-pub mod triadic;   // Three-level composed store (Meta/Node/Link)
+// NEW: HyperPropertyStores - The Sacred Hierarchy
+pub mod hyper;     // Monadic, Dyadic, Triadic, Tetradic, Pentadic
 
 // Specialized property implementations
 pub mod graph;
@@ -21,6 +20,5 @@ pub use property_values::*;
 #[cfg(feature = "triadic_codegen_preview")]
 pub use triadic_invoke::*;
 
-// Re-export Collections First systems for easy access
-pub use monadic::*;
-pub use triadic::*;
+// Re-export HyperPropertyStores for easy access
+pub use hyper::*;

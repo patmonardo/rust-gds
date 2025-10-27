@@ -38,6 +38,9 @@
 // Core traits
 pub mod traits;
 
+// HyperStore: Pure Being (Part 1 of Objective Logic)
+pub mod hyper_store;
+
 // Backend implementations
 pub mod backends;
 
