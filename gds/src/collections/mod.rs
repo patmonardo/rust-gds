@@ -47,8 +47,9 @@ pub mod backends;
 // Extension implementations
 pub mod extensions;
 
-// Macro system
-pub mod macros;
+// NOTE: Macro system has been moved to projection/codegen/collections/
+// All collections macros (vec_collections!, huge_collections!, etc.) now live there
+// This prepares for @reality migration as the foundation for data science
 
 // Utilities
 pub mod utils;
@@ -60,9 +61,11 @@ pub mod adapter;
 pub use traits::*;
 pub use backends::*;
 pub use extensions::*;
-pub use macros::*;
 pub use utils::*;
 pub use adapter::*;
+
+// NOTE: Macros are now in projection::codegen::collections
+// Use: `use crate::{vec_collections, huge_collections};` instead
 
 // Re-export legacy modules for backward compatibility
 pub mod bit_set;

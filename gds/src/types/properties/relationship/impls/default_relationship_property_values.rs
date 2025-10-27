@@ -12,9 +12,14 @@ use crate::types::ValueType;
 use crate::generate_all_relationship_adapters;
 
 // Generate all relationship property adapters from the ValueType table
-// This expands to adapters for: Byte, Short, Int, Long, Float, Double, Boolean
-// (Arrays are not typically used for relationships)
+// This expands to adapters for: Byte, Short, Int, Long, BigInt, Float, Double, Boolean, Char, String
 generate_all_relationship_adapters!();
+
+// TODO: Relationship array adapters require additional trait implementations
+// (DoubleArrayRelationshipPropertyValues, FloatArrayRelationshipPropertyValues, etc.)
+// Deferred until array accessor methods are fully designed.
+// use crate::generate_all_relationship_array_adapters;
+// generate_all_relationship_array_adapters!();
 
 // Note: The generated types are generic over Collections backend C:
 // - DefaultLongRelationshipPropertyValues<C>

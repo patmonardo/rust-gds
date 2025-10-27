@@ -1,10 +1,15 @@
-//! Vec Collections Macro: Enhanced Standard Library Vectors
+//! Vec Backend Collections Macro
 //!
-//! This macro generates Vec-based Collections with enhanced features,
-//! including aggregation methods, nullability support, and extensions.
-
-
-// Heavyweight vec_collections! generator removed as per simplification.
+//! Lightweight macro to implement Collections trait for Vec-backed types.
+//! This is the "Level 0" Collections infrastructure macro - it implements
+//! the Collections trait for structs that have a `data: Vec<T>` field.
+//!
+//! **Philosophy**: This macro is the foundation that enables Vec backends
+//! to participate in the Collections ecosystem. It's minimal by design -
+//! just trait implementation, no generation of new types.
+//!
+//! **Moved from**: `collections/macros/backends/vec.rs`
+//! **Purpose**: Consolidation - all Collections codegen now lives under projection/codegen
 
 /// Implement Collections for an existing Vec-backed type with a `data: Vec<T>` field
 #[macro_export]
@@ -222,3 +227,4 @@ macro_rules! vec_collections {
         }
     };
 }
+

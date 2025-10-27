@@ -1,8 +1,14 @@
-//! Huge Collections Macro: Paged Arrays for Billions of Elements
+//! Huge Backend Collections Macro
 //!
-//! This macro generates HugeArray-based Collections with paged memory management,
-//! including aggregation methods, nullability support, and extensions.
-
+//! Lightweight macro to implement Collections trait for HugeArray-backed types.
+//! This is the "Level 0" Collections infrastructure macro - it implements
+//! the Collections trait for existing HugeArray types.
+//!
+//! **Philosophy**: Similar to vec_collections!, but for paged arrays supporting
+//! billions of elements. Minimal by design - just trait implementation.
+//!
+//! **Moved from**: `collections/macros/backends/huge.rs`
+//! **Purpose**: Consolidation - all Collections codegen now lives under projection/codegen
 
 /// Huge Collections macro that generates HugeArray-based Collections implementations
 #[macro_export]
@@ -215,3 +221,4 @@ macro_rules! huge_collections {
         }
     };
 }
+

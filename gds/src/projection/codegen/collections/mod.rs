@@ -1,50 +1,77 @@
-//! Collections Codegen: The Typed Column Foundation
+//! Collections Codegen: Unified Collections Macro System
 //!
-//! This module consolidates all collection-related macros that generate:
-//! - HugeArray implementations (typed columns for billions of elements)
-//! - Sparse collection variants (memory-efficient for sparse data)
-//! - Atomic collection variants (thread-safe operations)
-//! - Cursor support (zero-copy iteration over pages)
+//! **CONSOLIDATION COMPLETE**: All Collections-related macros now live here.
+//! This module was previously split between `collections/macros/` (Level 0) and
+//! `projection/codegen/collections/` (Projection). We've unified everything under
+//! projection/codegen for clarity and to prepare for @reality migration.
 //!
-//! **Philosophy**: Collections are the **flip side** of PropertyValues - they're the actual
-//! typed columns that back property stores. Every PropertyValues implementation needs
-//! a corresponding collection type for storage.
+//! This module provides all collection-related macros:
+//! - **Vec backend macros** (lightweight trait impl for Vec-backed types)
+//! - **HugeArray generators** (typed columns for billions of elements)
+//! - **Sparse collection variants** (memory-efficient for sparse data)
+//! - **Atomic collection variants** (thread-safe operations)
+//! - **Cursor support** (zero-copy iteration over pages)
 //!
-//! **Aesthetic**: First-class terms via barrel imports:
-//! - `projection::codegen::huge_array!` (not buried in submodules)
-//! - `projection::codegen::sparse_collection!` (primary reality)
-//! - `projection::codegen::atomic_collection!` (unified access)
+//! **Philosophy**: Collections are the **typed columns** that back PropertyValues.
+//! Every PropertyValues implementation needs a corresponding collection type for storage.
+//!
+//! **Architecture**:
+//! - Lightweight macros (`vec_collections!`) → Implement Collections trait on existing structs
+//! - Heavy generators (`huge_primitive_array!`) → Generate complete new collection types
+//!
+//! **Future**: This will move to @reality as the foundation for data science.
 
-/// HugeArray implementation macros
+/// Vec backend macros (ACTIVE - lightweight trait impl)
+/// 
+/// Implements Collections trait for Vec-backed types with a `data: Vec<T>` field.
+/// This is the "Level 0" infrastructure - just trait implementation, no type generation.
+/// 
+/// **Moved from**: `collections/macros/backends/vec.rs`
+#[macro_use]
+mod vec_backend;
+
+/// Huge backend macros (ACTIVE - lightweight trait impl)
+/// 
+/// Implements Collections trait for HugeArray-backed types (paged arrays for billions of elements).
+/// Similar to vec_backend, but for HugeArrays - just trait implementation, no type generation.
+/// 
+/// **Moved from**: `collections/macros/backends/huge.rs`
+#[macro_use]
+mod huge_backend;
+
+/// HugeArray generator macros (FUTURE EXPANSION)
 /// 
 /// Generates typed columns supporting billions of elements with automatic
 /// single-page vs multi-page selection based on size.
 #[macro_use]
 mod huge_array;
 
-/// Sparse collection macros
+/// Sparse collection macros (FUTURE EXPANSION)
 /// 
 /// Generates memory-efficient variants for sparse data patterns
 /// with optional elements and compressed storage.
 #[macro_use]
 mod sparse_collection;
 
-/// Atomic collection macros
+/// Atomic collection macros (FUTURE EXPANSION)
 /// 
 /// Generates thread-safe variants for concurrent access patterns
 /// with atomic operations and lock-free algorithms.
 #[macro_use]
 mod atomic_collection;
 
-/// Cursor support macros
+/// Cursor support macros (FUTURE EXPANSION)
 /// 
 /// Generates zero-copy iteration support for all collection types
 /// with page-aware cursors and efficient traversal.
 #[macro_use]
 mod cursor_support;
 
-// Re-export all macros at module level for barrel imports
-// Note: These modules are available but not yet actively used
+// Re-export active backend macros
+pub use vec_backend::*;
+pub use huge_backend::*;
+
+// Future expansion macros (not yet activated)
 // pub use huge_array::*;
 // pub use sparse_collection::*;
 // pub use atomic_collection::*;

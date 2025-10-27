@@ -217,6 +217,28 @@ macro_rules! generate_all_relationship_adapters {
     };
 }
 
+/// Batch Relationship Array Adapter Generator
+#[macro_export]
+macro_rules! generate_all_relationship_array_adapters {
+    () => {
+        macro_rules! gen_rel_array_adapter {
+            ($vt:ident, $rt:ty, IntegralArray, $dv:expr) => {
+                $crate::relationship_universal_adapter!($vt, $rt, IntegralArray, $dv);
+            };
+            ($vt:ident, $rt:ty, FloatingPointArray, $dv:expr) => {
+                $crate::relationship_universal_adapter!($vt, $rt, FloatingPointArray, $dv);
+            };
+            ($vt:ident, $rt:ty, OtherArray, $dv:expr) => {
+                $crate::relationship_universal_adapter!($vt, $rt, OtherArray, $dv);
+            };
+            // Skip scalars
+            ($vt:ident, $rt:ty, $cat:ident, $dv:expr) => {};
+        }
+        
+        $crate::value_type_table!(gen_rel_array_adapter);
+    };
+}
+
 // ============================================================================
 // GRAPH PROPERTY ADAPTERS
 // ============================================================================
@@ -305,7 +327,7 @@ macro_rules! generate_all_graph_adapters {
             ($vt:ident, $rt:ty, FloatingPointScalar, $dv:expr) => {
                 $crate::graph_universal_adapter!($vt, $rt, FloatingPointScalar, $dv);
             };
-            // Skip OtherScalar (Boolean, String, Char) for graphs - not typically used
+            // Skip OtherScalar (Boolean, Char, String) for graphs - require specialized impls
             ($vt:ident, $rt:ty, OtherScalar, $dv:expr) => {};
             // Skip arrays
             ($vt:ident, $rt:ty, $cat:ident, $dv:expr) => {};
@@ -326,7 +348,7 @@ macro_rules! generate_all_graph_array_adapters {
             ($vt:ident, $rt:ty, FloatingPointArray, $dv:expr) => {
                 $crate::graph_universal_adapter!($vt, $rt, FloatingPointArray, $dv);
             };
-            // Skip OtherArray (BooleanArray, StringArray, etc.) - not typically used for graphs
+            // Skip OtherArray (BooleanArray, CharArray, StringArray) for graphs - require specialized impls
             ($vt:ident, $rt:ty, OtherArray, $dv:expr) => {};
             // Skip scalars
             ($vt:ident, $rt:ty, $cat:ident, $dv:expr) => {};
