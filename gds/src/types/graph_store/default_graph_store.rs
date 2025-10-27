@@ -860,7 +860,7 @@ mod tests {
 
     #[test]
     fn test_add_node_property_with_config() {
-        use crate::config::{GraphStoreConfig, GraphStorePropertiesConfig, CollectionsBackend};
+        use crate::config::GraphStoreConfig;
         
         // Create config with specific backend
         let config = GraphStoreConfig::default();
@@ -888,7 +888,7 @@ mod tests {
 
     #[test]
     fn test_add_graph_property_with_config() {
-        use crate::config::{GraphStoreConfig, GraphStorePropertiesConfig, CollectionsBackend};
+        use crate::config::GraphStoreConfig;
         
         let config = GraphStoreConfig::default();
         

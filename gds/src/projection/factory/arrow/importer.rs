@@ -34,8 +34,7 @@ use crate::types::graph::{
 };
 use crate::types::properties::node::{
     DefaultDoubleArrayNodePropertyValues, DefaultDoubleNodePropertyValues,
-    DefaultFloatArrayNodePropertyValues, DefaultLongArrayNodePropertyValues,
-    DefaultLongNodePropertyValues,
+    DefaultLongArrayNodePropertyValues, DefaultLongNodePropertyValues,
 };
 use crate::types::properties::PropertyValues;
 use crate::types::{DefaultValue, ValueType};

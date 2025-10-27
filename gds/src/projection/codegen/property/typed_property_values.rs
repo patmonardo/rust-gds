@@ -232,7 +232,6 @@ macro_rules! typed_property_values_factory {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::types::properties::property_values::PropertyValues;
 
     // Generate test implementations

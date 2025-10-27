@@ -12,7 +12,11 @@ pub mod vec;
 pub mod arrow;
 pub mod factory;
 
+#[allow(ambiguous_glob_reexports)]
 pub use huge::*;
+#[allow(ambiguous_glob_reexports)]
 pub use vec::*;
+#[allow(ambiguous_glob_reexports)]
 pub use arrow::*;
+#[allow(ambiguous_glob_reexports)]
 pub use factory::*;

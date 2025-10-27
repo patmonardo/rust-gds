@@ -325,7 +325,7 @@ where
     T: Clone + Send + Sync,
 {
     /// Generate a random value based on the collection's value type
-    fn generate_random_value_static(rng: &mut SplittableRandom) -> Result<T, RandomError> {
+    fn generate_random_value_static(_rng: &mut SplittableRandom) -> Result<T, RandomError> {
         // This is a simplified implementation - in practice, you'd need proper type conversion
         // For now, we'll use a placeholder implementation
         Err(RandomError::GenerationFailed("Type-specific random generation not implemented".to_string()))
@@ -381,7 +381,7 @@ impl RandomUtils {
     }
     
     /// Estimate memory usage for random operations
-    pub fn estimate_random_memory(collection_size: usize) -> usize {
+    pub fn estimate_random_memory(_collection_size: usize) -> usize {
         // Random operations typically don't require additional memory
         // beyond the collection itself
         0

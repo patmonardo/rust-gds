@@ -303,6 +303,7 @@ macro_rules! graph_universal_adapter {
                 }
 
                 fn element_count(&self) -> usize {
+                    #[allow(unused_imports)]
                     use $crate::collections::traits::Collections;
                     self.universal.collection().len()
                 }

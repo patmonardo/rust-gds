@@ -210,13 +210,13 @@ where
         self.value_type
     }
     
-    fn with_capacity(capacity: usize) -> Self where Self: Sized {
+    fn with_capacity(_capacity: usize) -> Self where Self: Sized {
         // This is tricky for UniversalPropertyValues since we need a collection
         // For now, create a default instance
         panic!("with_capacity not implemented for UniversalPropertyValues")
     }
     
-    fn with_defaults(count: usize, default_value: T) -> Self where Self: Sized {
+    fn with_defaults(_count: usize, _default_value: T) -> Self where Self: Sized {
         // This is tricky for UniversalPropertyValues since we need a collection
         // For now, create a default instance
         panic!("with_defaults not implemented for UniversalPropertyValues")

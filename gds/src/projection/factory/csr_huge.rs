@@ -109,7 +109,6 @@ impl crate::projection::factory::GraphStoreFactoryTyped for CsrHugeGraphStoreFac
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::projection::factory::arrow::ArrowProjectionConfig;
 
     #[test]
     fn csr_huge_factory_delegate_build() {

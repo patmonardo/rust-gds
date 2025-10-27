@@ -58,10 +58,15 @@ pub mod utils;
 pub mod adapter;
 
 // Re-export commonly used types
+#[allow(ambiguous_glob_reexports)]
 pub use traits::*;
+#[allow(ambiguous_glob_reexports)]
 pub use backends::*;
+#[allow(ambiguous_glob_reexports)]
 pub use extensions::*;
+#[allow(ambiguous_glob_reexports)]
 pub use utils::*;
+#[allow(ambiguous_glob_reexports)]
 pub use adapter::*;
 
 // NOTE: Macros are now in projection::codegen::collections

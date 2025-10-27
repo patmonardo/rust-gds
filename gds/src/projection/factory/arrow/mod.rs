@@ -50,8 +50,6 @@ mod task; // Phase 4: ImportTask trait + TaskRunner + parallel orchestration
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_module_compiles() {
         // Basic smoke test - ensures module structure is valid

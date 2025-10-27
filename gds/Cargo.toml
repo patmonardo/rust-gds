@@ -51,3 +51,7 @@ pipeline = []
 # Config system optional features
 serde = []        # Enables config serialization (serde already in deps)
 config-files = [] # Future: YAML/JSON file loading
+# Additional features referenced in code
+rayon = []        # Parallel computation support
+procedures = []   # Procedure execution system
+ml = []           # Machine learning features

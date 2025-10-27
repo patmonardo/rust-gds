@@ -641,7 +641,7 @@ impl PartitioningUtils {
     
     /// Create optimal partitioning configuration for ML workloads
     pub fn optimal_ml_config<T>(
-        collection_size: usize,
+        _collection_size: usize,
         workload_type: MLWorkloadType,
     ) -> PartitioningConfig {
         let concurrency = match workload_type {

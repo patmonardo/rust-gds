@@ -11,7 +11,6 @@
 use super::config::{ArrowProjectionConfig, ArrowProjectionError};
 use crate::projection::factory::GraphStoreFactory;
 use crate::types::graph_store::DefaultGraphStore;
-use std::sync::Arc;
 
 /// Arrow-native factory for creating GraphStores.
 ///

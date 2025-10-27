@@ -95,11 +95,11 @@ impl ConcurrencyConfig for GraphStoreComputeConfig {
     }
 }
 
-/// Properties configuration for Collections-backed property storage
-///
-/// This config drives the selection of Collections backends for different property levels.
-/// It replaces the deprecated PropertyStoreConfig with a Collections-first approach.
 define_config!(
+    /// Properties configuration for Collections-backed property storage
+    ///
+    /// This config drives the selection of Collections backends for different property levels.
+    /// It replaces the deprecated PropertyStoreConfig with a Collections-first approach.
     pub struct GraphStorePropertiesConfig {
         validate = |cfg: &GraphStorePropertiesConfig| {
             ConfigValidation::validate_positive(cfg.huge_array_threshold as f64, "hugeArrayThreshold")?;
@@ -179,7 +179,7 @@ impl GraphStoreConfig {
     ///
     /// Graph properties are typically small (single value), so adaptive
     /// backend selection is less relevant.
-    pub fn graph_collections_config<T>(&self, element_count: usize) -> CollectionsConfig<T> {
+    pub fn graph_collections_config<T>(&self, _element_count: usize) -> CollectionsConfig<T> {
         let backend = self.properties.default_graph_backend;
 
         CollectionsConfigBuilder::<T>::new()

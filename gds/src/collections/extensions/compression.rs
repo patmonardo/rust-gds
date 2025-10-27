@@ -513,7 +513,7 @@ pub struct CompressionUtils;
 impl CompressionUtils {
     /// Estimate compression ratio for different algorithms
     pub fn estimate_compression_ratio<T>(
-        data_size: usize,
+        _data_size: usize,
         algorithm: &CompressionAlgorithm,
     ) -> f64 {
         match algorithm {
@@ -528,7 +528,7 @@ impl CompressionUtils {
     
     /// Choose optimal compression algorithm based on data characteristics
     pub fn choose_optimal_algorithm<T>(
-        data_size: usize,
+        _data_size: usize,
         access_pattern: AccessPattern,
     ) -> CompressionAlgorithm {
         match access_pattern {

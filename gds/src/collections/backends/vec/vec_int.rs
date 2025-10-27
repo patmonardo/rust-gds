@@ -1,5 +1,7 @@
 //! VecInt: Vec-based i32 Collections implementation
+#[allow(unused_imports)]
 use crate::collections::traits::Collections;
+
 /// Vec-based i32 Collections implementation
 #[derive(Debug, Clone)]
 pub struct VecInt {

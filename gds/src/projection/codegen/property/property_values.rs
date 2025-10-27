@@ -678,6 +678,7 @@ macro_rules! impl_typed_node_property_values_universal {
                 + Send + Sync + std::fmt::Debug,
         {
             fn double_value(&self, node_id: u64) -> $crate::types::properties::PropertyValuesResult<f64> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 self.universal
                     .collection()
@@ -764,6 +765,7 @@ macro_rules! impl_typed_node_property_values_universal {
                 + Send + Sync + std::fmt::Debug,
         {
             fn long_array_value(&self, node_id: u64) -> $crate::types::properties::PropertyValuesResult<Vec<i64>> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 // For arrays: get() returns Option<Option<Vec<T>>>
                 // Convert element type to i64
@@ -862,6 +864,7 @@ macro_rules! impl_typed_node_property_values_universal {
                 + Send + Sync + std::fmt::Debug,
         {
             fn double_array_value(&self, node_id: u64) -> $crate::types::properties::PropertyValuesResult<Vec<f64>> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 // For arrays: get() returns Option<Option<Vec<T>>>
                 // Convert f32/f64 to f64 and unwrap
@@ -872,6 +875,7 @@ macro_rules! impl_typed_node_property_values_universal {
             }
             
             fn float_array_value(&self, node_id: u64) -> $crate::types::properties::PropertyValuesResult<Vec<f32>> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 // For arrays: get() returns Option<Option<Vec<T>>>
                 // Convert f32/f64 to f32 and unwrap
@@ -1028,6 +1032,7 @@ macro_rules! impl_relationship_property_values_universal {
                 + Send + Sync + std::fmt::Debug,
         {
             fn double_value(&self, rel_index: u64) -> $crate::types::properties::PropertyValuesResult<f64> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 let convert = $to_double;
                 self.universal
@@ -1146,6 +1151,7 @@ macro_rules! impl_graph_property_values_universal {
                 + Send + Sync + std::fmt::Debug,
         {
             fn double_values(&self) -> Box<dyn Iterator<Item = f64> + '_> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 Box::new((0..self.universal.collection().len()).filter_map(move |i| {
                     self.universal.collection().get(i).map(|v| v as f64)
@@ -1153,6 +1159,7 @@ macro_rules! impl_graph_property_values_universal {
             }
 
             fn long_values(&self) -> Box<dyn Iterator<Item = i64> + '_> {
+                #[allow(unused_imports)]
                 use $crate::collections::traits::Collections;
                 Box::new((0..self.universal.collection().len()).filter_map(move |i| {
                     self.universal.collection().get(i).map(|v| v as i64)

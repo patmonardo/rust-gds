@@ -1,5 +1,5 @@
 //! VecDouble: Vec-based f64 Collections implementation
-
+#[allow(unused_imports)]
 use crate::collections::traits::Collections;
 
 /// Vec-based f64 Collections implementation

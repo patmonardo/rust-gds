@@ -346,14 +346,14 @@ where
     T: Clone + Send + Sync,
 {
     /// Convert T to i64 for stack operations
-    fn convert_to_stack_value(&self, value: T) -> Result<i64, StackError> {
+    fn convert_to_stack_value(&self, _value: T) -> Result<i64, StackError> {
         // This is a simplified conversion - in practice, you'd need proper type conversion
         // For now, we'll use a placeholder implementation
         Err(StackError::ConversionFailed("Type conversion not implemented".to_string()))
     }
     
     /// Convert i64 from stack operations back to T
-    fn convert_from_stack_value(&self, value: i64) -> Option<T> {
+    fn convert_from_stack_value(&self, _value: i64) -> Option<T> {
         // This is a simplified conversion - in practice, you'd need proper type conversion
         // For now, we'll use a placeholder implementation
         None

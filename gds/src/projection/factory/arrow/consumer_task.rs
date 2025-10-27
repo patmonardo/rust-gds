@@ -15,7 +15,7 @@
 
 use super::{
     consumer::{
-        BufferedEdgeConsumer, BufferedNodeConsumer, NodeRecord, RecordConsumer, RelationshipRecord,
+        BufferedEdgeConsumer, BufferedNodeConsumer, RecordConsumer,
     },
     importer::{EdgeAccumulator, NodeAccumulator},
     task::{ImportTask, TaskError, TaskFactory},
@@ -161,7 +161,7 @@ impl ConsumerEdgeImportTask {
     fn flush_buffer(&mut self) -> Result<u64, TaskError> {
         let sources = self.consumer.sources();
         let targets = self.consumer.targets();
-        let rel_ids = self.consumer.relationship_ids();
+        let _rel_ids = self.consumer.relationship_ids();
 
         if sources.is_empty() {
             return Ok(0);

@@ -227,7 +227,7 @@ impl DefaultNodePropertyStoreBuilder {
     #[allow(dead_code)]
     pub fn put_double_array_from_vec(
         self,
-        key: impl Into<String>,
+        _key: impl Into<String>,
         _values: Vec<Option<Vec<f64>>>,
     ) -> Self {
         // TODO: Implement when array types are added to universal adapters
@@ -239,7 +239,7 @@ impl DefaultNodePropertyStoreBuilder {
     #[allow(dead_code)]
     pub fn put_long_array_from_vec(
         self,
-        key: impl Into<String>,
+        _key: impl Into<String>,
         _values: Vec<Option<Vec<i64>>>,
     ) -> Self {
         // TODO: Implement when array types are added to universal adapters

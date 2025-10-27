@@ -1,5 +1,5 @@
 //! VecLong: Vec-based i64 Collections implementation
-
+#[allow(unused_imports)]
 use crate::collections::traits::Collections;
 
 /// Vec-based i64 Collections implementation
