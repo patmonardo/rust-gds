@@ -5,8 +5,7 @@
 //! Greedy graph coloring algorithm ensuring no two adjacent nodes share the same color.
 //! Uses iterative phases: Coloring (assign colors) and Validation (detect conflicts).
 
-use crate::collections::{HugeLongArray, BitSet};
-use std::collections::HashMap;
+use crate::collections::BitSet;
 
 /// K1Coloring computation result
 #[derive(Clone)]

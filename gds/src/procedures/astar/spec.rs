@@ -5,7 +5,6 @@
 //! This module defines the A* algorithm specification using focused macros.
 
 use crate::define_algorithm_spec;
-use crate::projection::eval::procedure::ExecutionMode;
 use crate::projection::relationship_type::RelationshipType;
 use std::collections::HashSet;
 use crate::types::prelude::GraphStore as _; // bring trait methods into scope

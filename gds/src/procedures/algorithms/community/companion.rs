@@ -4,9 +4,8 @@
 //!
 //! This module provides utility functions for community detection algorithms.
 
-use super::super::stubs::{LongNodePropertyValues, NodePropertyValues, ValueType};
+use super::super::stubs::{LongNodePropertyValues, NodePropertyValues};
 use super::consecutive_values::ConsecutiveLongNodePropertyValues;
-use super::incremental_values::LongIfChangedNodePropertyValues;
 
 /// Community algorithm companion utilities
 ///

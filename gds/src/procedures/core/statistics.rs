@@ -11,8 +11,6 @@
 //! - **Type-safe** - Compile-time guarantees for statistical operations
 
 use rayon::prelude::*;
-use std::collections::HashMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// Statistical summary for algorithm results
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -151,7 +149,7 @@ impl StatisticsEngine {
 
     /// Compute statistics from a vector of values
     pub fn compute_statistics_from_values(
-        mut values: Vec<f64>,
+        values: Vec<f64>,
         config: StatisticsConfig,
     ) -> Result<(StatisticalSummary, Option<Histogram>), StatisticsError> {
         if values.is_empty() {

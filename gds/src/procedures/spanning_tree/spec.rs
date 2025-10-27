@@ -6,13 +6,12 @@
 //! using our focused macro system.
 
 use crate::define_algorithm_spec;
-use crate::projection::eval::procedure::{AlgorithmError, ExecutionContext, AlgorithmSpec};
+use crate::projection::eval::procedure::{AlgorithmError, AlgorithmSpec};
 use crate::projection::relationship_type::RelationshipType;
 use crate::types::prelude::GraphStore as _;
 use crate::projection::orientation::Orientation;
 use std::collections::HashSet;
 use super::storage::SpanningTreeStorageRuntime;
-use super::computation::{SpanningTreeComputationRuntime, SpanningTree};
 use serde::{Deserialize, Serialize};
 
 /// Configuration for spanning tree algorithms.

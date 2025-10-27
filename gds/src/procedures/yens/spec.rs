@@ -6,12 +6,11 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::codegen::config::validation::ConfigError;
-use crate::projection::eval::procedure::{ExecutionContext, AlgorithmSpec, ExecutionMode};
+use crate::projection::eval::procedure::AlgorithmSpec;
 use crate::projection::eval::procedure::AlgorithmError;
 use super::storage::YensStorageRuntime;
 use super::computation::YensComputationRuntime;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 /// Yen's algorithm configuration
 ///

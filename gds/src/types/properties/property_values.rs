@@ -67,7 +67,6 @@ impl PropertyValues for Box<dyn PropertyValues> {
 }
 
 // Re-export macros from codegen for backward compatibility
-pub use crate::projection::codegen::property::*;
 
 #[cfg(test)]
 mod tests {

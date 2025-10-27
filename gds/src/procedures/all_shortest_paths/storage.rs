@@ -9,7 +9,6 @@
 use crate::projection::eval::procedure::AlgorithmError;
 use crate::types::graph_store::GraphStore;
 use std::sync::mpsc;
-use std::thread;
 
 /// Algorithm type for All Shortest Paths
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]

@@ -5,7 +5,6 @@
 //! This module implements the result type for spanning tree algorithms and
 //! provides a graph adapter for traversing the spanning tree structure.
 
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 /// Spanning tree result containing parent relationships and costs.

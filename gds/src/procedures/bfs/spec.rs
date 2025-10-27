@@ -6,7 +6,7 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::codegen::config::validation::ConfigError;
-use crate::projection::eval::procedure::{ExecutionContext, AlgorithmSpec, ExecutionMode};
+use crate::projection::eval::procedure::AlgorithmSpec;
 use crate::projection::eval::procedure::AlgorithmError;
 use super::storage::BfsStorageRuntime;
 use super::computation::BfsComputationRuntime;
@@ -14,7 +14,6 @@ use crate::projection::RelationshipType;
 use crate::projection::orientation::Orientation;
 use crate::types::prelude::GraphStore as _;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 /// BFS algorithm configuration
 ///

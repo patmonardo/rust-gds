@@ -7,7 +7,6 @@
 
 use super::computation::{SpanningTreeComputationRuntime, SpanningTree};
 use crate::projection::eval::procedure::AlgorithmError;
-use std::collections::HashMap;
 use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator as _;
 

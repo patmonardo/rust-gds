@@ -7,13 +7,12 @@
 //! polymorphic target system, traversal state management, and stream-based results.
 
 use crate::define_algorithm_spec;
-use crate::projection::eval::procedure::{AlgorithmSpec, ExecutionContext};
+use crate::projection::eval::procedure::AlgorithmSpec;
 use crate::types::prelude::GraphStore as _;
 use crate::projection::orientation::Orientation;
 use crate::projection::relationship_type::RelationshipType;
 use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use super::storage::DijkstraStorageRuntime;
 use super::computation::DijkstraComputationRuntime;
 use super::targets::create_targets;

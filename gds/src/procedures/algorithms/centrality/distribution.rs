@@ -8,7 +8,7 @@
 
 use super::result::CentralityAlgorithmResult;
 use crate::procedures::core::statistics::{
-    StatisticsEngine, StatisticsConfig, StatisticalSummary
+    StatisticsEngine, StatisticsConfig
 };
 use std::collections::HashMap;
 

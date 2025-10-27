@@ -6,7 +6,6 @@
 //! handling ephemeral computation state and distance tracking.
 
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// Bellman-Ford Computation Runtime
 ///

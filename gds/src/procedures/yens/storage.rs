@@ -9,7 +9,6 @@ use super::computation::YensComputationRuntime;
 use super::spec::{YensResult, YensPathResult};
 use super::mutable_path_result::MutablePathResult;
 use super::candidate_queue::CandidatePathsPriorityQueue;
-use super::relationship_filterer::RelationshipFilterer;
 use crate::projection::eval::procedure::AlgorithmError;
 
 /// Yen's Storage Runtime - handles persistent data access and algorithm orchestration
@@ -68,7 +67,7 @@ impl YensStorageRuntime {
         }
 
         let mut k_shortest_paths = vec![first_path.unwrap()];
-        let mut candidate_queue = CandidatePathsPriorityQueue::new();
+        let candidate_queue = CandidatePathsPriorityQueue::new();
 
         // Main Yen's algorithm loop
         for i in 1..self.k {
@@ -138,7 +137,7 @@ impl YensStorageRuntime {
         prev_path: &MutablePathResult,
         k_shortest_paths: &[MutablePathResult],
     ) -> Result<Vec<MutablePathResult>, AlgorithmError> {
-        let mut candidates = Vec::new();
+        let candidates = Vec::new();
         
         // TODO: Implement actual Yen's candidate generation
         // For now, return empty candidates

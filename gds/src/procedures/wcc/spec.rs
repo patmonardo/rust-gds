@@ -1,7 +1,7 @@
 //! WCC Algorithm Specification
 use serde::{Deserialize, Serialize};
 use crate::define_algorithm_spec;
-use crate::projection::eval::procedure::{AlgorithmSpec, AlgorithmError, ExecutionMode};
+use crate::projection::eval::procedure::{AlgorithmSpec, AlgorithmError};
 use crate::projection::orientation::Orientation;
 use crate::projection::RelationshipType;
 use crate::types::prelude::GraphStore as _;

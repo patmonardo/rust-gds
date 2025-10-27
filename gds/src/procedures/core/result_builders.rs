@@ -9,7 +9,7 @@
 use crate::procedures::core::statistics::{StatisticalSummary, Histogram, StatisticsEngine, StatisticsConfig};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 /// Base result builder trait
 pub trait ResultBuilder<T> {
@@ -285,13 +285,13 @@ impl ResultBuilder<CommunityResult> for CommunityResultBuilder {
         })
     }
     
-    fn with_statistics(mut self, stats: StatisticalSummary) -> Self {
+    fn with_statistics(self, stats: StatisticalSummary) -> Self {
         // For community results, statistics are computed from community sizes
         // This method is kept for interface compatibility
         self
     }
     
-    fn with_histogram(mut self, hist: Option<Histogram>) -> Self {
+    fn with_histogram(self, hist: Option<Histogram>) -> Self {
         // For community results, histogram is computed from community sizes
         // This method is kept for interface compatibility
         self

@@ -11,7 +11,6 @@ use crate::procedures::traversal::{ExitPredicate, Aggregator, FollowExitPredicat
 use crate::projection::eval::procedure::AlgorithmError;
 use crate::types::graph::Graph;
 use crate::types::properties::relationship::traits::RelationshipIterator as _;
-use std::collections::{VecDeque, HashMap};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// BFS Storage Runtime - handles persistent data access and algorithm orchestration

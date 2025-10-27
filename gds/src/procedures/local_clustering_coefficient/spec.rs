@@ -4,7 +4,6 @@
 
 use crate::define_algorithm_spec;
 use crate::projection::eval::procedure::*;
-use serde_json::Value as JsonValue;
 use std::time::Duration;
 
 use super::storage::LocalClusteringCoefficientStorageRuntime;

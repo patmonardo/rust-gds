@@ -6,7 +6,7 @@
 //! 1. Computing MST using Prim's algorithm
 //! 2. Progressively cutting k weakest edges
 
-use std::collections::{HashMap, BinaryHeap};
+use std::collections::BinaryHeap;
 use std::cmp::Ordering;
 
 /// Result of k-spanning tree computation

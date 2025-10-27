@@ -40,6 +40,7 @@ macro_rules! define_algorithm_spec {
             /// Algorithm Specification for [<$name:upper>]
             ///
             /// This implements the `AlgorithmSpec` trait required by `ProcedureExecutor`.
+            #[allow(non_camel_case_types)]
             pub struct [<$name:upper AlgorithmSpec>] {
                 /// Name of the graph to load
                 graph_name: String,
