@@ -82,27 +82,61 @@ impl<C: PregelRuntimeConfig> MasterComputeContext<C> {
         &self.config
     }
 
-    /// Access a node's value by ID and schema key.
+    /// Read a double node value by ID and schema key.
     ///
-    /// # TODO
+    /// This is the infrastructure for accessing node values during master compute.
+    /// The actual algorithm logic (convergence checking, normalization) belongs in
+    /// the `master_compute()` method of `PregelComputation`.
+    pub fn double_node_value(&self, node_id: usize, key: &str) -> f64 {
+        self.node_values.read().double_value(key, node_id)
+    }
+
+    /// Read a long node value by ID and schema key.
+    pub fn long_node_value(&self, node_id: usize, key: &str) -> i64 {
+        self.node_values.read().long_value(key, node_id)
+    }
+
+    /// Set a double node value by ID and schema key.
     ///
-    /// Stub - will read from node value storage
-    pub fn node_value<V>(&self, _node_id: usize, _key: &str) -> Option<V> {
-        None
+    /// Used by master compute to atomically update all nodes after normalization.
+    pub fn set_double_node_value(&mut self, node_id: usize, key: &str, value: f64) {
+        self.node_values.write().set(key, node_id, value);
+    }
+
+    /// Set a long node value by ID and schema key.
+    pub fn set_long_node_value(&mut self, node_id: usize, key: &str, value: i64) {
+        self.node_values.write().set_long(key, node_id, value);
     }
 
     /// Iterate over all nodes with a consumer function.
     ///
     /// The consumer receives one node ID at a time and returns true to continue
-    /// or false to stop iteration.
+    /// or false to stop iteration. Used for parallel processing in master compute.
     ///
-    /// # TODO
+    /// # Example: Convergence Checking
     ///
-    /// Stub - will iterate over actual graph nodes
-    pub fn for_each_node<F>(&self, mut _consumer: F)
+    /// ```rust
+    /// let mut did_converge = true;
+    /// context.for_each_node(|node_id| {
+    ///     let current = context.double_node_value(node_id, "rank");
+    ///     let next = context.double_node_value(node_id, "next_rank");
+    ///     if (current - next).abs() > tolerance {
+    ///         did_converge = false;
+    ///         false // Stop iteration early (optimization)
+    ///     } else {
+    ///         true // Continue
+    ///     }
+    /// });
+    /// ```
+    pub fn for_each_node<F>(&self, mut consumer: F)
     where
         F: FnMut(usize) -> bool,
     {
-        // Stub
+        let node_count = self.node_count();
+        for node_id in 0..node_count {
+            if !consumer(node_id) {
+                break; // Consumer returned false, stop iteration
+            }
+        }
     }
 }

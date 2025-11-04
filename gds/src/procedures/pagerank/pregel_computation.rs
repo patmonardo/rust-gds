@@ -3,12 +3,13 @@
 //! This module implements PageRank using our PREGEL library, following the Java GDS pattern.
 
 use crate::pregel::{
-    ComputeContext, InitContext, MessageIterator, MessageReducer, Messages, PregelComputation,
+    ComputeContext, InitContext, MasterComputeContext, MessageIterator, MessageReducer, Messages, PregelComputation,
     PregelSchema, SumReducer,
 };
 use crate::config::PregelConfig;
 use crate::types::ValueType;
 use crate::pregel::Visibility;
+use super::degree_functions::{pagerank_degree_function, DegreeFunction};
 use std::collections::HashSet;
 
 /// PageRank computation using PREGEL framework
@@ -50,15 +51,22 @@ pub struct PageRankPregelComputation {
     source_nodes: Option<HashSet<u64>>,
     /// Alpha = 1 - damping_factor
     alpha: f64,
+    /// Optional cached degree function (initialized on first compute)
+    degree_fn: Option<DegreeFunction>,
+    /// Whether to treat relationships as weighted for denominators/messages
+    has_relationship_weight_property: bool,
 }
 
 impl PageRankPregelComputation {
+    pub const RANK: &'static str = "pagerank";
+    pub const NEXT_RANK: &'static str = "next_rank";
     /// Create a new PageRank computation
     pub fn new(
         damping_factor: f64,
         tolerance: f64,
         max_iterations: usize,
         source_nodes: Option<Vec<u64>>,
+        has_relationship_weight_property: bool,
     ) -> Self {
         let source_set = source_nodes.map(|nodes| nodes.into_iter().collect());
         Self {
@@ -67,6 +75,8 @@ impl PageRankPregelComputation {
             max_iterations,
             source_nodes: source_set,
             alpha: 1.0 - damping_factor,
+            degree_fn: None,
+            has_relationship_weight_property,
         }
     }
 
@@ -103,6 +113,7 @@ impl PregelComputation for PageRankPregelComputation {
     fn schema(&self, _config: &Self::Config) -> PregelSchema {
         PregelSchema::builder()
             .add("pagerank", ValueType::Double, Visibility::Public)
+            .add("next_rank", ValueType::Double, Visibility::Public)
             .build()
     }
 
@@ -120,6 +131,7 @@ impl PregelComputation for PageRankPregelComputation {
         };
         
         context.set_node_value("pagerank", initial_value);
+        context.set_node_value("next_rank", initial_value);
     }
 
     /// Compute PageRank for a single node
@@ -134,6 +146,15 @@ impl PregelComputation for PageRankPregelComputation {
         context: &mut ComputeContext<Self::Config, I>,
         messages: &mut Messages<I>,
     ) {
+        // Initialize degree function once with graph
+        if self.degree_fn.is_none() {
+            let graph = context.graph_arc();
+            self.degree_fn = Some(pagerank_degree_function(
+                graph,
+                self.has_relationship_weight_property,
+            ));
+        }
+
         let current_rank = context.double_node_value("pagerank");
         let mut delta = current_rank;
 
@@ -147,15 +168,20 @@ impl PregelComputation for PageRankPregelComputation {
             // Apply damping factor: new_rank = alpha + damping_factor * sum
             delta = self.damping_factor * sum;
             let new_rank = self.alpha + delta;
-            context.set_node_value("pagerank", new_rank);
+            // Write into NEXT_RANK; master step will publish to RANK
+            context.set_node_value("next_rank", new_rank);
         }
 
         // Send messages to neighbors if we have significant change
         if delta > self.tolerance || context.is_initial_superstep() {
-            let out_degree = context.degree();
-            if out_degree > 0 {
-                // Send rank / out_degree to all neighbors
-                let message_value = delta / out_degree as f64;
+            // Use DegreeFunction denominator
+            let denom = self
+                .degree_fn
+                .as_ref()
+                .map(|df| df.get(context.internal_node_id_i64()))
+                .unwrap_or(context.degree() as f64);
+            if denom > 0.0 {
+                let message_value = delta / denom;
                 context.send_to_neighbors(message_value);
             }
         } else {
@@ -178,6 +204,58 @@ impl PregelComputation for PageRankPregelComputation {
     fn apply_relationship_weight(&self, node_value: f64, relationship_weight: f64) -> f64 {
         node_value * relationship_weight
     }
+
+    /// Master compute step for PageRank convergence checking and normalization.
+    ///
+    /// This implements the **Power Iteration** pattern from `EigenvectorComputation.java`:
+    /// 1. Check convergence across all nodes (compare current vs. next rank)
+    /// 2. Normalize using L2-Norm (if using Power Iteration variant)
+    /// 3. Atomically update all node values
+    ///
+    /// **Note**: Currently stubbed. Full implementation requires:
+    /// - Two-value schema (RANK + NEXT_RANK)
+    /// - L2-Norm Scaler for normalization
+    /// - Parallel convergence checking
+    ///
+    /// # Java Source
+    ///
+    /// `org.neo4j.gds.pagerank.EigenvectorComputation.masterCompute()`
+    ///
+    /// # Returns
+    ///
+    /// `true` if converged (early termination), `false` to continue
+    fn master_compute(&mut self, context: &mut MasterComputeContext<Self::Config>) -> bool {
+        // Skip master compute on initial superstep
+        if context.is_initial_superstep() {
+            return false;
+        }
+
+        // Single-thread L2 normalization of NEXT_RANK, convergence vs current RANK, then publish
+        // 1) Compute L2 norm of NEXT_RANK
+        let mut sum_sq = 0.0;
+        context.for_each_node(|node_id| {
+            let v = context.double_node_value(node_id, "next_rank");
+            sum_sq += v * v;
+            true
+        });
+        let l2 = sum_sq.sqrt();
+
+        // 2) Normalize and check convergence; 3) Publish
+        let mut did_converge = true;
+        let tol = self.tolerance;
+        let node_count = context.node_count();
+        for node_id in 0..node_count {
+            let curr = context.double_node_value(node_id, "pagerank");
+            let next = context.double_node_value(node_id, "next_rank");
+            let normalized_next = if l2 > 0.0 { next / l2 } else { next };
+            if (normalized_next - curr).abs() > tol {
+                did_converge = false;
+            }
+            context.set_double_node_value(node_id, "pagerank", normalized_next);
+        }
+
+        !context.is_initial_superstep() && did_converge
+    }
 }
 
 #[cfg(test)]
@@ -186,7 +264,7 @@ mod tests {
 
     #[test]
     fn test_pagerank_computation_creation() {
-        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, None);
+        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, None, false);
         
         assert_eq!(computation.damping_factor(), 0.85);
         assert_eq!(computation.tolerance(), 1e-6);
@@ -197,7 +275,7 @@ mod tests {
     #[test]
     fn test_pagerank_computation_with_source_nodes() {
         let source_nodes = vec![0, 2, 4];
-        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, Some(source_nodes));
+        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, Some(source_nodes), false);
         
         assert!(computation.is_source_node(0));
         assert!(!computation.is_source_node(1));
@@ -208,7 +286,7 @@ mod tests {
 
     #[test]
     fn test_pagerank_computation_no_source_nodes() {
-        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, None);
+        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, None, false);
         
         // All nodes should be considered source nodes when none specified
         assert!(computation.is_source_node(0));
@@ -218,7 +296,7 @@ mod tests {
 
     #[test]
     fn test_pagerank_schema() {
-        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, None);
+        let computation = PageRankPregelComputation::new(0.85, 1e-6, 100, None, false);
         let config = PregelConfig::default();
         let schema = computation.schema(&config);
         

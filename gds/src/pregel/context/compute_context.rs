@@ -91,6 +91,11 @@ impl<C: PregelRuntimeConfig, I: crate::pregel::MessageIterator> ComputeContext<C
         self.base.node_id()
     }
 
+    /// Internal node id as i64 (Graph's NodeId type)
+    pub fn internal_node_id_i64(&self) -> i64 {
+        self.base.internal_node_id_i64()
+    }
+
     /// Get the current superstep number (0-indexed).
     pub fn superstep(&self) -> usize {
         self.iteration
@@ -109,6 +114,11 @@ impl<C: PregelRuntimeConfig, I: crate::pregel::MessageIterator> ComputeContext<C
     /// Get the configuration.
     pub fn config(&self) -> &C {
         self.base.config()
+    }
+
+    /// Access the underlying graph Arc for advanced algorithms.
+    pub fn graph_arc(&self) -> Arc<dyn Graph> {
+        self.base.graph_arc()
     }
 
     /// Returns the degree (number of relationships) of the currently processed node.

@@ -84,6 +84,11 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
         self.node_id
     }
 
+    /// Get the internal node id as i64 (Graph's NodeId type).
+    pub fn internal_node_id_i64(&self) -> i64 {
+        self.node_id as i64
+    }
+
     /// Get the configuration.
     ///
     /// # Java equivalent
@@ -93,6 +98,11 @@ impl<C: PregelRuntimeConfig> NodeCentricContext<C> {
     /// ```
     pub fn config(&self) -> &C {
         &self.config
+    }
+
+    /// Get a clone of the underlying graph Arc for advanced queries.
+    pub fn graph_arc(&self) -> Arc<dyn Graph> {
+        self.graph.clone()
     }
 
     /// Check if the graph is a multi-graph (allows multiple edges between nodes).

@@ -91,6 +91,7 @@
 pub mod centrality;
 pub mod community;
 pub mod stubs;
+pub mod result;
 
 // Re-export commonly used types
 pub use centrality::*;

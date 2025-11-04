@@ -8,44 +8,12 @@ use crate::projection::eval::procedure::{
     ExecutionMode, LogLevel, ProjectionHint, ValidationConfiguration,
 };
 use crate::types::prelude::GraphStore;
+use crate::config::PageRankConfig;
 use serde_json::{json, Value as JsonValue};
 use std::time::Instant;
 
 use super::computation::PageRankComputationRuntime;
 use super::storage::PageRankStorageRuntime;
-
-// ============================================================================
-// Configuration
-// ============================================================================
-
-/// PageRank Configuration
-///
-/// Specifies PageRank parameters and behavior.
-#[derive(Debug, Clone)]
-pub struct PageRankConfig {
-    /// Damping factor (typically 0.85)
-    pub damping_factor: f64,
-    /// Convergence tolerance
-    pub tolerance: f64,
-    /// Maximum number of iterations
-    pub max_iterations: usize,
-    /// Source nodes for personalized PageRank (if any)
-    pub source_nodes: Option<Vec<u64>>,
-    /// Relationship weight property (if any)
-    pub weight_property: Option<String>,
-}
-
-impl Default for PageRankConfig {
-    fn default() -> Self {
-        Self {
-            damping_factor: 0.85,
-            tolerance: 1e-6,
-            max_iterations: 100,
-            source_nodes: None,
-            weight_property: None,
-        }
-    }
-}
 
 // ============================================================================
 // Algorithm Specification
@@ -71,18 +39,15 @@ impl Default for PageRankConfig {
 /// 3. `validation_config()` - Get validators
 /// 4. `execute()` - Run the algorithm
 /// 5. `consume_result()` - Format output
-#[allow(dead_code)] // config field used for future implementation
 pub struct PageRankAlgorithmSpec {
     /// Name of the graph to load
     graph_name: String,
-    /// Configuration for this execution
-    config: PageRankConfig,
 }
 
 impl PageRankAlgorithmSpec {
     /// Create a new PageRank algorithm specification
-    pub fn new(graph_name: String, config: PageRankConfig) -> Self {
-        Self { graph_name, config }
+    pub fn new(graph_name: String) -> Self {
+        Self { graph_name }
     }
 }
 
@@ -127,96 +92,88 @@ impl AlgorithmSpec for PageRankAlgorithmSpec {
 
     /// Parse JSON configuration
     ///
+    /// Uses the config system's `PageRankConfig` builder pattern for validation.
+    /// The config system handles validation (damping factor range, positive values, etc.).
+    ///
     /// **Input JSON Format**:
     /// ```json
     /// {
     ///   "dampingFactor": 0.85,
     ///   "tolerance": 1e-6,
     ///   "maxIterations": 100,
-    ///   "sourceNodes": null,
-    ///   "weightProperty": null
+    ///   "sourceNodes": ["node1", "node2"],
+    ///   "weightProperty": "weight"
     /// }
     /// ```
-    ///
-    /// **Validation**:
-    /// - `dampingFactor` must be between 0 and 1
-    /// - `tolerance` must be positive
-    /// - `maxIterations` must be positive
-    /// - `sourceNodes` is optional array of node IDs
-    /// - `weightProperty` is optional string
     fn parse_config(&self, input: &JsonValue) -> Result<JsonValue, ConfigError> {
-        // Extract damping factor (required, default 0.85)
-        let damping_factor = input
-            .get("dampingFactor")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(0.85);
+        // Extract fields manually (since PageRankConfig doesn't derive Deserialize from define_config!)
+        let mut builder = PageRankConfig::builder();
         
-        if damping_factor <= 0.0 || damping_factor >= 1.0 {
-            return Err(ConfigError::InvalidValue {
-                param: "dampingFactor".to_string(),
-                message: "Must be between 0 and 1".to_string(),
-            });
+        if let Some(df) = input.get("dampingFactor").and_then(|v| v.as_f64()) {
+            builder = builder.damping_factor(df);
+        }
+        
+        if let Some(tol) = input.get("tolerance").and_then(|v| v.as_f64()) {
+            builder = builder.tolerance(tol);
+        }
+        
+        if let Some(max_iter) = input.get("maxIterations").and_then(|v| v.as_u64()) {
+            builder = builder.max_iterations(max_iter as usize);
+        }
+        
+        if let Some(src_nodes) = input.get("sourceNodes").and_then(|v| v.as_array()) {
+            let nodes: Vec<String> = src_nodes
+                .iter()
+                .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                .collect();
+            builder = builder.source_nodes(Some(nodes));
         }
 
-        // Extract tolerance (required, default 1e-6)
-        let tolerance = input
-            .get("tolerance")
-            .and_then(|v| v.as_f64())
-            .unwrap_or(1e-6);
-        
-        if tolerance <= 0.0 {
-            return Err(ConfigError::InvalidValue {
-                param: "tolerance".to_string(),
-                message: "Must be positive".to_string(),
-            });
-        }
+        // Build and validate using config system
+        let config = builder.build().map_err(|e| ConfigError::InvalidValue {
+            param: "config".to_string(),
+            message: format!("Config validation failed: {}", e),
+        })?;
 
-        // Extract max iterations (required, default 100)
-        let max_iterations = input
-            .get("maxIterations")
-            .and_then(|v| v.as_u64())
-            .unwrap_or(100) as usize;
-        
-        if max_iterations == 0 {
-            return Err(ConfigError::InvalidValue {
-                param: "maxIterations".to_string(),
-                message: "Must be positive".to_string(),
-            });
-        }
-
-        // Extract source nodes (optional)
-        let source_nodes = input
-            .get("sourceNodes")
-            .and_then(|v| v.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|v| v.as_u64())
-                    .collect::<Vec<u64>>()
-            });
-
-        // Extract weight property (optional)
+        // Return validated config as JSON (with weight_property included)
+        // Note: weight_property is not in PageRankConfig yet, extract separately
         let weight_property = input
             .get("weightProperty")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
 
-        // Return validated config as JSON
         Ok(json!({
-            "dampingFactor": damping_factor,
-            "tolerance": tolerance,
-            "maxIterations": max_iterations,
-            "sourceNodes": source_nodes,
+            "dampingFactor": config.damping_factor,
+            "tolerance": config.tolerance,
+            "maxIterations": config.max_iterations,
+            "sourceNodes": config.source_nodes,
             "weightProperty": weight_property,
         }))
     }
 
     /// Get validation configuration
     ///
-    /// For PageRank, we validate:
-    /// - Graph has nodes
-    /// - Source nodes (if specified) exist in the graph
-    /// - Weight property (if specified) exists
+    /// Returns validators for **two-phase validation**:
+    ///
+    /// 1. **Before-load validation** (config only):
+    ///    - Range checks (damping factor, tolerance) → Handled by `PageRankConfig::builder().build()` validation
+    ///    - Required parameters → Handled by config defaults
+    ///    
+    ///    Note: Most validation is already done by the config system in `parse_config()`,
+    ///    so before-load validators are typically not needed here.
+    ///
+    /// 2. **After-load validation** (config + graph):
+    ///    - TODO: Validate `weightProperty` exists (if specified)
+    ///    - TODO: Validate `sourceNodes` exist in graph (if specified)
+    ///    - Graph must have nodes (handled by executor)
+    ///
+    /// **Current Status**: Returns `empty()` because:
+    /// - Config system already validates parameters in `parse_config()` via `PageRankConfig::builder().build()`
+    /// - Graph-specific validators (weight property, source nodes) not yet implemented
     fn validation_config(&self, _context: &ExecutionContext) -> ValidationConfiguration {
+        // TODO: Add after-load validators:
+        // - PropertyExistsValidator for weightProperty (if specified)
+        // - NodeExistsValidator for sourceNodes (if specified)
         ValidationConfiguration::empty()
     }
 
@@ -239,35 +196,39 @@ impl AlgorithmSpec for PageRankAlgorithmSpec {
         config: &JsonValue,
         context: &ExecutionContext,
     ) -> Result<ComputationResult<Self::Output>, AlgorithmError> {
-        // Extract configuration
+        // Extract configuration values from parsed JSON
         let damping_factor = config
             .get("dampingFactor")
             .and_then(|v| v.as_f64())
-            .ok_or_else(|| AlgorithmError::Execution("Missing dampingFactor".to_string()))?;
+            .unwrap_or(0.85);
         
         let tolerance = config
             .get("tolerance")
             .and_then(|v| v.as_f64())
-            .ok_or_else(|| AlgorithmError::Execution("Missing tolerance".to_string()))?;
+            .unwrap_or(0.0000001);
         
         let max_iterations = config
             .get("maxIterations")
             .and_then(|v| v.as_u64())
-            .ok_or_else(|| AlgorithmError::Execution("Missing maxIterations".to_string()))? as usize;
+            .unwrap_or(20) as usize;
         
+        // Extract weight_property separately (not yet in PageRankConfig)
+        let weight_property = config
+            .get("weightProperty")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
+        // Convert source_nodes from Vec<String> to Vec<u64>
+        // Source nodes in config are strings (node identifiers), need to convert to IDs
+        // TODO: This should use GraphStore's node ID resolution
         let source_nodes = config
             .get("sourceNodes")
             .and_then(|v| v.as_array())
             .map(|arr| {
                 arr.iter()
-                    .filter_map(|v| v.as_u64())
+                    .filter_map(|v| v.as_str().and_then(|s| s.parse::<u64>().ok()))
                     .collect::<Vec<u64>>()
             });
-        
-        let weight_property = config
-            .get("weightProperty")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string());
 
         context.log(
             LogLevel::Info,
@@ -285,10 +246,10 @@ impl AlgorithmSpec for PageRankAlgorithmSpec {
         // Clone source_nodes for both runtimes
         let source_nodes_clone = source_nodes.clone();
 
-        // Create storage runtime (Gross pole - knows GraphStore)
+        // Create storage runtime (Real pole - knows GraphStore)
         let storage = PageRankStorageRuntime::new(graph_store, source_nodes_clone, weight_property)?;
 
-        // Create computation runtime (Subtle pole - knows PageRank scores)
+        // Create computation runtime (Ideal pole - knows PageRank scores)
         let mut computation = PageRankComputationRuntime::new(
             storage.node_count(),
             damping_factor,
@@ -386,43 +347,31 @@ mod tests {
 
     #[test]
     fn test_pagerank_algorithm_name() {
-        let spec = PageRankAlgorithmSpec::new(
-            "test_graph".to_string(),
-            PageRankConfig::default(),
-        );
+        let spec = PageRankAlgorithmSpec::new("test_graph".to_string());
         assert_eq!(spec.name(), "pagerank");
     }
 
     #[test]
     fn test_pagerank_graph_name() {
-        let spec = PageRankAlgorithmSpec::new(
-            "my_graph".to_string(),
-            PageRankConfig::default(),
-        );
+        let spec = PageRankAlgorithmSpec::new("my_graph".to_string());
         assert_eq!(spec.graph_name(), "my_graph");
     }
 
     #[test]
     fn test_pagerank_projection_hint() {
-        let spec = PageRankAlgorithmSpec::new(
-            "test_graph".to_string(),
-            PageRankConfig::default(),
-        );
+        let spec = PageRankAlgorithmSpec::new("test_graph".to_string());
         assert_eq!(spec.projection_hint(), ProjectionHint::Dense);
     }
 
     #[test]
     fn test_pagerank_parse_config_valid() {
-        let spec = PageRankAlgorithmSpec::new(
-            "test_graph".to_string(),
-            PageRankConfig::default(),
-        );
+        let spec = PageRankAlgorithmSpec::new("test_graph".to_string());
 
         let input = json!({
             "dampingFactor": 0.9,
             "tolerance": 1e-5,
             "maxIterations": 50,
-            "sourceNodes": [0, 1],
+            "sourceNodes": ["0", "1"],
             "weightProperty": "weight"
         });
 
@@ -436,10 +385,7 @@ mod tests {
 
     #[test]
     fn test_pagerank_parse_config_invalid_damping_factor() {
-        let spec = PageRankAlgorithmSpec::new(
-            "test_graph".to_string(),
-            PageRankConfig::default(),
-        );
+        let spec = PageRankAlgorithmSpec::new("test_graph".to_string());
 
         let input = json!({
             "dampingFactor": 1.5, // Invalid: > 1
@@ -451,18 +397,16 @@ mod tests {
 
     #[test]
     fn test_pagerank_parse_config_defaults() {
-        let spec = PageRankAlgorithmSpec::new(
-            "test_graph".to_string(),
-            PageRankConfig::default(),
-        );
+        let spec = PageRankAlgorithmSpec::new("test_graph".to_string());
 
         let input = json!({}); // Empty config
 
         let result = spec.parse_config(&input);
         assert!(result.is_ok());
         let config = result.unwrap();
+        // Config system defaults: dampingFactor=0.85, tolerance=0.0000001, maxIterations=20
         assert_eq!(config.get("dampingFactor").unwrap().as_f64().unwrap(), 0.85);
-        assert_eq!(config.get("tolerance").unwrap().as_f64().unwrap(), 1e-6);
-        assert_eq!(config.get("maxIterations").unwrap().as_u64().unwrap(), 100);
+        assert_eq!(config.get("tolerance").unwrap().as_f64().unwrap(), 0.0000001);
+        assert_eq!(config.get("maxIterations").unwrap().as_u64().unwrap(), 20);
     }
 }

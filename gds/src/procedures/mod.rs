@@ -132,7 +132,7 @@ pub mod hits;
 
 // Re-export commonly used types
 pub use sum::{SumComputationRuntime, SumAlgorithmSpec, SumConfig, SumStorageRuntime};
-pub use pagerank::{PageRankAlgorithmSpec, PageRankComputationResult, PageRankConfig, PageRankPregelComputation, PageRankMemoryEstimation, estimate_pagerank_memory};
+pub use pagerank::{PageRankAlgorithmSpec, PageRankComputationResult, PageRankPregelComputation, PageRankMemoryEstimation, estimate_pagerank_memory};
 pub use degree_centrality::{DEGREE_CENTRALITYAlgorithmSpec, DegreeCentralityConfig, DegreeCentralityResult, DegreeCentralityStorageRuntime, DegreeCentralityComputationRuntime};
 pub use all_shortest_paths::{ALL_SHORTEST_PATHSAlgorithmSpec, AllShortestPathsConfig, AllShortestPathsResult, AllShortestPathsStorageRuntime, AllShortestPathsComputationRuntime};
 pub use astar::{ASTARAlgorithmSpec, AStarConfig, AStarResult, AStarStorageRuntime, AStarComputationRuntime};

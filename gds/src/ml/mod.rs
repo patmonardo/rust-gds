@@ -24,7 +24,6 @@ pub mod node_prediction;
 pub mod sampling;
 pub mod splitting;
 pub mod training;
-pub mod training_method;
 
 // Curated re-exports for common surface area
 pub use core::tensor::{size_in_bytes, Matrix, Scalar, Tensor, Vector};
