@@ -1,10 +1,10 @@
+use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
 use crate::types::properties::relationship::relationship_property::RelationshipProperty;
 use crate::types::properties::relationship::{
     relationship_property_store::{RelationshipPropertyStore, RelationshipPropertyStoreBuilder},
     relationship_property_values::RelationshipPropertyValues,
 };
 use crate::types::properties::PropertyStore;
-use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -164,20 +164,20 @@ impl DefaultRelationshipPropertyStoreBuilder {
         default_value: f64,
     ) -> Self {
         let element_count = values.len();
-        
+
         // Use config to select backend
-        let backend = crate::collections::backends::factory::create_double_backend_from_config(config, values);
-        
+        let backend = crate::collections::backends::factory::create_double_backend_from_config(
+            config, values,
+        );
+
         // Create property values with selected backend
-        use crate::collections::traits::Collections;
-        let pv: Arc<dyn RelationshipPropertyValues> = Arc::new(
-            DefaultRelationshipPropertyValues::with_values(
+        let pv: Arc<dyn RelationshipPropertyValues> =
+            Arc::new(DefaultRelationshipPropertyValues::with_values(
                 (0..backend.len()).filter_map(|i| backend.get(i)).collect(), // Convert backend to vec
                 default_value,
-                element_count
-            ),
-        );
-        
+                element_count,
+            ));
+
         let key_str = key.into();
         use crate::types::PropertyState;
         let prop = RelationshipProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);

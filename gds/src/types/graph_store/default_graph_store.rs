@@ -2,27 +2,36 @@ use super::{
     Capabilities, DatabaseInfo, DeletionResult, GraphName, GraphStore, GraphStoreError,
     GraphStoreResult,
 };
+use crate::collections::backends::arrow::{ArrowDoubleArray, ArrowLongArray};
+use crate::collections::backends::factory::{
+    create_double_backend_from_config, create_long_backend_from_config, DoubleCollection,
+    LongCollection,
+};
+use crate::collections::backends::vec::{VecDouble, VecLong};
+use crate::config::GraphStoreConfig;
+use crate::projection::orientation::Orientation;
 use crate::projection::{NodeLabel, RelationshipType};
 use crate::types::graph::{
     id_map::{IdMap, SimpleIdMap},
     DefaultGraph, Graph, GraphCharacteristics, GraphCharacteristicsBuilder, RelationshipTopology,
 };
+use crate::types::properties::graph::impls::default_graph_property_values::{
+    DefaultDoubleGraphPropertyValues, DefaultLongGraphPropertyValues,
+};
 use crate::types::properties::graph::GraphPropertyValues;
-use crate::types::ValueType;
-use crate::config::GraphStoreConfig;
-
+use crate::types::properties::node::impls::default_node_property_values::{
+    DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues,
+};
 use crate::types::properties::node::NodePropertyValues;
-
 use crate::types::properties::relationship::default_relationship_property_store::DefaultRelationshipPropertyStore;
 use crate::types::properties::relationship::relationship_property::RelationshipProperty;
 use crate::types::properties::relationship::RelationshipPropertyValues;
 use crate::types::properties::relationship::{
     RelationshipPropertyStore, RelationshipPropertyStoreBuilder,
 };
-
 use crate::types::schema::{Direction, GraphSchema, PropertySchemaTrait};
-use crate::projection::orientation::Orientation;
 use crate::types::PropertyState;
+use crate::types::ValueType;
 use chrono::{DateTime, Utc};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -146,17 +155,14 @@ impl DefaultGraphStore {
         values: Vec<i64>,
     ) -> Result<(), GraphStoreError> {
         let node_count = self.id_map.node_count();
-        
+
         // Use config to create CollectionsConfig
         let collections_config = self.config.node_collections_config::<i64>(node_count);
-        
+
         // Create property using config
-        use crate::types::properties::node::impls::default_node_property_values::DefaultLongNodePropertyValues;
-        use crate::collections::backends::vec::VecLong;
-        
-        let backend = crate::collections::backends::factory::create_long_backend_from_config(&collections_config, values);
-        let pv = Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, node_count));
-        
+        let backend = create_long_backend_from_config(&collections_config, values);
+        let pv = build_node_long_property_values(backend, node_count);
+
         self.node_properties.insert(key, pv);
         self.set_modified();
         Ok(())
@@ -169,17 +175,14 @@ impl DefaultGraphStore {
         values: Vec<f64>,
     ) -> Result<(), GraphStoreError> {
         let node_count = self.id_map.node_count();
-        
+
         // Use config to create CollectionsConfig
         let collections_config = self.config.node_collections_config::<f64>(node_count);
-        
+
         // Create property using config
-        use crate::types::properties::node::impls::default_node_property_values::DefaultDoubleNodePropertyValues;
-        use crate::collections::backends::vec::VecDouble;
-        
-        let backend = crate::collections::backends::factory::create_double_backend_from_config(&collections_config, values);
-        let pv = Arc::new(DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(backend, node_count));
-        
+        let backend = create_double_backend_from_config(&collections_config, values);
+        let pv = build_node_double_property_values(backend, node_count);
+
         self.node_properties.insert(key, pv);
         self.set_modified();
         Ok(())
@@ -193,14 +196,11 @@ impl DefaultGraphStore {
     ) -> Result<(), GraphStoreError> {
         // Use config to create CollectionsConfig (graph properties don't scale with node count)
         let collections_config = self.config.graph_collections_config::<i64>(values.len());
-        
+
         // Create property using config
-        use crate::types::properties::graph::impls::default_graph_property_values::DefaultLongGraphPropertyValues;
-        use crate::collections::backends::vec::VecLong;
-        
-        let backend = crate::collections::backends::factory::create_long_backend_from_config(&collections_config, values);
-        let pv = Arc::new(DefaultLongGraphPropertyValues::<VecLong>::from_collection(backend));
-        
+        let backend = create_long_backend_from_config(&collections_config, values);
+        let pv = build_graph_long_property_values(backend);
+
         self.graph_properties.insert(key, pv);
         self.set_modified();
         Ok(())
@@ -214,14 +214,11 @@ impl DefaultGraphStore {
     ) -> Result<(), GraphStoreError> {
         // Use config to create CollectionsConfig
         let collections_config = self.config.graph_collections_config::<f64>(values.len());
-        
+
         // Create property using config
-        use crate::types::properties::graph::impls::default_graph_property_values::DefaultDoubleGraphPropertyValues;
-        use crate::collections::backends::vec::VecDouble;
-        
-        let backend = crate::collections::backends::factory::create_double_backend_from_config(&collections_config, values);
-        let pv = Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(backend));
-        
+        let backend = create_double_backend_from_config(&collections_config, values);
+        let pv = build_graph_double_property_values(backend);
+
         self.graph_properties.insert(key, pv);
         self.set_modified();
         Ok(())
@@ -729,9 +726,7 @@ impl GraphStore for DefaultGraphStore {
             .map(|top| top.relationship_count())
             .sum();
 
-        let has_parallel_edges = topologies
-            .values()
-            .any(|top| top.has_parallel_edges());
+        let has_parallel_edges = topologies.values().any(|top| top.has_parallel_edges());
 
         // Characteristics: preserve directed/undirected; inverse_indexed only if all selected are inverse indexed
         let all_inverse_indexed = !ordered_types.is_empty()
@@ -811,6 +806,86 @@ impl GraphStore for DefaultGraphStore {
     }
 }
 
+fn build_node_long_property_values(
+    backend: LongCollection,
+    node_count: usize,
+) -> Arc<dyn NodePropertyValues> {
+    match backend {
+        LongCollection::Vec(collection) => Arc::new(
+            DefaultLongNodePropertyValues::<VecLong>::from_collection(collection, node_count),
+        ),
+        LongCollection::Huge(collection) => {
+            let vec_backend = VecLong::from(collection.to_vec());
+            Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(
+                vec_backend,
+                node_count,
+            ))
+        }
+        LongCollection::Arrow(collection) => Arc::new(DefaultLongNodePropertyValues::<
+            ArrowLongArray,
+        >::from_collection(
+            collection, node_count
+        )),
+    }
+}
+
+fn build_node_double_property_values(
+    backend: DoubleCollection,
+    node_count: usize,
+) -> Arc<dyn NodePropertyValues> {
+    match backend {
+        DoubleCollection::Vec(collection) => Arc::new(
+            DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(collection, node_count),
+        ),
+        DoubleCollection::Huge(collection) => {
+            let vec_backend = VecDouble::from(collection.to_vec());
+            Arc::new(
+                DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(
+                    vec_backend,
+                    node_count,
+                ),
+            )
+        }
+        DoubleCollection::Arrow(collection) => Arc::new(DefaultDoubleNodePropertyValues::<
+            ArrowDoubleArray,
+        >::from_collection(
+            collection, node_count
+        )),
+    }
+}
+
+fn build_graph_long_property_values(backend: LongCollection) -> Arc<dyn GraphPropertyValues> {
+    match backend {
+        LongCollection::Vec(collection) => Arc::new(
+            DefaultLongGraphPropertyValues::<VecLong>::from_collection(collection),
+        ),
+        LongCollection::Huge(collection) => {
+            let vec_backend = VecLong::from(collection.to_vec());
+            Arc::new(DefaultLongGraphPropertyValues::<VecLong>::from_collection(
+                vec_backend,
+            ))
+        }
+        LongCollection::Arrow(collection) => {
+            Arc::new(DefaultLongGraphPropertyValues::<ArrowLongArray>::from_collection(collection))
+        }
+    }
+}
+
+fn build_graph_double_property_values(backend: DoubleCollection) -> Arc<dyn GraphPropertyValues> {
+    match backend {
+        DoubleCollection::Vec(collection) => {
+            Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(collection))
+        }
+        DoubleCollection::Huge(collection) => {
+            let vec_backend = VecDouble::from(collection.to_vec());
+            Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(vec_backend))
+        }
+        DoubleCollection::Arrow(collection) => Arc::new(DefaultDoubleGraphPropertyValues::<
+            ArrowDoubleArray,
+        >::from_collection(collection)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -820,7 +895,7 @@ mod tests {
     use crate::types::properties::relationship::impls::default_relationship_property_values::DefaultRelationshipPropertyValues;
     use std::sync::Arc;
 
-    fn sample_store() -> DefaultGraphStore {
+    fn store_with_config(config: crate::config::GraphStoreConfig) -> DefaultGraphStore {
         let graph_name = GraphName::new("g");
         let database_info = DatabaseInfo::new(
             DatabaseId::new("db"),
@@ -836,7 +911,7 @@ mod tests {
         relationship_topologies.insert(RelationshipType::of("KNOWS"), topology);
 
         DefaultGraphStore::new(
-            crate::config::GraphStoreConfig::default(),
+            config,
             graph_name,
             database_info,
             schema,
@@ -844,6 +919,10 @@ mod tests {
             id_map,
             relationship_topologies,
         )
+    }
+
+    fn sample_store() -> DefaultGraphStore {
+        store_with_config(crate::config::GraphStoreConfig::default())
     }
 
     #[test]
@@ -861,10 +940,10 @@ mod tests {
     #[test]
     fn test_add_node_property_with_config() {
         use crate::config::GraphStoreConfig;
-        
+
         // Create config with specific backend
         let config = GraphStoreConfig::default();
-        
+
         let mut store = DefaultGraphStore::new(
             config,
             GraphName::new("test"),
@@ -877,10 +956,12 @@ mod tests {
             SimpleIdMap::from_original_ids([0, 1, 2]),
             HashMap::new(),
         );
-        
+
         // Add property - should use Vec backend from config
-        store.add_node_property_i64("age".to_string(), vec![1, 2, 3]).unwrap();
-        
+        store
+            .add_node_property_i64("age".to_string(), vec![1, 2, 3])
+            .unwrap();
+
         // Verify property exists
         assert!(store.node_properties.contains_key("age"));
         assert_eq!(store.node_properties.len(), 1);
@@ -889,9 +970,9 @@ mod tests {
     #[test]
     fn test_add_graph_property_with_config() {
         use crate::config::GraphStoreConfig;
-        
+
         let config = GraphStoreConfig::default();
-        
+
         let mut store = DefaultGraphStore::new(
             config,
             GraphName::new("test"),
@@ -904,13 +985,29 @@ mod tests {
             SimpleIdMap::from_original_ids([0, 1, 2]),
             HashMap::new(),
         );
-        
+
         // Add graph property
-        store.add_graph_property_f64("density".to_string(), vec![0.5]).unwrap();
-        
+        store
+            .add_graph_property_f64("density".to_string(), vec![0.5])
+            .unwrap();
+
         // Verify property exists
         assert!(store.graph_properties.contains_key("density"));
         assert_eq!(store.graph_properties.len(), 1);
+    }
+
+    #[test]
+    fn vec_only_config_keeps_node_properties_vec_backed() {
+        let mut store = store_with_config(crate::config::GraphStoreConfig::vec_only());
+        store
+            .add_node_property_i64("score".to_string(), vec![10, 20, 30])
+            .expect("add node property via vec-only config");
+
+        let values = store
+            .node_property_values("score")
+            .expect("retrieve node property values");
+        assert_eq!(values.long_value(1).unwrap(), 20);
+        assert_eq!(values.long_value(2).unwrap(), 30);
     }
 
     #[test]
@@ -940,5 +1037,21 @@ mod tests {
             .expect("remove relationship property");
         assert!(!store.has_relationship_property(&rel_type, "weight"));
         assert!(!store.graph().has_relationship_property());
+    }
+
+    #[test]
+    fn builds_node_values_from_arrow_backend() {
+        let backend = LongCollection::Arrow(ArrowLongArray::from_vec(vec![5, 10]));
+        let values = build_node_long_property_values(backend, 2);
+        assert_eq!(values.long_value(1).unwrap(), 10);
+        assert_eq!(values.node_count(), 2);
+    }
+
+    #[test]
+    fn builds_graph_values_from_arrow_backend() {
+        let backend = DoubleCollection::Arrow(ArrowDoubleArray::from_vec(vec![0.25, 0.75]));
+        let values = build_graph_double_property_values(backend);
+        let collected: Vec<f64> = values.double_values().collect();
+        assert_eq!(collected, vec![0.25, 0.75]);
     }
 }

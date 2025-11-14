@@ -3,8 +3,16 @@
 //! This module provides factory functions for creating Collections instances,
 //! including Huge, Vec, Arrow, and other backend implementations.
 
-use crate::collections::backends::vec::{VecLong, VecDouble, VecInt, VecFloat, VecShort, VecByte, VecBoolean, VecChar};
-use crate::collections::backends::huge::{HugeLongArray, HugeDoubleArray, HugeIntArray, HugeFloatArray, HugeShortArray, HugeByteArray, HugeBooleanArray, HugeCharArray};
+use crate::collections::backends::arrow::{
+    ArrowDoubleArray, ArrowFloatArray, ArrowIntArray, ArrowLongArray,
+};
+use crate::collections::backends::huge::{
+    HugeBooleanArray, HugeByteArray, HugeCharArray, HugeDoubleArray, HugeFloatArray, HugeIntArray,
+    HugeLongArray, HugeShortArray,
+};
+use crate::collections::backends::vec::{
+    VecBoolean, VecByte, VecChar, VecDouble, VecFloat, VecInt, VecLong, VecShort,
+};
 use crate::collections::traits::{Collections, CollectionsFactory as CollectionsFactoryTrait};
 use crate::config::{CollectionsBackend, CollectionsConfig};
 
@@ -23,13 +31,13 @@ impl CollectionFactory {
                     Box::new(VecLong::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeLongArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeLongArray::new(capacity)),
             CollectionsBackend::Arrow => {
-                // TODO: Implement Arrow backend
-                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(VecLong::with_capacity(capacity))
+                if capacity > 0 {
+                    Box::new(ArrowLongArray::with_capacity(capacity))
+                } else {
+                    Box::new(ArrowLongArray::new())
+                }
             }
             _ => {
                 // Default to Vec
@@ -49,17 +57,15 @@ impl CollectionFactory {
                     Box::new(VecDouble::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeDoubleArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeDoubleArray::new(capacity)),
             CollectionsBackend::Arrow => {
-                // TODO: Implement Arrow backend
-                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(VecDouble::with_capacity(capacity))
+                if capacity > 0 {
+                    Box::new(ArrowDoubleArray::with_capacity(capacity))
+                } else {
+                    Box::new(ArrowDoubleArray::new())
+                }
             }
-            _ => {
-                Box::new(VecDouble::with_capacity(capacity))
-            }
+            _ => Box::new(VecDouble::with_capacity(capacity)),
         }
     }
 
@@ -74,16 +80,15 @@ impl CollectionFactory {
                     Box::new(VecInt::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeIntArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeIntArray::new(capacity)),
             CollectionsBackend::Arrow => {
-                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(VecInt::with_capacity(capacity))
+                if capacity > 0 {
+                    Box::new(ArrowIntArray::with_capacity(capacity))
+                } else {
+                    Box::new(ArrowIntArray::new())
+                }
             }
-            _ => {
-                Box::new(VecInt::with_capacity(capacity))
-            }
+            _ => Box::new(VecInt::with_capacity(capacity)),
         }
     }
 
@@ -93,21 +98,24 @@ impl CollectionFactory {
         match config.backend.primary {
             CollectionsBackend::Vec => {
                 if capacity > 0 {
-                    Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(capacity))
+                    Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(
+                        capacity,
+                    ))
                 } else {
                     Box::new(VecFloat::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeFloatArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeFloatArray::new(capacity)),
             CollectionsBackend::Arrow => {
-                eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(capacity))
+                if capacity > 0 {
+                    Box::new(ArrowFloatArray::with_capacity(capacity))
+                } else {
+                    Box::new(ArrowFloatArray::new())
+                }
             }
-            _ => {
-                Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(capacity))
-            }
+            _ => Box::new(<VecFloat as CollectionsFactoryTrait<f32>>::with_capacity(
+                capacity,
+            )),
         }
     }
 
@@ -117,21 +125,23 @@ impl CollectionFactory {
         match config.backend.primary {
             CollectionsBackend::Vec => {
                 if capacity > 0 {
-                    Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(capacity))
+                    Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(
+                        capacity,
+                    ))
                 } else {
                     Box::new(VecShort::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeShortArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeShortArray::new(capacity)),
             CollectionsBackend::Arrow => {
                 eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(capacity))
+                Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(
+                    capacity,
+                ))
             }
-            _ => {
-                Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(capacity))
-            }
+            _ => Box::new(<VecShort as CollectionsFactoryTrait<i16>>::with_capacity(
+                capacity,
+            )),
         }
     }
 
@@ -141,26 +151,30 @@ impl CollectionFactory {
         match config.backend.primary {
             CollectionsBackend::Vec => {
                 if capacity > 0 {
-                    Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(capacity))
+                    Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(
+                        capacity,
+                    ))
                 } else {
                     Box::new(VecByte::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeByteArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeByteArray::new(capacity)),
             CollectionsBackend::Arrow => {
                 eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(capacity))
+                Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(
+                    capacity,
+                ))
             }
-            _ => {
-                Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(capacity))
-            }
+            _ => Box::new(<VecByte as CollectionsFactoryTrait<i8>>::with_capacity(
+                capacity,
+            )),
         }
     }
 
     /// Creates a boolean collection based on config
-    pub fn create_boolean_collection(config: &CollectionsConfig<bool>) -> Box<dyn Collections<bool>> {
+    pub fn create_boolean_collection(
+        config: &CollectionsConfig<bool>,
+    ) -> Box<dyn Collections<bool>> {
         let capacity = config.element_type.element_count;
         match config.backend.primary {
             CollectionsBackend::Vec => {
@@ -170,16 +184,12 @@ impl CollectionFactory {
                     Box::new(VecBoolean::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeBooleanArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeBooleanArray::new(capacity)),
             CollectionsBackend::Arrow => {
                 eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
                 Box::new(<VecBoolean as CollectionsFactoryTrait<bool>>::with_capacity(capacity))
             }
-            _ => {
-                Box::new(<VecBoolean as CollectionsFactoryTrait<bool>>::with_capacity(capacity))
-            }
+            _ => Box::new(<VecBoolean as CollectionsFactoryTrait<bool>>::with_capacity(capacity)),
         }
     }
 
@@ -189,21 +199,68 @@ impl CollectionFactory {
         match config.backend.primary {
             CollectionsBackend::Vec => {
                 if capacity > 0 {
-                    Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(capacity))
+                    Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(
+                        capacity,
+                    ))
                 } else {
                     Box::new(VecChar::new())
                 }
             }
-            CollectionsBackend::Huge => {
-                Box::new(HugeCharArray::new(capacity))
-            }
+            CollectionsBackend::Huge => Box::new(HugeCharArray::new(capacity)),
             CollectionsBackend::Arrow => {
                 eprintln!("Warning: Arrow backend not yet implemented, falling back to Vec");
-                Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(capacity))
+                Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(
+                    capacity,
+                ))
             }
-            _ => {
-                Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(capacity))
-            }
+            _ => Box::new(<VecChar as CollectionsFactoryTrait<char>>::with_capacity(
+                capacity,
+            )),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::collections::traits::Collections;
+
+    fn arrow_config<T>() -> CollectionsConfig<T> {
+        let mut config = CollectionsConfig::default();
+        config.backend.primary = CollectionsBackend::Arrow;
+        config.element_type.element_count = 16;
+        config
+    }
+
+    #[test]
+    fn arrow_long_collection_factory_uses_arrow_backend() {
+        let config = arrow_config::<i64>();
+        let collection = CollectionFactory::create_long_collection(&config);
+        assert_eq!(collection.backend(), CollectionsBackend::Arrow);
+        assert_eq!(collection.len(), 0);
+    }
+
+    #[test]
+    fn arrow_double_collection_factory_uses_arrow_backend() {
+        let config = arrow_config::<f64>();
+        let collection = CollectionFactory::create_double_collection(&config);
+        assert_eq!(collection.backend(), CollectionsBackend::Arrow);
+        assert_eq!(collection.len(), 0);
+    }
+
+    #[test]
+    fn arrow_int_collection_factory_uses_arrow_backend() {
+        let config = arrow_config::<i32>();
+        let collection = CollectionFactory::create_int_collection(&config);
+        assert_eq!(collection.backend(), CollectionsBackend::Arrow);
+        assert_eq!(collection.len(), 0);
+    }
+
+    #[test]
+    fn arrow_float_collection_factory_uses_arrow_backend() {
+        let config = arrow_config::<f32>();
+        let collection = CollectionFactory::create_float_collection(&config);
+        assert_eq!(collection.backend(), CollectionsBackend::Arrow);
+        assert_eq!(collection.len(), 0);
     }
 }

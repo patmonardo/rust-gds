@@ -6,11 +6,15 @@ use crate::types::PropertyState;
 // Note: The generated property value types are now generic over Collections backend.
 // They should be used as DefaultLongNodePropertyValues<C>, DefaultDoubleNodePropertyValues<C>, etc.
 // where C is a Collections implementation like VecLong, VecDouble, HugeLong, etc.
-use crate::types::properties::node::impls::default_node_property_values::{
-    DefaultLongNodePropertyValues,
-    DefaultDoubleNodePropertyValues,
+use crate::collections::backends::arrow::{ArrowDoubleArray, ArrowLongArray};
+use crate::collections::backends::factory::{
+    create_double_backend_from_config, create_long_backend_from_config, DoubleCollection,
+    LongCollection,
 };
-use crate::collections::backends::vec::{VecLong, VecDouble};
+use crate::collections::backends::vec::{VecDouble, VecLong};
+use crate::types::properties::node::impls::default_node_property_values::{
+    DefaultDoubleNodePropertyValues, DefaultLongNodePropertyValues,
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -168,24 +172,15 @@ impl DefaultNodePropertyStoreBuilder {
         values: Vec<i64>,
     ) -> Self {
         let node_count = values.len();
-        
-        // Use config to select backend
-        let backend = crate::collections::backends::factory::create_long_backend_from_config(config, values);
-        
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(
-            DefaultLongNodePropertyValues::<VecLong>::from_collection(backend, node_count)
-        );
+        let backend = create_long_backend_from_config(config, values);
+        let pv = build_long_node_property_values(backend, node_count);
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
     }
 
     /// Convenience: create and put a Long property from a Vec using Vec-backed defaults.
-    pub fn put_long_from_vec(
-        self,
-        key: impl Into<String>,
-        values: Vec<i64>,
-    ) -> Self {
+    pub fn put_long_from_vec(self, key: impl Into<String>, values: Vec<i64>) -> Self {
         // Default to Vec backend
         let default_config = crate::config::CollectionsConfig::<i64>::default();
         self.put_long_with_config(&default_config, key, values)
@@ -199,24 +194,15 @@ impl DefaultNodePropertyStoreBuilder {
         values: Vec<f64>,
     ) -> Self {
         let node_count = values.len();
-        
-        // Use config to select backend
-        let backend = crate::collections::backends::factory::create_double_backend_from_config(config, values);
-        
-        let pv: Arc<dyn NodePropertyValues> = Arc::new(
-            DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(backend, node_count)
-        );
+        let backend = create_double_backend_from_config(config, values);
+        let pv = build_double_node_property_values(backend, node_count);
         let prop = NodeProperty::with_state(key.into(), PropertyState::Persistent, pv);
         self.properties.insert(prop.key().to_string(), prop);
         self
     }
 
     /// Convenience: create and put a Double property from a Vec using Vec-backed defaults.
-    pub fn put_double_from_vec(
-        self,
-        key: impl Into<String>,
-        values: Vec<f64>,
-    ) -> Self {
+    pub fn put_double_from_vec(self, key: impl Into<String>, values: Vec<f64>) -> Self {
         // Default to Vec backend
         let default_config = crate::config::CollectionsConfig::<f64>::default();
         self.put_double_with_config(&default_config, key, values)
@@ -247,6 +233,54 @@ impl DefaultNodePropertyStoreBuilder {
     }
 }
 
+fn build_long_node_property_values(
+    backend: LongCollection,
+    node_count: usize,
+) -> Arc<dyn NodePropertyValues> {
+    match backend {
+        LongCollection::Vec(collection) => Arc::new(
+            DefaultLongNodePropertyValues::<VecLong>::from_collection(collection, node_count),
+        ),
+        LongCollection::Huge(collection) => {
+            let vec_backend = VecLong::from(collection.to_vec());
+            Arc::new(DefaultLongNodePropertyValues::<VecLong>::from_collection(
+                vec_backend,
+                node_count,
+            ))
+        }
+        LongCollection::Arrow(collection) => Arc::new(DefaultLongNodePropertyValues::<
+            ArrowLongArray,
+        >::from_collection(
+            collection, node_count
+        )),
+    }
+}
+
+fn build_double_node_property_values(
+    backend: DoubleCollection,
+    node_count: usize,
+) -> Arc<dyn NodePropertyValues> {
+    match backend {
+        DoubleCollection::Vec(collection) => Arc::new(
+            DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(collection, node_count),
+        ),
+        DoubleCollection::Huge(collection) => {
+            let vec_backend = VecDouble::from(collection.to_vec());
+            Arc::new(
+                DefaultDoubleNodePropertyValues::<VecDouble>::from_collection(
+                    vec_backend,
+                    node_count,
+                ),
+            )
+        }
+        DoubleCollection::Arrow(collection) => Arc::new(DefaultDoubleNodePropertyValues::<
+            ArrowDoubleArray,
+        >::from_collection(
+            collection, node_count
+        )),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -259,7 +293,10 @@ mod tests {
         use std::sync::Arc;
 
         let values: Arc<dyn NodePropertyValues> =
-            Arc::new(DefaultLongNodePropertyValues::from_collection(crate::collections::backends::vec::VecLong::from(vec![1, 2, 3]), 3));
+            Arc::new(DefaultLongNodePropertyValues::from_collection(
+                crate::collections::backends::vec::VecLong::from(vec![1, 2, 3]),
+                3,
+            ));
         let default_value = DefaultValue::of(values.value_type());
         NodeProperty::with_default(
             key.to_string(),
@@ -312,5 +349,23 @@ mod tests {
         let store = DefaultNodePropertyStore::builder().put("score", p1).build();
         let rebuilt = store.to_builder().build();
         assert!(rebuilt.contains_key("score"));
+    }
+
+    #[test]
+    fn builds_arrow_backed_long_values() {
+        use crate::collections::backends::arrow::ArrowLongArray;
+
+        let backend = LongCollection::Arrow(ArrowLongArray::from_vec(vec![11, 42]));
+        let values = build_long_node_property_values(backend, 2);
+        assert_eq!(values.long_value(1).unwrap(), 42);
+    }
+
+    #[test]
+    fn builds_arrow_backed_double_values() {
+        use crate::collections::backends::arrow::ArrowDoubleArray;
+
+        let backend = DoubleCollection::Arrow(ArrowDoubleArray::from_vec(vec![1.5, 3.5]));
+        let values = build_double_node_property_values(backend, 2);
+        assert_eq!(values.double_value(0).unwrap(), 1.5);
     }
 }

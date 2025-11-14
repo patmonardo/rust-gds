@@ -1,11 +1,16 @@
+use crate::collections::backends::arrow::{ArrowDoubleArray, ArrowLongArray};
+use crate::collections::backends::factory::{
+    create_double_backend_from_config, create_long_backend_from_config, DoubleCollection,
+    LongCollection,
+};
+use crate::collections::backends::vec::{VecDouble, VecLong};
+use crate::types::properties::graph::impls::default_graph_property_values::{
+    DefaultDoubleGraphPropertyValues, DefaultLongGraphPropertyValues,
+};
 use crate::types::properties::graph::GraphProperty;
 use crate::types::properties::graph::GraphPropertyValues;
 use crate::types::properties::graph::{GraphPropertyStore, GraphPropertyStoreBuilder};
 use crate::types::properties::PropertyStore;
-use crate::types::properties::graph::impls::default_graph_property_values::{
-    DefaultDoubleGraphPropertyValues,
-    DefaultLongGraphPropertyValues,
-};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -162,14 +167,8 @@ impl DefaultGraphPropertyStoreBuilder {
         key: impl Into<String>,
         values: Vec<i64>,
     ) -> Self {
-        use crate::collections::backends::vec::VecLong;
-        
-        // Use config to select backend
-        let backend = crate::collections::backends::factory::create_long_backend_from_config(config, values);
-        
-        let pv: Arc<dyn GraphPropertyValues> = Arc::new(
-            DefaultLongGraphPropertyValues::<VecLong>::from_collection(backend)
-        );
+        let backend = create_long_backend_from_config(config, values);
+        let pv = build_long_graph_property_values(backend);
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
@@ -178,11 +177,7 @@ impl DefaultGraphPropertyStoreBuilder {
     }
 
     /// Convenience: create and put Long graph property from Vec using Vec-backed defaults.
-    pub fn put_long_from_vec(
-        self,
-        key: impl Into<String>,
-        values: Vec<i64>,
-    ) -> Self {
+    pub fn put_long_from_vec(self, key: impl Into<String>, values: Vec<i64>) -> Self {
         // Default to Vec backend
         let default_config = crate::config::CollectionsConfig::<i64>::default();
         self.put_long_with_config(&default_config, key, values)
@@ -195,14 +190,8 @@ impl DefaultGraphPropertyStoreBuilder {
         key: impl Into<String>,
         values: Vec<f64>,
     ) -> Self {
-        use crate::collections::backends::vec::VecDouble;
-        
-        // Use config to select backend
-        let backend = crate::collections::backends::factory::create_double_backend_from_config(config, values);
-        
-        let pv: Arc<dyn GraphPropertyValues> = Arc::new(
-            DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(backend)
-        );
+        let backend = create_double_backend_from_config(config, values);
+        let pv = build_double_graph_property_values(backend);
         use crate::types::PropertyState;
         let key_str = key.into();
         let prop = GraphProperty::with_state(key_str.clone(), PropertyState::Persistent, pv);
@@ -211,13 +200,63 @@ impl DefaultGraphPropertyStoreBuilder {
     }
 
     /// Convenience: create and put Double graph property from Vec using Vec-backed defaults.
-    pub fn put_double_from_vec(
-        self,
-        key: impl Into<String>,
-        values: Vec<f64>,
-    ) -> Self {
+    pub fn put_double_from_vec(self, key: impl Into<String>, values: Vec<f64>) -> Self {
         // Default to Vec backend
         let default_config = crate::config::CollectionsConfig::<f64>::default();
         self.put_double_with_config(&default_config, key, values)
+    }
+}
+
+fn build_long_graph_property_values(backend: LongCollection) -> Arc<dyn GraphPropertyValues> {
+    match backend {
+        LongCollection::Vec(collection) => Arc::new(
+            DefaultLongGraphPropertyValues::<VecLong>::from_collection(collection),
+        ),
+        LongCollection::Huge(collection) => {
+            let vec_backend = VecLong::from(collection.to_vec());
+            Arc::new(DefaultLongGraphPropertyValues::<VecLong>::from_collection(
+                vec_backend,
+            ))
+        }
+        LongCollection::Arrow(collection) => {
+            Arc::new(DefaultLongGraphPropertyValues::<ArrowLongArray>::from_collection(collection))
+        }
+    }
+}
+
+fn build_double_graph_property_values(backend: DoubleCollection) -> Arc<dyn GraphPropertyValues> {
+    match backend {
+        DoubleCollection::Vec(collection) => {
+            Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(collection))
+        }
+        DoubleCollection::Huge(collection) => {
+            let vec_backend = VecDouble::from(collection.to_vec());
+            Arc::new(DefaultDoubleGraphPropertyValues::<VecDouble>::from_collection(vec_backend))
+        }
+        DoubleCollection::Arrow(collection) => Arc::new(DefaultDoubleGraphPropertyValues::<
+            ArrowDoubleArray,
+        >::from_collection(collection)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::collections::backends::arrow::{ArrowDoubleArray, ArrowLongArray};
+
+    #[test]
+    fn builds_arrow_backed_long_graph_values() {
+        let backend = LongCollection::Arrow(ArrowLongArray::from_vec(vec![3, 4, 5]));
+        let values = build_long_graph_property_values(backend);
+        let collected: Vec<i64> = values.long_values().collect();
+        assert_eq!(collected, vec![3, 4, 5]);
+    }
+
+    #[test]
+    fn builds_arrow_backed_double_graph_values() {
+        let backend = DoubleCollection::Arrow(ArrowDoubleArray::from_vec(vec![0.5, 0.75]));
+        let values = build_double_graph_property_values(backend);
+        let collected: Vec<f64> = values.double_values().collect();
+        assert_eq!(collected, vec![0.5, 0.75]);
     }
 }
